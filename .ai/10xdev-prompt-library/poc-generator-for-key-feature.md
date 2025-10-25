@@ -1,0 +1,1 @@
+Based on the MVP description from @prd.md and the technology stack from @tech-stack.md, prepare a prompt for the proof of concept generator that will allow us to verify the basic functionality of the application, i.e. {{KEYFEATURE}}. Exclude all redundant features. Mark that the generator should plan the work and obtain my approval before proceeding to create the PoC.
