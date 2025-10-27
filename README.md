@@ -36,7 +36,7 @@
 
 ### Prerequisites
 
-- Node.js v22.14.0 (see `.nvmrc`)
+- Node.js **v22.14.0** (see `.nvmrc`)
 - npm (comes with Node.js)
 - A Supabase project with:
   - `SUPABASE_URL`
@@ -48,8 +48,8 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/darter-assistant.git
-cd darter-assistant
+git clone https://github.com/adiranmirek/darterassistant.git
+cd darterassistant
 
 # Use the correct Node version
 nvm use
@@ -105,7 +105,7 @@ npm run dev
 
 ## Project Status
 
-This project is currently in **MVP / Alpha** stage. Core functionality has been implemented, and the focus is on polishing, testing, and adding missing environment configuration and license.
+This project is currently in **MVP / Alpha** stage.
 
 ## License
 
