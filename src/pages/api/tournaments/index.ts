@@ -177,8 +177,13 @@ export const POST: APIRoute = async ({ locals, request }) => {
       }
 
       console.error('Error creating tournament:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
       return new Response(
-        JSON.stringify({ error: 'Failed to create tournament' }),
+        JSON.stringify({ 
+          error: 'Failed to create tournament',
+          details: error.message || 'Unknown error',
+          code: error.code || 'UNKNOWN'
+        }),
         {
           status: 500,
           headers: { 'Content-Type': 'application/json' },

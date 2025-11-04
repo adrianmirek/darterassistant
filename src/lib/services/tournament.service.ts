@@ -157,6 +157,9 @@ export async function createTournament(
   command: CreateTournamentCommand
 ): Promise<{ data: CreateTournamentResponseDTO | null; error: any }> {
   try {
+    console.log('Creating tournament with command:', JSON.stringify(command, null, 2));
+    console.log('User ID:', userId);
+
     // Insert tournament
     const { data: tournament, error: tournamentError } = await supabase
       .from('tournaments')
@@ -169,32 +172,42 @@ export async function createTournament(
       .single();
 
     if (tournamentError) {
+      console.error('Error inserting tournament:', tournamentError);
       return { data: null, error: tournamentError };
     }
 
+    console.log('Tournament created successfully:', tournament);
+
     // Insert tournament result
+    const resultData = {
+      tournament_id: tournament.id,
+      match_type_id: command.result.match_type_id,
+      average_score: command.result.average_score,
+      first_nine_avg: command.result.first_nine_avg,
+      checkout_percentage: command.result.checkout_percentage,
+      score_60_count: command.result.score_60_count,
+      score_100_count: command.result.score_100_count,
+      score_140_count: command.result.score_140_count,
+      score_180_count: command.result.score_180_count,
+      high_finish: command.result.high_finish,
+      best_leg: command.result.best_leg,
+      worst_leg: command.result.worst_leg,
+    };
+
+    console.log('Inserting result with data:', JSON.stringify(resultData, null, 2));
+
     const { error: resultError } = await supabase
       .from('tournament_match_results')
-      .insert({
-        tournament_id: tournament.id,
-        match_type_id: command.result.match_type_id,
-        average_score: command.result.average_score,
-        first_nine_avg: command.result.first_nine_avg,
-        checkout_percentage: command.result.checkout_percentage,
-        score_60_count: command.result.score_60_count,
-        score_100_count: command.result.score_100_count,
-        score_140_count: command.result.score_140_count,
-        score_180_count: command.result.score_180_count,
-        high_finish: command.result.high_finish,
-        best_leg: command.result.best_leg,
-        worst_leg: command.result.worst_leg,
-      });
+      .insert(resultData);
 
     if (resultError) {
       // If result insertion fails, we should ideally rollback the tournament
       // For now, return the error
+      console.error('Error inserting tournament result:', resultError);
       return { data: null, error: resultError };
     }
+
+    console.log('Tournament result created successfully');
 
     const response: CreateTournamentResponseDTO = {
       id: tournament.id,
@@ -203,6 +216,7 @@ export async function createTournament(
 
     return { data: response, error: null };
   } catch (error) {
+    console.error('Unexpected error in createTournament:', error);
     return { data: null, error };
   }
 }

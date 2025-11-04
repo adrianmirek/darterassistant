@@ -57,7 +57,7 @@ export type CreateTournamentResultCommand = Omit<
 /**
  * Command Model for creating a tournament along with its initial result
  */
-export type CreateTournamentCommand = {
+export type CreateTournamentCommand = {  
   name: Tables['tournaments']['Insert']['name'];
   date: Tables['tournaments']['Insert']['date'];
   result: CreateTournamentResultCommand;
