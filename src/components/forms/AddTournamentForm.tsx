@@ -57,6 +57,7 @@ const STEPS = ['Basic Info', 'Metrics', 'Review'];
 export default function AddTournamentForm() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [canSubmit, setCanSubmit] = useState(false);
   const [matchTypes, setMatchTypes] = useState<MatchTypeDTO[]>([]);
   const [isLoadingMatchTypes, setIsLoadingMatchTypes] = useState(true);
   const [matchTypesError, setMatchTypesError] = useState<string | null>(null);
@@ -125,6 +126,23 @@ export default function AddTournamentForm() {
     }
   };
 
+  const handleSubmitClick = () => {
+    // Enable submission flag when Submit button is explicitly clicked
+    setCanSubmit(true);
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    // Only allow form submission if explicitly allowed via Submit button
+    if (canSubmit && currentStep === STEPS.length - 1) {
+      await form.handleSubmit(onSubmit)(e);
+    }
+    
+    // Reset the flag after attempting submission
+    setCanSubmit(false);
+  };
+
   const getFieldsForStep = (step: number): (keyof AddTournamentFormViewModel)[] => {
     switch (step) {
       case 0:
@@ -149,6 +167,11 @@ export default function AddTournamentForm() {
   };
 
   const onSubmit = async (data: AddTournamentFormViewModel) => {
+    // Double-check: Only submit if we're on the final step (Review) and explicitly allowed
+    if (currentStep !== STEPS.length - 1 || !canSubmit) {
+      return;
+    }
+
     try {
       setIsSubmitting(true);
 
@@ -215,7 +238,7 @@ export default function AddTournamentForm() {
         <StepperNavigation currentStep={currentStep} steps={STEPS} />
         
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={handleFormSubmit} className="space-y-8">
             {currentStep === 0 && (
               <Step1_BasicInfo
                 matchTypes={matchTypes}
@@ -234,6 +257,7 @@ export default function AddTournamentForm() {
               isSubmitting={isSubmitting}
               onBack={handleBack}
               onNext={handleNext}
+              onSubmit={handleSubmitClick}
             />
           </form>
         </Form>

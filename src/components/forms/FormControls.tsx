@@ -7,6 +7,7 @@ interface FormControlsProps {
   isSubmitting: boolean;
   onBack: () => void;
   onNext: () => void;
+  onSubmit: () => void;
 }
 
 export default function FormControls({
@@ -15,6 +16,7 @@ export default function FormControls({
   isSubmitting,
   onBack,
   onNext,
+  onSubmit,
 }: FormControlsProps) {
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === totalSteps - 1;
@@ -31,7 +33,7 @@ export default function FormControls({
       </Button>
 
       {isLastStep ? (
-        <Button type="submit" disabled={isSubmitting}>
+        <Button type="submit" onClick={onSubmit} disabled={isSubmitting}>
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {isSubmitting ? 'Submitting...' : 'Submit'}
         </Button>
