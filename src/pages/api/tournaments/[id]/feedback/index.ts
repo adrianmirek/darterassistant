@@ -1,7 +1,8 @@
 import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import type { GenerateFeedbackCommand, FeedbackResponseDTO } from '../../../../../types';
-import { generateFeedback } from '../../../../../lib/services/feedback.service';
+// TODO: Reimplement using OpenRouterService
+// import { generateFeedback } from '../../../../../lib/services/feedback.service';
 
 export const prerender = false;
 
@@ -77,40 +78,21 @@ export const POST: APIRoute = async ({ params, locals, request }) => {
       });
     }
 
-    // Generate feedback using service
-    const { data, error } = await generateFeedback(
-      locals.supabase,
-      tournamentId,
-      locals.user.id,
-      body
-    );
-
-    // Handle tournament not found
-    if (error && error.message === 'Tournament not found') {
-      return new Response(JSON.stringify({ error: 'Tournament not found' }), {
-        status: 404,
+    // TODO: Reimplement feedback generation using OpenRouterService
+    // Example implementation:
+    // 1. Initialize OpenRouterService with API key
+    // 2. Fetch tournament data
+    // 3. Build prompt with tournament metrics
+    // 4. Call sendChat() with appropriate messages
+    // 5. Return structured feedback response
+    
+    return new Response(
+      JSON.stringify({ error: 'Feedback generation temporarily unavailable - pending reimplementation' }),
+      {
+        status: 503,
         headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
-    if (error) {
-      console.error('Error generating feedback:', error);
-      // Return service unavailable if AI service fails
-      return new Response(
-        JSON.stringify({ error: 'Feedback service temporarily unavailable' }),
-        {
-          status: 503,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
-    }
-
-    const feedback: FeedbackResponseDTO = data!;
-
-    return new Response(JSON.stringify(feedback), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+      }
+    );
   } catch (error) {
     console.error('Unexpected error in POST /api/tournaments/:id/feedback:', error);
     return new Response(
