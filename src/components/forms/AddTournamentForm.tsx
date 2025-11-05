@@ -214,14 +214,25 @@ export default function AddTournamentForm() {
 
       const result: CreateTournamentResponseDTO = await response.json();
 
+      // Show success message
       toast.success('Tournament saved successfully!', {
         description: `Tournament "${data.name}" has been recorded.`,
       });
 
+      // Show AI feedback if available
+      if (result.feedback) {
+        setTimeout(() => {
+          toast.info('Performance Analysis', {
+            description: result.feedback,
+            duration: 17000, // Display longer to allow reading
+          });
+        }, 500); // Delay to show after success message
+      }
+
       // Redirect to dashboard after successful submission
       setTimeout(() => {
         window.location.href = '/';
-      }, 1000);
+      }, result.feedback ? 17500 : 1500); // Wait longer if feedback is shown
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
       toast.error('Failed to save tournament', {

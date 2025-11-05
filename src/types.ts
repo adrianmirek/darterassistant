@@ -69,6 +69,7 @@ export type CreateTournamentCommand = {
 export type CreateTournamentResponseDTO = {
   id: string;
   created_at: string;
+  feedback?: string;
 };
 
 /**

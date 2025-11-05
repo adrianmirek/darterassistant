@@ -6,10 +6,75 @@ import type {
   CreateTournamentCommand,
   CreateTournamentResponseDTO,
 } from '../../types';
+import { OpenRouterService } from './openrouter.service';
+import type { ChatMessage } from '../../types/openrouter.types';
 
 /**
  * Service for tournament-related business logic
  */
+
+/**
+ * Generate AI-powered performance feedback based on tournament results
+ */
+async function generateTournamentFeedback(
+  command: CreateTournamentCommand,
+  apiKey: string
+): Promise<string> {
+  try {
+    // Initialize OpenRouter service
+    const openRouter = new OpenRouterService({
+      apiKey,
+      defaultModel: 'anthropic/claude-3.5-sonnet',
+      logger: (level, message, data) => {
+        console.log(`[OpenRouter ${level}]`, message, data);
+      },
+    });
+
+    // Build prompt with tournament performance data
+    const result = command.result;
+    const prompt = `Analyze this darts tournament performance and provide constructive feedback:
+
+Tournament: ${command.name}
+Date: ${command.date}
+
+Performance Metrics:
+- Average Score: ${result.average_score}
+- First Nine Average: ${result.first_nine_avg}
+- Checkout Percentage: ${result.checkout_percentage}%
+- High Finish: ${result.high_finish}
+- Best Leg: ${result.best_leg} darts
+- Worst Leg: ${result.worst_leg} darts
+- Score Counts: ${result.score_60_count} (60+), ${result.score_100_count} (100+), ${result.score_140_count} (140+), ${result.score_180_count} (180s)
+
+Provide brief, encouraging feedback (2-3 sentences) highlighting:
+1. Key strengths based on the metrics
+2. One specific area for improvement
+3. Motivational closing
+
+Keep the tone positive, supportive, and professional.`;
+
+    const messages: ChatMessage[] = [
+      {
+        role: 'user',
+        content: prompt,
+      },
+    ];
+
+    // Send chat request
+    const response = await openRouter.sendChat(messages);
+
+    // Extract feedback from response
+    if (response.choices && response.choices.length > 0) {
+      return response.choices[0].message.content || 'Great performance! Keep up the good work.';
+    }
+
+    return 'Great performance! Keep up the good work.';
+  } catch (error) {
+    console.error('Error generating tournament feedback:', error);
+    // Return a default message if AI feedback fails
+    return 'Tournament recorded successfully! Keep practicing to improve your game.';
+  }
+}
 
 /**
  * Fetches tournaments for a user with pagination and sorting
@@ -149,7 +214,7 @@ export async function getTournamentById(
 }
 
 /**
- * Creates a new tournament with an initial result
+ * Creates a new tournament with an initial result and AI-generated feedback
  */
 export async function createTournament(
   supabase: SupabaseClient,
@@ -209,9 +274,20 @@ export async function createTournament(
 
     console.log('Tournament result created successfully');
 
+    // Generate AI feedback based on performance (optional)
+    let feedback: string | undefined;
+    const apiKey = import.meta.env.OPENROUTER_API_KEY;
+    
+    if (!apiKey) {
+      console.log('OPENROUTER_API_KEY is not configured. Skipping AI feedback generation.');
+    } else {
+      feedback = await generateTournamentFeedback(command, apiKey);
+    }
+
     const response: CreateTournamentResponseDTO = {
       id: tournament.id,
       created_at: tournament.created_at,
+      feedback,
     };
 
     return { data: response, error: null };
