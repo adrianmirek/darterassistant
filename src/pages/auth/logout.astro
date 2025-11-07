@@ -1,34 +1,14 @@
 ---
-import Layout from '@/layouts/Layout.astro';
-import GuestNav from '@/components/navigation/GuestNav';
-
 export const prerender = false;
 
-// TODO: Check authentication and perform logout
-// if (!Astro.locals.user) {
-//   return Astro.redirect('/auth/login');
-// }
+// Call logout API
+const response = await fetch(new URL('/api/auth/logout', Astro.url.origin), {
+  method: 'POST',
+  headers: {
+    Cookie: Astro.request.headers.get('Cookie') || '',
+  },
+});
 
-// TODO: Call logout API endpoint and clear cookies
-// await fetch('/api/auth/logout', { method: 'POST' });
-// return Astro.redirect('/auth/login');
+// Always redirect to login, regardless of API result
+return Astro.redirect('/auth/login');
 ---
-
-<Layout title="Logging Out - Darter Assistant">
-  <GuestNav client:load />
-  
-  <main class="min-h-[calc(100vh-73px)] flex items-center justify-center p-4">
-    <div class="w-full max-w-md mx-auto text-center space-y-4">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-      <h1 class="text-2xl font-bold">Logging out...</h1>
-      <p class="text-muted-foreground">Please wait while we sign you out.</p>
-    </div>
-  </main>
-</Layout>
-
-<script>
-  // TODO: This script will handle client-side logout when backend is ready
-  // For now, it's a placeholder
-  console.log('Logout page loaded - backend implementation pending');
-</script>
-

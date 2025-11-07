@@ -1,11 +1,14 @@
 ---
 import "../styles/global.css";
+import AuthNav from '@/components/navigation/AuthNav';
 
 interface Props {
   title?: string;
+  showAuthNav?: boolean;
 }
 
-const { title = "10x Astro Starter" } = Astro.props;
+const { title = "Darter Assistant", showAuthNav = true } = Astro.props;
+const user = Astro.locals.user;
 ---
 
 <!doctype html>
@@ -18,6 +21,9 @@ const { title = "10x Astro Starter" } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
+    {showAuthNav && user && (
+      <AuthNav userEmail={user.email} client:load />
+    )}
     <slot />
   </body>
 </html>

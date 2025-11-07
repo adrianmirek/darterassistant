@@ -129,3 +129,30 @@ export type FeedbackResponseDTO = {
   message: string;
   tone: string;
 };
+
+/**
+ * User authentication data
+ */
+export type UserDTO = {
+  id: string;
+  email: string;
+  created_at?: string;
+};
+
+/**
+ * Authentication session data
+ */
+export type SessionDTO = {
+  access_token: string;
+  refresh_token: string;
+  expires_at: number;
+  user: UserDTO;
+};
+
+/**
+ * Response DTO for login
+ */
+export type LoginResponseDTO = {
+  user: UserDTO;
+  session: SessionDTO;
+};

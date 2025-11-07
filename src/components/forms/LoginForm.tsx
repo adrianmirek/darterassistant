@@ -38,15 +38,34 @@ export default function LoginForm() {
     try {
       setIsSubmitting(true);
       
-      // TODO: Implement API call to /api/auth/login
-      console.log('Login data:', data);
-      
-      toast.success('Login successful!', {
-        description: 'Redirecting to dashboard...',
+      // Call login API
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+        }),
       });
-      
-      // TODO: Redirect to dashboard after successful login
-      // window.location.href = '/';
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        // Handle error response
+        throw new Error(result.error || 'Login failed');
+      }
+
+      // Success - cookies are set automatically by the API
+      toast.success('Login successful!', {
+        description: 'Redirecting...',
+      });
+
+      // Redirect to main page
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 500);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
       toast.error('Login failed', {

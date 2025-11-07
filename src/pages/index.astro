@@ -1,19 +1,14 @@
 ---
-//import Welcome from "../components/Welcome.astro";
 import Layout from '@/layouts/Layout.astro';
 import AddTournamentForm from '@/components/forms/AddTournamentForm';
-
-
-//<Layout>
-//  <Welcome />
-//</Layout>
 
 export const prerender = false;
 
 // This is a protected route - authentication check happens in middleware
+// User must be logged in to access this page
 ---
 
-<Layout title="Add Tournament">
+<Layout title="Add Tournament - Darter Assistant">
   <div class="container mx-auto px-4 py-8 max-w-4xl">
     <div class="mb-8">
       <h1 class="text-3xl font-bold tracking-tight mb-2">Add Tournament</h1>
