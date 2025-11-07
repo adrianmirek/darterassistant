@@ -109,7 +109,27 @@ US-009: Secure Data Access
 - Description: Only authenticated users can access their data.
 - Acceptance Criteria:
   - Attempts to access protected routes without authentication redirect to login.
-  - Users cannot view or edit other users' data.
+
+US-010: Tournament Data Entry
+- Title: Tournament Data Entry
+- Description: As a user, I want to be able to save tournament data (as defined in US-004), so that I can later edit and view it in the next phase of the project.
+- Acceptance Criteria:
+  - The user can save the current tournament results (US-004) as tournament-match-results.
+  - The user can update saved tournament data (not in MVP).
+  - The user can delete tournament data (not in MVP).
+
+US-011: Secure Access and Authentication
+- Title: Secure Access
+- Description: As a user, I want to be able to register and log in to the system in a way that ensures the security of my data.
+- Acceptance Criteria:
+  - Login and registration take place on dedicated pages.
+  - Login requires providing an email address and password.
+  - Registration requires providing an email address, password, and password confirmation.
+  - The user cannot use the function for adding new tournament data to tournament-match-results without logging into the system (US-010).
+  - The user can log in to the system using a button in the upper-right corner.
+  - The user can log out of the system using a button in the upper-right corner of the main @Layout.astro.
+  - No external login services are used (e.g., Google, GitHub).
+  - Password recovery must be possible.
 
 ## 6. Success Metrics
 - 90% of active users save at least two tournament results per month.
