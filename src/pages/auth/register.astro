@@ -5,10 +5,11 @@ import GuestNav from '@/components/navigation/GuestNav';
 
 export const prerender = false;
 
-// TODO: Check authentication state and redirect if already authenticated
-// if (Astro.locals.user) {
-//   return Astro.redirect('/');
-// }
+// Check authentication state and redirect if already authenticated
+// Middleware already handles this, but we add this as a safety check
+if (Astro.locals.user) {
+  return Astro.redirect('/');
+}
 ---
 
 <Layout title="Create Account - Darter Assistant">

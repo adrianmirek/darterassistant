@@ -90,15 +90,34 @@ export default function RegisterForm() {
     try {
       setIsSubmitting(true);
       
-      // TODO: Implement API call to /api/auth/register
-      console.log('Register data:', data);
-      
-      toast.success('Registration successful!', {
-        description: 'Welcome to Darter Assistant!',
+      // Call registration API
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+        }),
       });
-      
-      // TODO: Redirect to dashboard after successful registration
-      // window.location.href = '/';
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        // Handle error response
+        throw new Error(result.error || 'Registration failed');
+      }
+
+      // Success - show success message and redirect to login
+      toast.success('Registration successful!', {
+        description: 'Please sign in with your new account',
+      });
+
+      // Redirect to login page after short delay
+      setTimeout(() => {
+        window.location.href = '/auth/login';
+      }, 1500);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
       toast.error('Registration failed', {

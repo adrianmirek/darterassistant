@@ -1,5 +1,58 @@
 import type { SupabaseClient } from '@/db/supabase.client';
-import type { LoginResponseDTO, UserDTO, SessionDTO } from '@/types';
+import type { LoginResponseDTO, RegisterResponseDTO, UserDTO, SessionDTO } from '@/types';
+
+/**
+ * Register a new user
+ */
+export async function registerUser(
+  supabase: SupabaseClient,
+  email: string,
+  password: string
+): Promise<{ data: RegisterResponseDTO | null; error: any }> {
+  try {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    if (error) {
+      return { data: null, error };
+    }
+
+    if (!data.session || !data.user) {
+      return {
+        data: null,
+        error: { message: 'No session returned from registration' },
+      };
+    }
+
+    const userDTO: UserDTO = {
+      id: data.user.id,
+      email: data.user.email!,
+      created_at: data.user.created_at,
+    };
+
+    const sessionDTO: SessionDTO = {
+      access_token: data.session.access_token,
+      refresh_token: data.session.refresh_token,
+      expires_at: data.session.expires_at || 0,
+      user: userDTO,
+    };
+
+    const registerResponse: RegisterResponseDTO = {
+      user: userDTO,
+      session: sessionDTO,
+    };
+
+    return { data: registerResponse, error: null };
+  } catch (error) {
+    console.error('Registration error:', error);
+    return {
+      data: null,
+      error: { message: 'An unexpected error occurred during registration' },
+    };
+  }
+}
 
 /**
  * Authenticate user with email and password

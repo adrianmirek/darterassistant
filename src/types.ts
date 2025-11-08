@@ -150,6 +150,14 @@ export type SessionDTO = {
 };
 
 /**
+ * Response DTO for registration
+ */
+export type RegisterResponseDTO = {
+  user: UserDTO;
+  session: SessionDTO;
+};
+
+/**
  * Response DTO for login
  */
 export type LoginResponseDTO = {
