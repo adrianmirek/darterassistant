@@ -36,12 +36,28 @@ export default function ForgotPasswordForm() {
     try {
       setIsSubmitting(true);
       
-      // TODO: Implement API call to /api/auth/forgot-password
-      console.log('Forgot password data:', data);
-      
+      // Call forgot password API
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: data.email,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        // Handle validation errors
+        throw new Error(result.error || 'Failed to send reset email');
+      }
+
+      // Success - show confirmation
       setIsSuccess(true);
       toast.success('Check your email', {
-        description: 'If an account exists with this email, you will receive password reset instructions.',
+        description: result.message || 'If an account exists with this email, you will receive password reset instructions.',
       });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';

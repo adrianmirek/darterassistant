@@ -123,6 +123,34 @@ export async function logoutUser(
 }
 
 /**
+ * Request password reset email
+ */
+export async function requestPasswordReset(
+  supabase: SupabaseClient,
+  email: string,
+  redirectUrl: string
+): Promise<{ error: any }> {
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: redirectUrl,
+    });
+
+    // Even if there's an error (e.g., email not found), we don't expose it
+    // for security reasons. Just log it server-side.
+    if (error) {
+      console.info('Password reset request error (hidden from user):', error);
+    }
+
+    // Always return success to prevent email enumeration
+    return { error: null };
+  } catch (error) {
+    console.error('Password reset request error:', error);
+    // Still return success to maintain security
+    return { error: null };
+  }
+}
+
+/**
  * Get current session and user (securely authenticated)
  */
 export async function getCurrentSession(
