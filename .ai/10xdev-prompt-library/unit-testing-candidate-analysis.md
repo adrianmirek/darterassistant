@@ -1,0 +1,1 @@
+Which elements of this project fragment are worth testing with unit tests and why?
