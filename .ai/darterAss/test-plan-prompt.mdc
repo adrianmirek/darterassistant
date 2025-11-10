@@ -1,0 +1,68 @@
+You are an experienced QA engineer whose task is to create a comprehensive test plan for a software project. Analyze the following project information:
+
+<project_code>
+
+</project_code>
+
+<tech_stack>
+tech-stack.md
+
+</tech_stack>
+
+Your task is to generate a detailed test plan tailored to the specifics of the project, taking into account the technologies used, the code structure, and the key elements of the repository. The test plan should be written in Polish.
+
+Before creating the test plan, perform an in-depth analysis of the project inside the <project_analysis> block in your thought process. In the analysis include:
+
+Key project components derived from code analysis:
+
+List and describe the main components of the project
+
+Specifics of the technology stack and its impact on the testing strategy:
+
+Analyze each element of the technology stack and its implications for testing
+
+Test priorities based on repository structure:
+
+Identify and rank test areas by importance
+
+Potential risk areas requiring special attention in testing:
+
+List potential risks and justify why they need special attention
+
+After finishing the analysis, create the test plan inside the <test_plan> block. The plan should include:
+
+Introduction and testing objectives
+
+Scope of testing
+
+Types of tests to be performed (e.g., unit tests, integration tests, performance tests)
+
+Test scenarios for key functionalities
+
+Test environment
+
+Testing tools
+
+Test schedule
+
+Test acceptance criteria
+
+Roles and responsibilities in the testing process
+
+Bug reporting procedures
+
+Remember that the test plan must:
+
+Be precisely tailored to the project context
+
+Consider the specifics of the technologies used
+
+Prioritize key repository elements
+
+Be written in Polish
+
+Exhibit high quality and professionalism
+
+Start with the analysis, then proceed to creating the test plan. Your final output should consist only of the test plan and must not reproduce or summarize any work done inside the project analysis block.
+
+Present the plan in Markdown.

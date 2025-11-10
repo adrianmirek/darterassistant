@@ -1,0 +1,13 @@
+# Testing artifacts
+coverage/
+.vitest/
+playwright-report/
+test-results/
+screenshots/
+*.png
+!public/**/*.png
+!src/**/*.png
+
+# Playwright
+playwright/.cache/
+

@@ -28,6 +28,13 @@
   - Supabase (PostgreSQL database, SDKs, built-in authentication)
 - **AI Integration**
   - Openrouter.ai service for model access
+- **Testing**
+  - Vitest (Unit & integration tests)
+  - React Testing Library (Component tests)
+  - Playwright (E2E tests, multi-browser)
+  - Supertest (API endpoint tests)
+  - OWASP ZAP (Security scanning)
+  - axe DevTools (Accessibility testing)
 - **CI/CD & Hosting**
   - GitHub Actions (CI/CD pipelines)
   - DigitalOcean (Docker-based hosting)
