@@ -1,6 +1,6 @@
 # Darter Assistant
 
-> A web-based analytics and improvement platform for amateur and professional darts players.
+> A web-based analytics and improvement platform for amateur and professional darts players. 
 
 [![Version](https://img.shields.io/badge/version-0.0.1-blue.svg)](#)
 [![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](#)
