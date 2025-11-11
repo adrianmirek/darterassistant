@@ -34,7 +34,7 @@ Create a `.env` file in the project root with the following variables:
 ```bash
 # Supabase Configuration
 SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_KEY=your-anon-public-key
+SUPABASE_PUBLIC_KEY=your-anon-public-key
 
 # Application Configuration
 SITE_URL=http://localhost:4321
@@ -50,7 +50,7 @@ Update your `.env.example` file to include the new authentication variables:
 ```bash
 # Supabase Configuration
 SUPABASE_URL=https://xxxxx.supabase.co
-SUPABASE_KEY=eyJhbGc...
+SUPABASE_PUBLIC_KEY=eyJhbGc...
 SITE_URL=http://localhost:4321
 
 # AI Service
@@ -176,7 +176,7 @@ Registration functionality will be implemented in the next phase.
 ### Issue: "Invalid API key" or "Failed to fetch"
 
 **Solution:** 
-- Verify `SUPABASE_URL` and `SUPABASE_KEY` in `.env` are correct
+- Verify `SUPABASE_URL` and `SUPABASE_PUBLIC_KEY` in `.env` are correct
 - Ensure you're using the **anon/public** key, not the service role key
 - Restart the development server after changing `.env`
 
@@ -212,7 +212,7 @@ Registration functionality will be implemented in the next phase.
 
 Before deploying to production:
 
-- [ ] Change `SUPABASE_KEY` to use environment-specific keys
+- [ ] Change `SUPABASE_PUBLIC_KEY` to use environment-specific keys
 - [ ] Set `SITE_URL` to production domain
 - [ ] Configure proper redirect URLs in Supabase
 - [ ] Enable HTTPS in production (set `secure: true` in cookies)

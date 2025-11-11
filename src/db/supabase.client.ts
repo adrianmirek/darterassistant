@@ -3,7 +3,7 @@ import { createServerClient, type CookieOptionsWithName } from '@supabase/ssr';
 import type { Database } from './database.types';
 
 const supabaseUrl = import.meta.env.SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.SUPABASE_KEY;
+const supabaseAnonKey = import.meta.env.SUPABASE_PUBLIC_KEY;
 
 export const cookieOptions: CookieOptionsWithName = {
   path: '/',
