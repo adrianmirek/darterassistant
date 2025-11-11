@@ -3,11 +3,7 @@
  * Throws an error if any are missing
  */
 export function validateEnvironmentVariables() {
-  const requiredEnvVars = [
-    "SUPABASE_URL",
-    "SUPABASE_PUBLIC_KEY",
-    "OPENROUTER_API_KEY",
-  ] as const;
+  const requiredEnvVars = ["SUPABASE_URL", "SUPABASE_PUBLIC_KEY", "OPENROUTER_API_KEY"] as const;
 
   const missing: string[] = [];
 
@@ -19,11 +15,8 @@ export function validateEnvironmentVariables() {
 
   if (missing.length > 0) {
     const errorMessage = `Missing required environment variables: ${missing.join(", ")}`;
-    console.error(errorMessage);
     throw new Error(errorMessage);
   }
-
-  console.log("✓ All required environment variables are set");
 }
 
 /**
@@ -36,4 +29,3 @@ export function getRequiredEnv(key: keyof ImportMetaEnv): string {
   }
   return value;
 }
-
