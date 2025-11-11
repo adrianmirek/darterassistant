@@ -1,0 +1,11 @@
+name = "darterassistant"
+compatibility_date = "2024-11-01"
+pages_build_output_dir = "dist"
+
+[env.production]
+# Environment variables should be set in Cloudflare Pages dashboard
+# This file only defines the structure
+
+[env.preview]
+# Preview environment configuration
+

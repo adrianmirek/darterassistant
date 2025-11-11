@@ -1,10 +1,6 @@
 import type { AstroCookies } from "astro";
 import { createServerClient, type CookieOptionsWithName } from "@supabase/ssr";
 import type { Database } from "./database.types";
-import { getRequiredEnv } from "../lib/utils/env.validation";
-
-const supabaseUrl = getRequiredEnv("SUPABASE_URL");
-const supabaseAnonKey = getRequiredEnv("SUPABASE_PUBLIC_KEY");
 
 export const cookieOptions: CookieOptionsWithName = {
   path: "/",
@@ -21,6 +17,15 @@ function parseCookieHeader(cookieHeader: string): { name: string; value: string 
 }
 
 export const createSupabaseServerInstance = (context: { headers: Headers; cookies: AstroCookies }) => {
+  // Access environment variables at request time, not module load time
+  // This is required for Cloudflare Workers runtime
+  const supabaseUrl = import.meta.env.SUPABASE_URL;
+  const supabaseAnonKey = import.meta.env.SUPABASE_PUBLIC_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error("Missing required Supabase environment variables: SUPABASE_URL or SUPABASE_PUBLIC_KEY");
+  }
+
   const supabase = createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
     cookieOptions,
     cookies: {
