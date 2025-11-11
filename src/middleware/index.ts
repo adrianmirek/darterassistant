@@ -1,6 +1,10 @@
 import { defineMiddleware } from "astro:middleware";
 import { createSupabaseServerInstance } from "../db/supabase.client";
 import type { UserDTO } from "../types";
+import { validateEnvironmentVariables } from "../lib/utils/env.validation";
+
+// Validate environment variables on module load
+validateEnvironmentVariables();
 
 /**
  * Protected routes that require authentication

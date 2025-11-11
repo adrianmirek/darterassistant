@@ -23,7 +23,6 @@
   },
   "dependencies": {
     "@astrojs/cloudflare": "12.6.10",
-    "@astrojs/node": "9.5.0",
     "@astrojs/react": "^4.3.1",
     "@astrojs/sitemap": "^3.5.1",
     "@hookform/resolvers": "^5.2.2",
