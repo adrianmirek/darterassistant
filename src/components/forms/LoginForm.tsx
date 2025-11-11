@@ -1,7 +1,5 @@
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -13,18 +11,13 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Toaster, toast } from 'sonner';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
-
-const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
+import { Loader2 } from 'lucide-react';
+import { PasswordInput } from './fields/PasswordInput';
+import { useAuthApi } from '@/lib/hooks/useAuthApi';
+import { loginSchema, type LoginFormData } from '@/lib/utils/validation.schemas';
 
 export default function LoginForm() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const { login } = useAuthApi();
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -32,37 +25,17 @@ export default function LoginForm() {
       email: '',
       password: '',
     },
+    mode: 'onBlur',
   });
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      setIsSubmitting(true);
+      await login(data);
       
-      // Call login API
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: data.email,
-          password: data.password,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        // Handle error response
-        throw new Error(result.error || 'Login failed');
-      }
-
-      // Success - cookies are set automatically by the API
       toast.success('Login successful!', {
         description: 'Redirecting...',
       });
 
-      // Redirect to main page
       setTimeout(() => {
         window.location.href = '/';
       }, 500);
@@ -71,8 +44,6 @@ export default function LoginForm() {
       toast.error('Login failed', {
         description: errorMessage,
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -97,7 +68,7 @@ export default function LoginForm() {
                       type="email"
                       placeholder="your.email@example.com"
                       {...field}
-                      disabled={isSubmitting}
+                      disabled={form.formState.isSubmitting}
                     />
                   </FormControl>
                   <FormMessage />
@@ -112,26 +83,11 @@ export default function LoginForm() {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <div className="relative">
-                      <Input
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="Enter your password"
-                        {...field}
-                        disabled={isSubmitting}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                        tabIndex={-1}
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </button>
-                    </div>
+                    <PasswordInput
+                      placeholder="Enter your password"
+                      {...field}
+                      disabled={form.formState.isSubmitting}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -150,9 +106,9 @@ export default function LoginForm() {
             <Button
               type="submit"
               className="w-full"
-              disabled={isSubmitting}
+              disabled={form.formState.isSubmitting}
             >
-              {isSubmitting ? (
+              {form.formState.isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Signing in...

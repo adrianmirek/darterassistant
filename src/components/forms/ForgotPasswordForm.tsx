@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -14,15 +13,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { Toaster, toast } from 'sonner';
 import { Loader2, ArrowLeft, Mail } from 'lucide-react';
-
-const forgotPasswordSchema = z.object({
-  email: z.string().email('Invalid email address'),
-});
-
-type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+import { useAuthApi } from '@/lib/hooks/useAuthApi';
+import { forgotPasswordSchema, type ForgotPasswordFormData } from '@/lib/utils/validation.schemas';
 
 export default function ForgotPasswordForm() {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { forgotPassword } = useAuthApi();
   const [isSuccess, setIsSuccess] = useState(false);
 
   const form = useForm<ForgotPasswordFormData>({
@@ -30,29 +25,12 @@ export default function ForgotPasswordForm() {
     defaultValues: {
       email: '',
     },
+    mode: 'onBlur',
   });
 
   const onSubmit = async (data: ForgotPasswordFormData) => {
     try {
-      setIsSubmitting(true);
-      
-      // Call forgot password API
-      const response = await fetch('/api/auth/forgot-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: data.email,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        // Handle validation errors
-        throw new Error(result.error || 'Failed to send reset email');
-      }
+      const result = await forgotPassword(data);
 
       // Success - show confirmation
       setIsSuccess(true);
@@ -64,8 +42,6 @@ export default function ForgotPasswordForm() {
       toast.error('Failed to send reset email', {
         description: errorMessage,
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -138,7 +114,7 @@ export default function ForgotPasswordForm() {
                       type="email"
                       placeholder="your.email@example.com"
                       {...field}
-                      disabled={isSubmitting}
+                      disabled={form.formState.isSubmitting}
                     />
                   </FormControl>
                   <FormMessage />
@@ -149,9 +125,9 @@ export default function ForgotPasswordForm() {
             <Button
               type="submit"
               className="w-full"
-              disabled={isSubmitting}
+              disabled={form.formState.isSubmitting}
             >
-              {isSubmitting ? (
+              {form.formState.isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Sending...
