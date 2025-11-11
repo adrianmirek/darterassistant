@@ -37,6 +37,7 @@ export default function RegisterForm() {
       });
 
       setTimeout(() => {
+        // eslint-disable-next-line react-compiler/react-compiler
         window.location.href = "/auth/login";
       }, 1500);
     } catch (error) {

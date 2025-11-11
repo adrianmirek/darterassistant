@@ -36,6 +36,7 @@ describe("AddTournamentForm", () => {
     });
 
     it("should handle match types fetch error gracefully", async () => {
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
       mockFetch.mockRejectedValueOnce(new Error("Failed to load match types"));
 
@@ -101,6 +102,7 @@ describe("AddTournamentForm", () => {
   describe("Match Types Integration", () => {
     it("should display loading state while fetching match types", () => {
       // Mock a slow fetch
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       mockFetch.mockImplementation(() => new Promise(() => {}));
 
       render(<AddTournamentForm />);

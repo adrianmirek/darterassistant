@@ -30,6 +30,7 @@ export default function LoginForm() {
       });
 
       setTimeout(() => {
+        // eslint-disable-next-line react-compiler/react-compiler
         window.location.href = "/";
       }, 500);
     } catch (error) {
@@ -107,7 +108,7 @@ export default function LoginForm() {
         </Form>
 
         <div className="text-center text-sm">
-          <span className="text-muted-foreground">Don't have an account? </span>
+          <span className="text-muted-foreground">Don&apos;t have an account? </span>
           <a href="/auth/register" className="text-primary hover:underline font-medium">
             Register
           </a>

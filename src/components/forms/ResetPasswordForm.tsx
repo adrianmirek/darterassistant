@@ -57,6 +57,7 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
       });
 
       setTimeout(() => {
+        // eslint-disable-next-line react-compiler/react-compiler
         window.location.href = "/auth/login";
       }, 1500);
     } catch (error) {

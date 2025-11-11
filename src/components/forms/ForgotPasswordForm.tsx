@@ -53,7 +53,7 @@ export default function ForgotPasswordForm() {
               shortly.
             </p>
             <p className="text-sm text-muted-foreground">
-              Didn't receive an email? Check your spam folder or try again.
+              Didn&apos;t receive an email? Check your spam folder or try again.
             </p>
           </div>
 
@@ -82,7 +82,7 @@ export default function ForgotPasswordForm() {
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Forgot password?</h1>
           <p className="text-muted-foreground">
-            Enter your email address and we'll send you instructions to reset your password
+            Enter your email address and we&apos;ll send you instructions to reset your password
           </p>
         </div>
 
