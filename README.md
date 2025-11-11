@@ -4,17 +4,20 @@
 
 [![Version](https://img.shields.io/badge/version-0.0.1-blue.svg)](#)
 [![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](#)
+[![CI/CD Pipeline](https://github.com/adiranmirek/darterassistant/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/adiranmirek/darterassistant/actions/workflows/ci-cd.yml)
 
 ## Table of Contents
 
 1. [Tech Stack](#tech-stack)  
 2. [Getting Started](#getting-started)  
 3. [Available Scripts](#available-scripts)  
-4. [Project Scope](#project-scope)  
+4. [CI/CD Pipeline](#cicd-pipeline)  
+5. [Testing](#testing)  
+6. [Project Scope](#project-scope)  
    - [Included in MVP](#included-in-mvp)  
    - [Excluded from MVP](#excluded-from-mvp)  
-5. [Project Status](#project-status)  
-6. [License](#license)  
+7. [Project Status](#project-status)  
+8. [License](#license)  
 
 ## Tech Stack
 
@@ -90,6 +93,54 @@ npm run dev
   Automatically fix ESLint errors.
 - `npm run format`  
   Format code with Prettier.
+
+## CI/CD Pipeline
+
+This project uses GitHub Actions for continuous integration and deployment.
+
+### Workflow Features
+
+- **Automated Testing**: Runs linting and unit tests on every push to main
+- **Production Build**: Validates that the production build succeeds
+- **Manual Trigger**: Can be triggered manually from the Actions tab
+- **Artifacts**: Stores build artifacts and test reports
+
+### Setup Instructions
+
+The CI/CD pipeline is ready to use without any additional configuration:
+
+1. **No Secrets Required**  
+   The workflow runs linting, unit tests, and production builds without requiring GitHub secrets.
+
+2. **Follow the Checklist**  
+   See [`.github/CI_CD_SETUP_CHECKLIST.md`](.github/CI_CD_SETUP_CHECKLIST.md) for step-by-step setup instructions.
+
+3. **View Workflow Documentation**  
+   See [`.github/workflows/README.md`](.github/workflows/README.md) for detailed workflow documentation.
+
+### Running the Workflow
+
+The workflow runs automatically on:
+- Push to `main` branch
+- Manual trigger from Actions tab
+
+To manually trigger:
+1. Go to the Actions tab in GitHub
+2. Select "CI/CD Pipeline"
+3. Click "Run workflow"
+
+## Testing
+
+This project includes comprehensive testing:
+
+- **Unit & Integration Tests**: `npm test` (Vitest)
+- **E2E Tests**: `npm run test:e2e` (Playwright)
+- **Test Coverage**: `npm run test:coverage`
+
+For E2E test setup, see:
+- [`ENV_SETUP_E2E.md`](ENV_SETUP_E2E.md) - E2E environment configuration
+- [`E2E_TEARDOWN_SETUP.md`](E2E_TEARDOWN_SETUP.md) - E2E cleanup documentation
+- [`TESTING.md`](TESTING.md) - Comprehensive testing guide
 
 ## Project Scope
 
