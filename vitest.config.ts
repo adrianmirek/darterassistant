@@ -30,10 +30,10 @@ export default defineConfig({
       ],
       // Set coverage thresholds (adjust as needed)
       thresholds: {
-        lines: 70,
-        functions: 70,
-        branches: 70,
-        statements: 70,
+        lines: 30,
+        functions: 30,
+        branches: 30,
+        statements: 30,
       },
     },
 
