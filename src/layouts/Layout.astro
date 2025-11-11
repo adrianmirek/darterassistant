@@ -1,6 +1,6 @@
 ---
 import "../styles/global.css";
-import AuthNav from '@/components/navigation/AuthNav';
+import AuthNav from "@/components/navigation/AuthNav";
 
 interface Props {
   title?: string;
@@ -21,9 +21,7 @@ const user = Astro.locals.user;
     <title>{title}</title>
   </head>
   <body>
-    {showAuthNav && user && (
-      <AuthNav userEmail={user.email} client:load />
-    )}
+    {showAuthNav && user && <AuthNav userEmail={user.email} client:load />}
     <slot />
   </body>
 </html>

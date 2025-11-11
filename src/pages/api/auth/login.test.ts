@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { APIContext } from 'astro';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { APIContext } from "astro";
 
 /**
  * Example API endpoint test using Vitest
@@ -7,15 +7,15 @@ import type { APIContext } from 'astro';
  */
 
 // Example API endpoint tests - uncomment when you implement the actual endpoint
-describe.skip('POST /api/auth/login', () => {
+describe.skip("POST /api/auth/login", () => {
   let mockContext: Partial<APIContext>;
 
   beforeEach(() => {
     mockContext = {
-      request: new Request('http://localhost:4321/api/auth/login', {
-        method: 'POST',
+      request: new Request("http://localhost:4321/api/auth/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       }),
       cookies: {
@@ -32,16 +32,13 @@ describe.skip('POST /api/auth/login', () => {
     };
   });
 
-  it('should return 400 if email is missing', async () => {
+  it("should return 400 if email is missing", async () => {
     // Mock request body without email
-    const requestWithoutEmail = new Request(
-      'http://localhost:4321/api/auth/login',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: 'password123' }),
-      }
-    );
+    const requestWithoutEmail = new Request("http://localhost:4321/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: "password123" }),
+    });
 
     mockContext.request = requestWithoutEmail;
 
@@ -50,15 +47,12 @@ describe.skip('POST /api/auth/login', () => {
     // expect(response.status).toBe(400);
   });
 
-  it('should return 400 if password is missing', async () => {
-    const requestWithoutPassword = new Request(
-      'http://localhost:4321/api/auth/login',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: 'test@example.com' }),
-      }
-    );
+  it("should return 400 if password is missing", async () => {
+    const requestWithoutPassword = new Request("http://localhost:4321/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: "test@example.com" }),
+    });
 
     mockContext.request = requestWithoutPassword;
 
@@ -66,18 +60,15 @@ describe.skip('POST /api/auth/login', () => {
     // expect(response.status).toBe(400);
   });
 
-  it('should authenticate user with valid credentials', async () => {
-    const requestWithCredentials = new Request(
-      'http://localhost:4321/api/auth/login',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: 'test@example.com',
-          password: 'password123',
-        }),
-      }
-    );
+  it("should authenticate user with valid credentials", async () => {
+    const requestWithCredentials = new Request("http://localhost:4321/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: "test@example.com",
+        password: "password123",
+      }),
+    });
 
     mockContext.request = requestWithCredentials;
 
@@ -88,4 +79,3 @@ describe.skip('POST /api/auth/login', () => {
     // expect(data).toHaveProperty('user');
   });
 });
-

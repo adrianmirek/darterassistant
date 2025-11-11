@@ -1,4 +1,4 @@
-import type { Page, Locator } from '@playwright/test';
+import type { Page, Locator } from "@playwright/test";
 
 /**
  * Base Page Object Model class
@@ -14,7 +14,7 @@ export class BasePage {
   /**
    * Navigate to the page
    */
-  async goto(path: string = '') {
+  async goto(path = "") {
     await this.page.goto(path);
   }
 
@@ -22,7 +22,7 @@ export class BasePage {
    * Wait for the page to load
    */
   async waitForPageLoad() {
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState("networkidle");
   }
 
   /**
@@ -60,4 +60,3 @@ export class BasePage {
     return this.page.locator('[role="alert"]');
   }
 }
-

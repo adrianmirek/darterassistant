@@ -1,7 +1,7 @@
-import type { APIRoute } from 'astro';
-import { z } from 'zod';
-import type { GoalProgressDTO } from '../../../../types';
-import { getGoalProgress } from '../../../../lib/services/goal.service';
+import type { APIRoute } from "astro";
+import { z } from "zod";
+import type { GoalProgressDTO } from "../../../../types";
+import { getGoalProgress } from "../../../../lib/services/goal.service";
 
 export const prerender = false;
 
@@ -20,16 +20,16 @@ export const GET: APIRoute = async ({ locals, url }) => {
   try {
     // Check authentication
     if (!locals.user) {
-      return new Response(JSON.stringify({ error: 'Authentication required' }), {
+      return new Response(JSON.stringify({ error: "Authentication required" }), {
         status: 401,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
       });
     }
 
     // Parse and validate query parameters
     const queryParams = {
-      limit: url.searchParams.get('limit'),
-      offset: url.searchParams.get('offset'),
+      limit: url.searchParams.get("limit"),
+      offset: url.searchParams.get("offset"),
     };
 
     const validationResult = querySchema.safeParse(queryParams);
@@ -37,12 +37,12 @@ export const GET: APIRoute = async ({ locals, url }) => {
     if (!validationResult.success) {
       return new Response(
         JSON.stringify({
-          error: 'Invalid query parameters',
+          error: "Invalid query parameters",
           details: validationResult.error.errors,
         }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
@@ -56,10 +56,10 @@ export const GET: APIRoute = async ({ locals, url }) => {
     });
 
     if (error) {
-      console.error('Error fetching goal progress:', error);
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Error fetching goal progress:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
       });
     }
 
@@ -67,14 +67,13 @@ export const GET: APIRoute = async ({ locals, url }) => {
 
     return new Response(JSON.stringify(progress), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error('Unexpected error in GET /api/goals/progress:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+    console.error("Unexpected error in GET /api/goals/progress:", error);
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     });
   }
 };
-

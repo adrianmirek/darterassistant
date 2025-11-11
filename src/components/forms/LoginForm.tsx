@@ -1,20 +1,13 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Toaster, toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
-import { PasswordInput } from './fields/PasswordInput';
-import { useAuthApi } from '@/lib/hooks/useAuthApi';
-import { loginSchema, type LoginFormData } from '@/lib/utils/validation.schemas';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Toaster, toast } from "sonner";
+import { Loader2 } from "lucide-react";
+import { PasswordInput } from "./fields/PasswordInput";
+import { useAuthApi } from "@/lib/hooks/useAuthApi";
+import { loginSchema, type LoginFormData } from "@/lib/utils/validation.schemas";
 
 export default function LoginForm() {
   const { login } = useAuthApi();
@@ -22,26 +15,26 @@ export default function LoginForm() {
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
     },
-    mode: 'onBlur',
+    mode: "onBlur",
   });
 
   const onSubmit = async (data: LoginFormData) => {
     try {
       await login(data);
-      
-      toast.success('Login successful!', {
-        description: 'Redirecting...',
+
+      toast.success("Login successful!", {
+        description: "Redirecting...",
       });
 
       setTimeout(() => {
-        window.location.href = '/';
+        window.location.href = "/";
       }, 500);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-      toast.error('Login failed', {
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      toast.error("Login failed", {
         description: errorMessage,
       });
     }
@@ -95,26 +88,19 @@ export default function LoginForm() {
             />
 
             <div className="flex items-center justify-end">
-              <a
-                href="/auth/forgot-password"
-                className="text-sm text-primary hover:underline"
-              >
+              <a href="/auth/forgot-password" className="text-sm text-primary hover:underline">
                 Forgot password?
               </a>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={form.formState.isSubmitting}
-            >
+            <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
               {form.formState.isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Signing in...
                 </>
               ) : (
-                'Sign in'
+                "Sign in"
               )}
             </Button>
           </form>
@@ -132,4 +118,3 @@ export default function LoginForm() {
     </>
   );
 }
-

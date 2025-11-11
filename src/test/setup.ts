@@ -1,6 +1,6 @@
-import { expect, afterEach, vi } from 'vitest';
-import { cleanup } from '@testing-library/react';
-import '@testing-library/jest-dom/vitest';
+import { expect, afterEach, vi } from "vitest";
+import { cleanup } from "@testing-library/react";
+import "@testing-library/jest-dom/vitest";
 
 // Cleanup after each test case
 afterEach(() => {
@@ -12,7 +12,7 @@ afterEach(() => {
 // This is already done by importing '@testing-library/jest-dom/vitest'
 
 // Mock window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(window, "matchMedia", {
   writable: true,
   value: vi.fn().mockImplementation((query: string) => ({
     matches: false,
@@ -46,6 +46,4 @@ global.ResizeObserver = class ResizeObserver {
 } as any;
 
 // Set up environment variables for testing
-process.env.NODE_ENV = 'test';
-
-
+process.env.NODE_ENV = "test";

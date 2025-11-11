@@ -1,7 +1,7 @@
-import { useFormContext } from 'react-hook-form';
-import { format } from 'date-fns';
-import type { AddTournamentFormViewModel } from './AddTournamentForm';
-import type { MatchTypeDTO } from '@/types';
+import { useFormContext } from "react-hook-form";
+import { format } from "date-fns";
+import type { AddTournamentFormViewModel } from "./AddTournamentForm";
+import type { MatchTypeDTO } from "@/types";
 
 interface Step3_ReviewProps {
   matchTypes: MatchTypeDTO[];
@@ -11,9 +11,7 @@ export default function Step3_Review({ matchTypes }: Step3_ReviewProps) {
   const form = useFormContext<AddTournamentFormViewModel>();
   const values = form.getValues();
 
-  const selectedMatchType = matchTypes.find(
-    (type) => type.id.toString() === values.match_type_id
-  );
+  const selectedMatchType = matchTypes.find((type) => type.id.toString() === values.match_type_id);
 
   return (
     <div className="space-y-6">
@@ -26,15 +24,11 @@ export default function Step3_Review({ matchTypes }: Step3_ReviewProps) {
           </div>
           <div className="flex justify-between">
             <dt className="text-sm font-medium text-muted-foreground">Date</dt>
-            <dd className="text-sm font-semibold">
-              {values.date ? format(values.date, 'PPP') : '-'}
-            </dd>
+            <dd className="text-sm font-semibold">{values.date ? format(values.date, "PPP") : "-"}</dd>
           </div>
           <div className="flex justify-between">
             <dt className="text-sm font-medium text-muted-foreground">Match Type</dt>
-            <dd className="text-sm font-semibold">
-              {selectedMatchType?.name || '-'}
-            </dd>
+            <dd className="text-sm font-semibold">{selectedMatchType?.name || "-"}</dd>
           </div>
           <div className="flex justify-between">
             <dt className="text-sm font-medium text-muted-foreground">Final Placement</dt>
@@ -60,9 +54,7 @@ export default function Step3_Review({ matchTypes }: Step3_ReviewProps) {
           </div>
           <div>
             <dt className="text-sm font-medium text-muted-foreground">High Finish</dt>
-            <dd className="mt-1 text-2xl font-bold">
-              {values.high_finish === 0 ? '-' : values.high_finish}
-            </dd>
+            <dd className="mt-1 text-2xl font-bold">{values.high_finish === 0 ? "-" : values.high_finish}</dd>
           </div>
         </dl>
       </div>
@@ -111,4 +103,3 @@ export default function Step3_Review({ matchTypes }: Step3_ReviewProps) {
     </div>
   );
 }
-

@@ -5,13 +5,9 @@ import type {
   ResponseFormat,
   SendChatOverrides,
   OpenRouterErrorResponse,
-} from '../../types/openrouter.types';
-import {
-  OpenRouterApiError,
-  OpenRouterNetworkError,
-  OpenRouterValidationError,
-} from '../errors/openrouter.errors';
-import Ajv, { type ValidateFunction } from 'ajv';
+} from "../../types/openrouter.types";
+import { OpenRouterApiError, OpenRouterNetworkError, OpenRouterValidationError } from "../errors/openrouter.errors";
+import Ajv, { type ValidateFunction } from "ajv";
 
 /**
  * OpenRouter API Service
@@ -27,8 +23,8 @@ export class OpenRouterService {
   private readonly ajv: InstanceType<typeof Ajv>;
 
   // Constants
-  private static readonly DEFAULT_BASE_URL = 'https://openrouter.ai/api/v1';
-  private static readonly DEFAULT_MODEL = 'gpt-4o-mini';
+  private static readonly DEFAULT_BASE_URL = "https://openrouter.ai/api/v1";
+  private static readonly DEFAULT_MODEL = "gpt-4o-mini";
   private static readonly MAX_RETRIES = 3;
   private static readonly INITIAL_RETRY_DELAY = 500; // milliseconds
 
@@ -38,8 +34,8 @@ export class OpenRouterService {
    */
   constructor(options: OpenRouterServiceOptions) {
     // Guard: Validate API key
-    if (!options.apiKey || options.apiKey.trim() === '') {
-      throw new Error('OpenRouter API key is required');
+    if (!options.apiKey || options.apiKey.trim() === "") {
+      throw new Error("OpenRouter API key is required");
     }
 
     this.apiKey = options.apiKey;
@@ -51,7 +47,7 @@ export class OpenRouterService {
     // Initialize JSON schema validator
     this.ajv = new Ajv({ allErrors: true });
 
-    this.log('debug', 'OpenRouterService initialized', {
+    this.log("debug", "OpenRouterService initialized", {
       baseUrl: this.baseUrl,
       defaultModel: this.defaultModel,
     });
@@ -71,20 +67,20 @@ export class OpenRouterService {
   ): Promise<ChatResponse> {
     // Guard: Validate messages
     if (!messages || messages.length === 0) {
-      throw new Error('Messages array cannot be empty');
+      throw new Error("Messages array cannot be empty");
     }
 
     // Guard: Validate message structure
     for (const msg of messages) {
       if (!msg.role || !msg.content) {
-        throw new Error('Each message must have a role and content');
+        throw new Error("Each message must have a role and content");
       }
     }
 
-    this.log('debug', 'Sending chat request', { messageCount: messages.length });
+    this.log("debug", "Sending chat request", { messageCount: messages.length });
 
     const payload = this.buildPayload(messages, responseFormat, overrides);
-    const response = await this.request('/chat/completions', payload);
+    const response = await this.request("/chat/completions", payload);
 
     // Validate response if format specified
     if (responseFormat) {
@@ -99,11 +95,11 @@ export class OpenRouterService {
    * @param name Model name
    */
   public setDefaultModel(name: string): void {
-    if (!name || name.trim() === '') {
-      throw new Error('Model name cannot be empty');
+    if (!name || name.trim() === "") {
+      throw new Error("Model name cannot be empty");
     }
     this.defaultModel = name;
-    this.log('debug', 'Default model updated', { model: name });
+    this.log("debug", "Default model updated", { model: name });
   }
 
   /**
@@ -112,7 +108,7 @@ export class OpenRouterService {
    */
   public setDefaultParams(params: Record<string, any>): void {
     this.defaultParams = { ...this.defaultParams, ...params };
-    this.log('debug', 'Default params updated', { params: this.defaultParams });
+    this.log("debug", "Default params updated", { params: this.defaultParams });
   }
 
   /**
@@ -128,13 +124,13 @@ export class OpenRouterService {
     overrides?: SendChatOverrides
   ): Record<string, any> {
     // Inject default system message if absent
-    const hasSystemMessage = messages.some((msg) => msg.role === 'system');
+    const hasSystemMessage = messages.some((msg) => msg.role === "system");
     const finalMessages = hasSystemMessage
       ? messages
       : [
           {
-            role: 'system' as const,
-            content: 'You are a helpful assistant.',
+            role: "system" as const,
+            content: "You are a helpful assistant.",
           },
           ...messages,
         ];
@@ -163,26 +159,17 @@ export class OpenRouterService {
    * @param responseFormat Expected format
    * @throws OpenRouterValidationError if validation fails
    */
-  private validateResponse(
-    response: ChatResponse,
-    responseFormat: ResponseFormat
-  ): void {
+  private validateResponse(response: ChatResponse, responseFormat: ResponseFormat): void {
     // Guard: Check if response has content
     if (!response.choices || response.choices.length === 0) {
-      throw new OpenRouterValidationError(
-        'Response has no choices',
-        []
-      );
+      throw new OpenRouterValidationError("Response has no choices", []);
     }
 
     const content = response.choices[0].message.content;
 
     // Guard: Check if content exists
     if (!content) {
-      throw new OpenRouterValidationError(
-        'Response content is empty',
-        []
-      );
+      throw new OpenRouterValidationError("Response content is empty", []);
     }
 
     // Parse JSON content
@@ -190,10 +177,7 @@ export class OpenRouterService {
     try {
       parsedContent = JSON.parse(content);
     } catch (error) {
-      throw new OpenRouterValidationError(
-        'Failed to parse response as JSON',
-        [{ message: (error as Error).message }]
-      );
+      throw new OpenRouterValidationError("Failed to parse response as JSON", [{ message: (error as Error).message }]);
     }
 
     // Validate against schema
@@ -202,16 +186,13 @@ export class OpenRouterService {
     const valid = validate(parsedContent);
 
     if (!valid) {
-      throw new OpenRouterValidationError(
-        'Response does not match expected schema',
-        validate.errors || []
-      );
+      throw new OpenRouterValidationError("Response does not match expected schema", validate.errors || []);
     }
 
     // Attach parsed content to response
     response.parsedContent = parsedContent;
 
-    this.log('debug', 'Response validation successful');
+    this.log("debug", "Response validation successful");
   }
 
   /**
@@ -220,22 +201,19 @@ export class OpenRouterService {
    * @param payload Request payload
    * @returns Promise resolving to chat response
    */
-  private async request(
-    endpoint: string,
-    payload: Record<string, any>
-  ): Promise<ChatResponse> {
+  private async request(endpoint: string, payload: Record<string, any>): Promise<ChatResponse> {
     let lastError: Error | null = null;
 
     for (let attempt = 0; attempt < OpenRouterService.MAX_RETRIES; attempt++) {
       try {
         const url = `${this.baseUrl}${endpoint}`;
         const response = await fetch(url, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${this.apiKey}`,
-            'HTTP-Referer': 'https://darterassistant.app', // Optional: for OpenRouter tracking
-            'X-Title': 'Darter Assistant', // Optional: for OpenRouter tracking
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${this.apiKey}`,
+            "HTTP-Referer": "https://darterassistant.app", // Optional: for OpenRouter tracking
+            "X-Title": "Darter Assistant", // Optional: for OpenRouter tracking
           },
           body: JSON.stringify(payload),
         });
@@ -247,24 +225,21 @@ export class OpenRouterService {
         }
 
         const data = await response.json();
-        this.log('debug', 'Request successful', { responseId: data.id });
+        this.log("debug", "Request successful", { responseId: data.id });
         return data as ChatResponse;
       } catch (error) {
         lastError = error as Error;
 
         // Check if it's a network error
-        if (error instanceof OpenRouterNetworkError || 
-            error instanceof TypeError) {
-          this.log('warn', 'Network error, retrying', {
+        if (error instanceof OpenRouterNetworkError || error instanceof TypeError) {
+          this.log("warn", "Network error, retrying", {
             attempt: attempt + 1,
             error: (error as Error).message,
           });
 
           // Wait before retry with exponential backoff
           if (attempt < OpenRouterService.MAX_RETRIES - 1) {
-            await this.delay(
-              OpenRouterService.INITIAL_RETRY_DELAY * Math.pow(2, attempt)
-            );
+            await this.delay(OpenRouterService.INITIAL_RETRY_DELAY * Math.pow(2, attempt));
             continue;
           }
         }
@@ -275,10 +250,7 @@ export class OpenRouterService {
     }
 
     // Max retries exceeded
-    throw new OpenRouterNetworkError(
-      `Max retries (${OpenRouterService.MAX_RETRIES}) exceeded`,
-      lastError || undefined
-    );
+    throw new OpenRouterNetworkError(`Max retries (${OpenRouterService.MAX_RETRIES}) exceeded`, lastError || undefined);
   }
 
   /**
@@ -298,33 +270,25 @@ export class OpenRouterService {
       // Ignore JSON parse errors
     }
 
-    const errorMessage =
-      errorBody?.error?.message || response.statusText || 'Unknown error';
+    const errorMessage = errorBody?.error?.message || response.statusText || "Unknown error";
     const errorType = errorBody?.error?.type;
     const errorCode = errorBody?.error?.code;
 
     // Handle rate limiting with retry
     if (statusCode === 429) {
-      this.log('warn', 'Rate limit exceeded, retrying', {
+      this.log("warn", "Rate limit exceeded, retrying", {
         attempt: attempt + 1,
       });
 
       // Wait before retry with exponential backoff
       if (attempt < OpenRouterService.MAX_RETRIES - 1) {
-        await this.delay(
-          OpenRouterService.INITIAL_RETRY_DELAY * Math.pow(2, attempt)
-        );
+        await this.delay(OpenRouterService.INITIAL_RETRY_DELAY * Math.pow(2, attempt));
         return; // Continue retry loop
       }
     }
 
     // Throw appropriate error
-    throw new OpenRouterApiError(
-      errorMessage,
-      statusCode,
-      errorType,
-      errorCode
-    );
+    throw new OpenRouterApiError(errorMessage, statusCode, errorType, errorCode);
   }
 
   /**
@@ -347,4 +311,3 @@ export class OpenRouterService {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
-

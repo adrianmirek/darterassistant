@@ -1,4 +1,4 @@
-import { Target } from 'lucide-react';
+import { Target } from "lucide-react";
 
 export default function GuestNav() {
   return (
@@ -15,4 +15,3 @@ export default function GuestNav() {
     </header>
   );
 }
-

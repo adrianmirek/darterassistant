@@ -1,12 +1,12 @@
-import type { APIRoute } from 'astro';
-import { z } from 'zod';
-import { createSupabaseServerInstance } from '@/db/supabase.client';
-import { requestPasswordReset } from '@/lib/services/auth.service';
+import type { APIRoute } from "astro";
+import { z } from "zod";
+import { createSupabaseServerInstance } from "@/db/supabase.client";
+import { requestPasswordReset } from "@/lib/services/auth.service";
 
 export const prerender = false;
 
 const forgotPasswordRequestSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  email: z.string().email("Invalid email address"),
 });
 
 export const POST: APIRoute = async ({ request, cookies, url }) => {
@@ -19,15 +19,15 @@ export const POST: APIRoute = async ({ request, cookies, url }) => {
     if (!validation.success) {
       return new Response(
         JSON.stringify({
-          error: 'Validation failed',
+          error: "Validation failed",
           details: validation.error.errors.map((err) => ({
-            field: err.path.join('.'),
+            field: err.path.join("."),
             message: err.message,
           })),
         }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
@@ -51,28 +51,25 @@ export const POST: APIRoute = async ({ request, cookies, url }) => {
     // Always return success message for security
     return new Response(
       JSON.stringify({
-        message:
-          'If an account exists with this email, you will receive password reset instructions.',
+        message: "If an account exists with this email, you will receive password reset instructions.",
       }),
       {
         status: 200,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
       }
     );
   } catch (error) {
-    console.error('Forgot password API error:', error);
-    
+    console.error("Forgot password API error:", error);
+
     // Still return success message to prevent information leakage
     return new Response(
       JSON.stringify({
-        message:
-          'If an account exists with this email, you will receive password reset instructions.',
+        message: "If an account exists with this email, you will receive password reset instructions.",
       }),
       {
         status: 200,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
       }
     );
   }
 };
-

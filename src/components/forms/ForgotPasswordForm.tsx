@@ -1,20 +1,13 @@
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Toaster, toast } from 'sonner';
-import { Loader2, ArrowLeft, Mail } from 'lucide-react';
-import { useAuthApi } from '@/lib/hooks/useAuthApi';
-import { forgotPasswordSchema, type ForgotPasswordFormData } from '@/lib/utils/validation.schemas';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Toaster, toast } from "sonner";
+import { Loader2, ArrowLeft, Mail } from "lucide-react";
+import { useAuthApi } from "@/lib/hooks/useAuthApi";
+import { forgotPasswordSchema, type ForgotPasswordFormData } from "@/lib/utils/validation.schemas";
 
 export default function ForgotPasswordForm() {
   const { forgotPassword } = useAuthApi();
@@ -23,9 +16,9 @@ export default function ForgotPasswordForm() {
   const form = useForm<ForgotPasswordFormData>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
-      email: '',
+      email: "",
     },
-    mode: 'onBlur',
+    mode: "onBlur",
   });
 
   const onSubmit = async (data: ForgotPasswordFormData) => {
@@ -34,12 +27,13 @@ export default function ForgotPasswordForm() {
 
       // Success - show confirmation
       setIsSuccess(true);
-      toast.success('Check your email', {
-        description: result.message || 'If an account exists with this email, you will receive password reset instructions.',
+      toast.success("Check your email", {
+        description:
+          result.message || "If an account exists with this email, you will receive password reset instructions.",
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-      toast.error('Failed to send reset email', {
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      toast.error("Failed to send reset email", {
         description: errorMessage,
       });
     }
@@ -55,7 +49,8 @@ export default function ForgotPasswordForm() {
             </div>
             <h1 className="text-3xl font-bold tracking-tight">Check your email</h1>
             <p className="text-muted-foreground">
-              If an account exists with the email address you provided, you will receive password reset instructions shortly.
+              If an account exists with the email address you provided, you will receive password reset instructions
+              shortly.
             </p>
             <p className="text-sm text-muted-foreground">
               Didn't receive an email? Check your spam folder or try again.
@@ -63,21 +58,11 @@ export default function ForgotPasswordForm() {
           </div>
 
           <div className="space-y-4">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={() => setIsSuccess(false)}
-            >
+            <Button type="button" variant="outline" className="w-full" onClick={() => setIsSuccess(false)}>
               Try another email
             </Button>
-            
-            <Button
-              type="button"
-              variant="ghost"
-              className="w-full"
-              asChild
-            >
+
+            <Button type="button" variant="ghost" className="w-full" asChild>
               <a href="/auth/login">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to sign in
@@ -122,30 +107,21 @@ export default function ForgotPasswordForm() {
               )}
             />
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={form.formState.isSubmitting}
-            >
+            <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
               {form.formState.isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Sending...
                 </>
               ) : (
-                'Send reset instructions'
+                "Send reset instructions"
               )}
             </Button>
           </form>
         </Form>
 
         <div className="text-center">
-          <Button
-            type="button"
-            variant="ghost"
-            className="text-sm"
-            asChild
-          >
+          <Button type="button" variant="ghost" className="text-sm" asChild>
             <a href="/auth/login">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to sign in
@@ -158,4 +134,3 @@ export default function ForgotPasswordForm() {
     </>
   );
 }
-

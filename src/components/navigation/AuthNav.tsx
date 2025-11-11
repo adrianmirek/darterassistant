@@ -1,5 +1,5 @@
-import { Button } from '@/components/ui/button';
-import { LogOut, Target } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { LogOut, Target } from "lucide-react";
 
 interface AuthNavProps {
   userEmail: string;
@@ -21,12 +21,8 @@ export default function AuthNav({ userEmail }: AuthNavProps) {
             <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground">
               <span className="font-medium text-foreground">{userEmail}</span>
             </div>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              asChild
-            >
+
+            <Button variant="outline" size="sm" asChild>
               <a href="/auth/logout">
                 <LogOut className="h-4 w-4 mr-2" />
                 Logout
@@ -38,4 +34,3 @@ export default function AuthNav({ userEmail }: AuthNavProps) {
     </header>
   );
 }
-

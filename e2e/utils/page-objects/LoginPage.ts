@@ -1,5 +1,5 @@
-import type { Page, Locator } from '@playwright/test';
-import { BasePage } from './BasePage';
+import type { Page, Locator } from "@playwright/test";
+import { BasePage } from "./BasePage";
 
 /**
  * Page Object Model for Login Page
@@ -25,7 +25,7 @@ export class LoginPage extends BasePage {
    * Navigate to login page
    */
   async goto() {
-    await super.goto('/auth/login');
+    await super.goto("/auth/login");
   }
 
   /**
@@ -67,7 +67,7 @@ export class LoginPage extends BasePage {
   getFieldError(fieldName: string) {
     // FormMessage has data-slot="form-message" attribute and is within the FormItem
     // We need to find the FormItem containing the field, then find the form-message within it
-    return this.page.locator(`[name="${fieldName}"]`).locator('..').locator('[data-slot="form-message"]');
+    return this.page.locator(`[name="${fieldName}"]`).locator("..").locator('[data-slot="form-message"]');
   }
 
   /**
@@ -77,4 +77,3 @@ export class LoginPage extends BasePage {
     return this.page.locator('[data-slot="form-message"]').first();
   }
 }
-

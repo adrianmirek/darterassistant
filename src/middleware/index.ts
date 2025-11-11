@@ -1,40 +1,35 @@
-import { defineMiddleware } from 'astro:middleware';
-import { createSupabaseServerInstance } from '../db/supabase.client';
-import type { UserDTO } from '../types';
+import { defineMiddleware } from "astro:middleware";
+import { createSupabaseServerInstance } from "../db/supabase.client";
+import type { UserDTO } from "../types";
 
 /**
  * Protected routes that require authentication
  */
 const PROTECTED_ROUTES = [
-  '/',                    // Main page with AddTournamentForm (protected)
-  '/api/tournaments',     // Tournament API
-  '/api/goals',           // Goals API
+  "/", // Main page with AddTournamentForm (protected)
+  "/api/tournaments", // Tournament API
+  "/api/goals", // Goals API
 ];
 
 /**
  * Public routes that should redirect to dashboard if authenticated
  */
-const AUTH_ROUTES = [
-  '/auth/login',
-  '/auth/register',
-  '/auth/forgot-password',
-  '/auth/reset-password',
-];
+const AUTH_ROUTES = ["/auth/login", "/auth/register", "/auth/forgot-password", "/auth/reset-password"];
 
 /**
  * Check if route requires authentication
  */
 function isProtectedRoute(pathname: string): boolean {
   // Exact match for root, prefix match for others
-  if (pathname === '/') return true;
-  return PROTECTED_ROUTES.slice(1).some(route => pathname.startsWith(route));
+  if (pathname === "/") return true;
+  return PROTECTED_ROUTES.slice(1).some((route) => pathname.startsWith(route));
 }
 
 /**
  * Check if route is an auth page
  */
 function isAuthRoute(pathname: string): boolean {
-  return AUTH_ROUTES.some(route => pathname.startsWith(route));
+  return AUTH_ROUTES.some((route) => pathname.startsWith(route));
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
@@ -62,13 +57,15 @@ export const onRequest = defineMiddleware(async (context, next) => {
     if (error) {
       // AuthSessionMissingError is expected when user is not logged in
       // Only log other types of errors
-      if (error.name !== 'AuthSessionMissingError') {
-        console.error('Error getting user in middleware:', error);
+      if (error.name !== "AuthSessionMissingError") {
+        console.error("Error getting user in middleware:", error);
       }
     } else if (user) {
       // Get the session for token data (only after user is verified)
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
       // Valid authenticated user exists
       context.locals.user = {
         id: user.id,
@@ -87,22 +84,21 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
       // If accessing auth routes while authenticated, redirect to dashboard
       if (isAuthRoute(pathname)) {
-        return redirect('/');
+        return redirect("/");
       }
     }
   } catch (error) {
-    console.error('Unexpected error in auth middleware:', error);
+    console.error("Unexpected error in auth middleware:", error);
   }
 
   // Check if route requires authentication
   if (isProtectedRoute(pathname)) {
     if (!context.locals.user) {
       // Not authenticated, redirect to login
-      return redirect('/auth/login');
+      return redirect("/auth/login");
     }
   }
 
   // Allow request to proceed
   return next();
 });
-

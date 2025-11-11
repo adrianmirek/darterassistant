@@ -1,31 +1,15 @@
-import { useFormContext } from 'react-hook-form';
-import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import { cn } from '@/lib/utils';
-import type { AddTournamentFormViewModel } from './AddTournamentForm';
-import type { MatchTypeDTO } from '@/types';
+import { useFormContext } from "react-hook-form";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import type { AddTournamentFormViewModel } from "./AddTournamentForm";
+import type { MatchTypeDTO } from "@/types";
 
 interface Step1_BasicInfoProps {
   matchTypes: MatchTypeDTO[];
@@ -33,11 +17,7 @@ interface Step1_BasicInfoProps {
   matchTypesError: string | null;
 }
 
-export default function Step1_BasicInfo({
-  matchTypes,
-  isLoadingMatchTypes,
-  matchTypesError,
-}: Step1_BasicInfoProps) {
+export default function Step1_BasicInfo({ matchTypes, isLoadingMatchTypes, matchTypesError }: Step1_BasicInfoProps) {
   const form = useFormContext<AddTournamentFormViewModel>();
 
   return (
@@ -50,10 +30,7 @@ export default function Step1_BasicInfo({
             <FormItem>
               <FormLabel>Tournament Name</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="Enter tournament name"
-                  {...field}
-                />
+                <Input placeholder="Enter tournament name" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -71,16 +48,9 @@ export default function Step1_BasicInfo({
                   <FormControl>
                     <Button
                       variant="outline"
-                      className={cn(
-                        'w-full pl-3 text-left font-normal',
-                        !field.value && 'text-muted-foreground'
-                      )}
+                      className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
                     >
-                      {field.value ? (
-                        format(field.value, 'PPP')
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
+                      {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
                   </FormControl>
@@ -90,9 +60,7 @@ export default function Step1_BasicInfo({
                     mode="single"
                     selected={field.value}
                     onSelect={field.onChange}
-                    disabled={(date) =>
-                      date > new Date() || date < new Date('1900-01-01')
-                    }
+                    disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
                     initialFocus
                   />
                 </PopoverContent>
@@ -109,23 +77,13 @@ export default function Step1_BasicInfo({
             <FormItem>
               <FormLabel>Match Type</FormLabel>
               {matchTypesError ? (
-                <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                  {matchTypesError}
-                </div>
+                <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{matchTypesError}</div>
               ) : (
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  disabled={isLoadingMatchTypes}
-                >
+                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoadingMatchTypes}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue 
-                        placeholder={
-                          isLoadingMatchTypes 
-                            ? 'Loading match types...' 
-                            : 'Select a match type'
-                        } 
+                      <SelectValue
+                        placeholder={isLoadingMatchTypes ? "Loading match types..." : "Select a match type"}
                       />
                     </SelectTrigger>
                   </FormControl>
@@ -146,4 +104,3 @@ export default function Step1_BasicInfo({
     </div>
   );
 }
-

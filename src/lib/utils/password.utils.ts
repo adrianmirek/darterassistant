@@ -1,4 +1,4 @@
-export type PasswordStrength = 'weak' | 'medium' | 'strong';
+export type PasswordStrength = "weak" | "medium" | "strong";
 
 export interface PasswordStrengthResult {
   strength: PasswordStrength;
@@ -14,11 +14,11 @@ export interface PasswordStrengthResult {
  */
 export function calculatePasswordStrength(password: string): PasswordStrengthResult {
   let score = 0;
-  
+
   // Length criteria
   if (password.length >= 8) score++;
   if (password.length >= 12) score++;
-  
+
   // Character type criteria
   if (/[A-Z]/.test(password)) score++;
   if (/[a-z]/.test(password)) score++;
@@ -27,11 +27,11 @@ export function calculatePasswordStrength(password: string): PasswordStrengthRes
 
   let strength: PasswordStrength;
   if (score <= 2) {
-    strength = 'weak';
+    strength = "weak";
   } else if (score <= 4) {
-    strength = 'medium';
+    strength = "medium";
   } else {
-    strength = 'strong';
+    strength = "strong";
   }
 
   return {
@@ -49,9 +49,9 @@ export function calculatePasswordStrength(password: string): PasswordStrengthRes
  */
 function getStrengthColor(strength: PasswordStrength): string {
   const colors: Record<PasswordStrength, string> = {
-    weak: 'bg-red-500',
-    medium: 'bg-yellow-500',
-    strong: 'bg-green-500',
+    weak: "bg-red-500",
+    medium: "bg-yellow-500",
+    strong: "bg-green-500",
   };
   return colors[strength];
 }
@@ -63,10 +63,9 @@ function getStrengthColor(strength: PasswordStrength): string {
  */
 function getStrengthWidth(strength: PasswordStrength): string {
   const widths: Record<PasswordStrength, string> = {
-    weak: 'w-1/3',
-    medium: 'w-2/3',
-    strong: 'w-full',
+    weak: "w-1/3",
+    medium: "w-2/3",
+    strong: "w-full",
   };
   return widths[strength];
 }
-

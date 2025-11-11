@@ -1,13 +1,13 @@
-import type { SupabaseClient } from '../../db/supabase.client';
+import type { SupabaseClient } from "../../db/supabase.client";
 import type {
   TournamentSummaryDTO,
   TournamentDetailDTO,
   TournamentResultDTO,
   CreateTournamentCommand,
   CreateTournamentResponseDTO,
-} from '../../types';
-import { OpenRouterService } from './openrouter.service';
-import type { ChatMessage } from '../../types/openrouter.types';
+} from "../../types";
+import { OpenRouterService } from "./openrouter.service";
+import type { ChatMessage } from "../../types/openrouter.types";
 
 /**
  * Service for tournament-related business logic
@@ -16,15 +16,12 @@ import type { ChatMessage } from '../../types/openrouter.types';
 /**
  * Generate AI-powered performance feedback based on tournament results
  */
-async function generateTournamentFeedback(
-  command: CreateTournamentCommand,
-  apiKey: string
-): Promise<string> {
+async function generateTournamentFeedback(command: CreateTournamentCommand, apiKey: string): Promise<string> {
   try {
     // Initialize OpenRouter service
     const openRouter = new OpenRouterService({
       apiKey,
-      defaultModel: 'anthropic/claude-3.5-sonnet',
+      defaultModel: "anthropic/claude-3.5-sonnet",
       logger: (level, message, data) => {
         console.log(`[OpenRouter ${level}]`, message, data);
       },
@@ -55,7 +52,7 @@ Keep the tone positive, supportive, and professional.`;
 
     const messages: ChatMessage[] = [
       {
-        role: 'user',
+        role: "user",
         content: prompt,
       },
     ];
@@ -65,14 +62,14 @@ Keep the tone positive, supportive, and professional.`;
 
     // Extract feedback from response
     if (response.choices && response.choices.length > 0) {
-      return response.choices[0].message.content || 'Great performance! Keep up the good work.';
+      return response.choices[0].message.content || "Great performance! Keep up the good work.";
     }
 
-    return 'Great performance! Keep up the good work.';
+    return "Great performance! Keep up the good work.";
   } catch (error) {
-    console.error('Error generating tournament feedback:', error);
+    console.error("Error generating tournament feedback:", error);
     // Return a default message if AI feedback fails
-    return 'Tournament recorded successfully! Keep practicing to improve your game.';
+    return "Tournament recorded successfully! Keep practicing to improve your game.";
   }
 }
 
@@ -85,13 +82,13 @@ export async function getTournaments(
   options: {
     limit: number;
     offset: number;
-    sort: 'date_asc' | 'date_desc';
+    sort: "date_asc" | "date_desc";
   }
 ): Promise<{ data: TournamentSummaryDTO[] | null; error: any }> {
   try {
     // Build query with tournaments and their results
     let query = supabase
-      .from('tournaments')
+      .from("tournaments")
       .select(
         `
         id,
@@ -102,13 +99,13 @@ export async function getTournaments(
         )
       `
       )
-      .eq('user_id', userId);
+      .eq("user_id", userId);
 
     // Apply sorting
-    if (options.sort === 'date_asc') {
-      query = query.order('date', { ascending: true });
+    if (options.sort === "date_asc") {
+      query = query.order("date", { ascending: true });
     } else {
-      query = query.order('date', { ascending: false });
+      query = query.order("date", { ascending: false });
     }
 
     // Apply pagination
@@ -124,10 +121,7 @@ export async function getTournaments(
     const tournaments: TournamentSummaryDTO[] = (data || []).map((tournament) => {
       // Calculate average score from all match results
       const results = tournament.tournament_match_results || [];
-      const totalAvg = results.reduce(
-        (sum, result) => sum + (result.average_score || 0),
-        0
-      );
+      const totalAvg = results.reduce((sum, result) => sum + (result.average_score || 0), 0);
       const averageScore = results.length > 0 ? totalAvg / results.length : 0;
 
       return {
@@ -154,7 +148,7 @@ export async function getTournamentById(
 ): Promise<{ data: TournamentDetailDTO | null; error: any }> {
   try {
     const { data, error } = await supabase
-      .from('tournaments')
+      .from("tournaments")
       .select(
         `
         id,
@@ -175,8 +169,8 @@ export async function getTournamentById(
         )
       `
       )
-      .eq('id', tournamentId)
-      .eq('user_id', userId)
+      .eq("id", tournamentId)
+      .eq("user_id", userId)
       .single();
 
     if (error) {
@@ -184,9 +178,7 @@ export async function getTournamentById(
     }
 
     // Transform nested results to TournamentResultDTO[]
-    const results: TournamentResultDTO[] = (
-      data.tournament_match_results || []
-    ).map((result) => ({
+    const results: TournamentResultDTO[] = (data.tournament_match_results || []).map((result) => ({
       match_type_id: result.match_type_id,
       average_score: result.average_score,
       first_nine_avg: result.first_nine_avg,
@@ -222,26 +214,26 @@ export async function createTournament(
   command: CreateTournamentCommand
 ): Promise<{ data: CreateTournamentResponseDTO | null; error: any }> {
   try {
-    console.log('Creating tournament with command:', JSON.stringify(command, null, 2));
-    console.log('User ID:', userId);
+    console.log("Creating tournament with command:", JSON.stringify(command, null, 2));
+    console.log("User ID:", userId);
 
     // Insert tournament
     const { data: tournament, error: tournamentError } = await supabase
-      .from('tournaments')
+      .from("tournaments")
       .insert({
         user_id: userId,
         name: command.name,
         date: command.date,
       })
-      .select('id, created_at')
+      .select("id, created_at")
       .single();
 
     if (tournamentError) {
-      console.error('Error inserting tournament:', tournamentError);
+      console.error("Error inserting tournament:", tournamentError);
       return { data: null, error: tournamentError };
     }
 
-    console.log('Tournament created successfully:', tournament);
+    console.log("Tournament created successfully:", tournament);
 
     // Insert tournament result
     const resultData = {
@@ -259,27 +251,25 @@ export async function createTournament(
       worst_leg: command.result.worst_leg,
     };
 
-    console.log('Inserting result with data:', JSON.stringify(resultData, null, 2));
+    console.log("Inserting result with data:", JSON.stringify(resultData, null, 2));
 
-    const { error: resultError } = await supabase
-      .from('tournament_match_results')
-      .insert(resultData);
+    const { error: resultError } = await supabase.from("tournament_match_results").insert(resultData);
 
     if (resultError) {
       // If result insertion fails, we should ideally rollback the tournament
       // For now, return the error
-      console.error('Error inserting tournament result:', resultError);
+      console.error("Error inserting tournament result:", resultError);
       return { data: null, error: resultError };
     }
 
-    console.log('Tournament result created successfully');
+    console.log("Tournament result created successfully");
 
     // Generate AI feedback based on performance (optional)
     let feedback: string | undefined;
     const apiKey = import.meta.env.OPENROUTER_API_KEY;
-    
+
     if (!apiKey) {
-      console.log('OPENROUTER_API_KEY is not configured. Skipping AI feedback generation.');
+      console.log("OPENROUTER_API_KEY is not configured. Skipping AI feedback generation.");
     } else {
       feedback = await generateTournamentFeedback(command, apiKey);
     }
@@ -292,8 +282,7 @@ export async function createTournament(
 
     return { data: response, error: null };
   } catch (error) {
-    console.error('Unexpected error in createTournament:', error);
+    console.error("Unexpected error in createTournament:", error);
     return { data: null, error };
   }
 }
-

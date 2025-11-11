@@ -1,14 +1,7 @@
-import { useFormContext } from 'react-hook-form';
-import {
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import type { AddTournamentFormViewModel } from './AddTournamentForm';
+import { useFormContext } from "react-hook-form";
+import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import type { AddTournamentFormViewModel } from "./AddTournamentForm";
 
 export default function Step2_Metrics() {
   const form = useFormContext<AddTournamentFormViewModel>();
@@ -41,7 +34,7 @@ export default function Step2_Metrics() {
 
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Performance Metrics</h3>
-        
+
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField
             control={form.control}
@@ -136,7 +129,7 @@ export default function Step2_Metrics() {
 
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Score Counts</h3>
-        
+
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <FormField
             control={form.control}
@@ -226,7 +219,7 @@ export default function Step2_Metrics() {
 
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Leg Performance</h3>
-        
+
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField
             control={form.control}
@@ -276,4 +269,3 @@ export default function Step2_Metrics() {
     </div>
   );
 }
-

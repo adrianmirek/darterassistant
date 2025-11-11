@@ -1,5 +1,5 @@
-import type { SupabaseClient } from '@/db/supabase.client';
-import type { LoginResponseDTO, RegisterResponseDTO, UserDTO, SessionDTO } from '@/types';
+import type { SupabaseClient } from "@/db/supabase.client";
+import type { LoginResponseDTO, RegisterResponseDTO, UserDTO, SessionDTO } from "@/types";
 
 /**
  * Register a new user
@@ -22,7 +22,7 @@ export async function registerUser(
     if (!data.session || !data.user) {
       return {
         data: null,
-        error: { message: 'No session returned from registration' },
+        error: { message: "No session returned from registration" },
       };
     }
 
@@ -46,10 +46,10 @@ export async function registerUser(
 
     return { data: registerResponse, error: null };
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error("Registration error:", error);
     return {
       data: null,
-      error: { message: 'An unexpected error occurred during registration' },
+      error: { message: "An unexpected error occurred during registration" },
     };
   }
 }
@@ -75,7 +75,7 @@ export async function loginUser(
     if (!data.session || !data.user) {
       return {
         data: null,
-        error: { message: 'No session returned from authentication' },
+        error: { message: "No session returned from authentication" },
       };
     }
 
@@ -99,10 +99,10 @@ export async function loginUser(
 
     return { data: loginResponse, error: null };
   } catch (error) {
-    console.error('Login error:', error);
+    console.error("Login error:", error);
     return {
       data: null,
-      error: { message: 'An unexpected error occurred during login' },
+      error: { message: "An unexpected error occurred during login" },
     };
   }
 }
@@ -110,15 +110,13 @@ export async function loginUser(
 /**
  * Sign out current user
  */
-export async function logoutUser(
-  supabase: SupabaseClient
-): Promise<{ error: any }> {
+export async function logoutUser(supabase: SupabaseClient): Promise<{ error: any }> {
   try {
     const { error } = await supabase.auth.signOut();
     return { error };
   } catch (error) {
-    console.error('Logout error:', error);
-    return { error: { message: 'An unexpected error occurred during logout' } };
+    console.error("Logout error:", error);
+    return { error: { message: "An unexpected error occurred during logout" } };
   }
 }
 
@@ -138,13 +136,13 @@ export async function requestPasswordReset(
     // Even if there's an error (e.g., email not found), we don't expose it
     // for security reasons. Just log it server-side.
     if (error) {
-      console.info('Password reset request error (hidden from user):', error);
+      console.info("Password reset request error (hidden from user):", error);
     }
 
     // Always return success to prevent email enumeration
     return { error: null };
   } catch (error) {
-    console.error('Password reset request error:', error);
+    console.error("Password reset request error:", error);
     // Still return success to maintain security
     return { error: null };
   }
@@ -153,9 +151,7 @@ export async function requestPasswordReset(
 /**
  * Get current session and user (securely authenticated)
  */
-export async function getCurrentSession(
-  supabase: SupabaseClient
-): Promise<{ data: SessionDTO | null; error: any }> {
+export async function getCurrentSession(supabase: SupabaseClient): Promise<{ data: SessionDTO | null; error: any }> {
   try {
     // First, authenticate the user with Supabase server
     const {
@@ -165,7 +161,7 @@ export async function getCurrentSession(
 
     if (userError) {
       // AuthSessionMissingError is expected when user is not logged in
-      if (userError.name === 'AuthSessionMissingError') {
+      if (userError.name === "AuthSessionMissingError") {
         return { data: null, error: null };
       }
       return { data: null, error: userError };
@@ -200,11 +196,10 @@ export async function getCurrentSession(
 
     return { data: sessionDTO, error: null };
   } catch (error) {
-    console.error('Get session error:', error);
+    console.error("Get session error:", error);
     return {
       data: null,
-      error: { message: 'An unexpected error occurred while getting session' },
+      error: { message: "An unexpected error occurred while getting session" },
     };
   }
 }
-
