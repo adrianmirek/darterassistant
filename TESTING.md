@@ -19,6 +19,31 @@ All testing dependencies are already installed. If you need to reinstall:
 npm install
 ```
 
+### E2E Testing Environment Setup
+
+E2E tests require a `.env.test` file with the following environment variables:
+
+```env
+# Supabase Configuration
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_PUBLIC_KEY=your_supabase_anon_key
+
+# E2E Test User Credentials
+E2E_USERNAME_ID=test_user_id_uuid_from_auth_users_table
+E2E_USERNAME=test@example.com
+E2E_PASSWORD=test_password
+
+# Base URL (optional - defaults to http://localhost:3000)
+BASE_URL=http://localhost:3000
+```
+
+**Important Notes:**
+- Create a dedicated test user in your Supabase authentication system
+- Use the test user's UUID from `auth.users` table as `E2E_USERNAME_ID`
+- The global teardown will automatically clean up **ONLY** test data for the E2E user after all E2E tests complete
+- Cleanup is user-scoped: only deletes records from `tournaments` and `tournament_match_results` where `user_id` matches `E2E_USERNAME_ID`
+- Other users' data is never affected by the cleanup process
+
 ### Running Tests
 
 #### Unit Tests
@@ -78,10 +103,11 @@ darterassistant/
 │               └── login.test.ts # Example API test
 ├── e2e/
 │   ├── utils/
-│   │   ├── fixtures.ts           # Playwright custom fixtures
+│   │   ├── supabase-client.ts    # Supabase client for E2E tests
 │   │   └── page-objects/
 │   │       ├── BasePage.ts       # Base page object class
 │   │       └── LoginPage.ts      # Example page object
+│   ├── global-teardown.ts        # Global teardown for database cleanup
 │   ├── auth/
 │   │   └── login.spec.ts         # Example auth e2e test
 │   └── home.spec.ts              # Example home page e2e test
@@ -212,6 +238,36 @@ test('should call API endpoint', async ({ request }) => {
 5. **Use fixtures** - Create reusable test fixtures
 6. **Take screenshots on failure** - Already configured in playwright.config.ts
 7. **Use trace viewer** - Debug failing tests with trace viewer
+8. **Database cleanup** - Global teardown automatically cleans test data after all tests
+
+## Database Cleanup (E2E)
+
+The E2E test suite includes automatic database cleanup via a global teardown script that runs after all tests complete.
+
+### How It Works
+
+1. **Global Teardown** - Configured in `playwright.config.ts` to run `e2e/global-teardown.ts`
+2. **User-Specific Cleanup** - Only deletes data created by the test user (identified by `E2E_USERNAME_ID`)
+3. **Respects Foreign Keys** - Deletes `tournament_match_results` before `tournaments` to maintain referential integrity
+4. **Non-Blocking** - Cleanup failures don't fail the test run
+
+### Manual Cleanup
+
+If you need to manually clean up test data:
+
+```bash
+# Create a script or use Supabase SQL editor
+DELETE FROM tournament_match_results 
+WHERE tournament_id IN (
+  SELECT id FROM tournaments WHERE user_id = 'your-test-user-id'
+);
+
+DELETE FROM tournaments WHERE user_id = 'your-test-user-id';
+```
+
+### Extending Cleanup
+
+To add more tables to the cleanup process, edit `e2e/global-teardown.ts` and add additional delete operations following the same pattern. Remember to respect foreign key constraints by deleting child records before parent records.
 
 ## CI/CD Integration
 
@@ -321,4 +377,5 @@ npx playwright show-trace trace.zip
 - [React Testing Library](https://testing-library.com/react)
 - [Playwright Documentation](https://playwright.dev/)
 - [Testing Best Practices](https://kentcdodds.com/blog/common-mistakes-with-react-testing-library)
+
 

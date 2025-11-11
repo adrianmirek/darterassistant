@@ -1,33 +1,35 @@
-import { test, expect } from './utils/fixtures';
+import { test, expect } from '@playwright/test';
 
 /**
  * Basic E2E tests for home page
+ * Note: Home page is protected and requires authentication
  */
 test.describe('Home Page', () => {
-  test('should load successfully', async ({ page }) => {
+  test('should redirect to login when not authenticated', async ({ page }) => {
     await page.goto('/');
     
-    // Verify page loaded
-    await expect(page).toHaveURL('/');
+    // Should redirect to login page since home is protected
+    await expect(page).toHaveURL('/auth/login');
     
-    // Check for main content
+    // Check for login form
     const main = page.locator('main');
     await expect(main).toBeVisible();
   });
 
-  test('should have correct title', async ({ page }) => {
+  test('should show login page title after redirect', async ({ page }) => {
     await page.goto('/');
     
-    // Verify page title (adjust based on your actual title)
-    await expect(page).toHaveTitle(/darter assistant/i);
+    // After redirect, should show login page title
+    await expect(page).toHaveTitle(/sign in.*darter assistant/i);
   });
 
-  test('should display navigation', async ({ page }) => {
+  test('should display navigation on login page after redirect', async ({ page }) => {
     await page.goto('/');
     
-    // Check for navigation elements
-    const nav = page.locator('nav');
-    await expect(nav).toBeVisible();
+    // After redirect to login, check for GuestNav navigation elements
+    // Login page has links to register and forgot password
+    const registerLink = page.locator('a[href="/auth/register"]');
+    await expect(registerLink).toBeVisible();
   });
 
   test('should take screenshot', async ({ page }) => {
@@ -55,4 +57,6 @@ test.describe('Home Page', () => {
     await expect(page.locator('main')).toBeVisible();
   });
 });
+
+
 
