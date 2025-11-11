@@ -31,9 +31,9 @@ export class OpenRouterApiError extends OpenRouterError {
  * Error thrown when response validation fails
  */
 export class OpenRouterValidationError extends OpenRouterError {
-  public readonly validationErrors: any[];
+  public readonly validationErrors: unknown[];
 
-  constructor(message: string, validationErrors: any[] = []) {
+  constructor(message: string, validationErrors: unknown[] = []) {
     super(message);
     this.name = "OpenRouterValidationError";
     this.validationErrors = validationErrors;
