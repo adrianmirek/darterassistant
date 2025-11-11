@@ -101,6 +101,15 @@ jobs:
           name: dist
           path: dist
 
+      - name: Verify build artifacts
+        run: |
+          echo "Checking dist directory contents..."
+          ls -la dist/
+          echo "Checking for _worker.js..."
+          ls -la dist/_worker.js/ || echo "_worker.js directory not found"
+          echo "Checking for _routes.json..."
+          cat dist/_routes.json || echo "_routes.json not found"
+
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
