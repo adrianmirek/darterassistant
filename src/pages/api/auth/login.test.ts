@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, vi, beforeEach } from "vitest";
 import type { APIContext } from "astro";
 
 /**
@@ -23,9 +23,9 @@ describe.skip("POST /api/auth/login", () => {
         set: vi.fn(),
         delete: vi.fn(),
         has: vi.fn(),
-      } as any,
+      } as unknown,
       locals: {
-        supabase: {} as any,
+        supabase: {} as unknown,
         user: null,
         session: null,
       },

@@ -308,7 +308,7 @@ export async function modelOverrideExample() {
 // ============================================
 export async function withLoggingExample() {
   // Custom logger function
-  const logger = (level: string, message: string, data?: any) => {
+  const logger = (level: string, message: string, data?: unknown) => {
     const timestamp = new Date().toISOString();
     console.log(`[${timestamp}] [${level.toUpperCase()}] ${message}`, data || "");
   };

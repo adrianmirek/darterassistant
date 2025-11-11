@@ -2,7 +2,7 @@
 export const prerender = false;
 
 // Call logout API
-const response = await fetch(new URL("/api/auth/logout", Astro.url.origin), {
+await fetch(new URL("/api/auth/logout", Astro.url.origin), {
   method: "POST",
   headers: {
     Cookie: Astro.request.headers.get("Cookie") || "",

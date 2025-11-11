@@ -109,7 +109,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
     let body;
     try {
       body = await request.json();
-    } catch (error) {
+    } catch {
       return new Response(JSON.stringify({ error: "Invalid JSON in request body" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
@@ -146,21 +146,28 @@ export const POST: APIRoute = async ({ locals, request }) => {
         });
       }
 
-      console.error("Error creating goal:", error);
+      // Error creating goal
       return new Response(JSON.stringify({ error: "Failed to create goal" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
       });
     }
 
-    const response: CreateGoalResponseDTO = data!;
+    if (!data) {
+      return new Response(JSON.stringify({ error: "Failed to create goal" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const response: CreateGoalResponseDTO = data;
 
     return new Response(JSON.stringify(response), {
       status: 201,
       headers: { "Content-Type": "application/json" },
     });
-  } catch (error) {
-    console.error("Unexpected error in POST /api/goals:", error);
+  } catch {
+    // Unexpected error in POST /api/goals
     return new Response(JSON.stringify({ error: "Failed to create goal" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },

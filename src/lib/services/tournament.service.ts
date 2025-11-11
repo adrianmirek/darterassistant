@@ -9,6 +9,8 @@ import type {
 import { OpenRouterService } from "./openrouter.service";
 import type { ChatMessage } from "../../types/openrouter.types";
 
+type ServiceError = { message: string } | null;
+
 /**
  * Service for tournament-related business logic
  */
@@ -22,9 +24,6 @@ async function generateTournamentFeedback(command: CreateTournamentCommand, apiK
     const openRouter = new OpenRouterService({
       apiKey,
       defaultModel: "anthropic/claude-3.5-sonnet",
-      logger: (level, message, data) => {
-        console.log(`[OpenRouter ${level}]`, message, data);
-      },
     });
 
     // Build prompt with tournament performance data
@@ -66,8 +65,8 @@ Keep the tone positive, supportive, and professional.`;
     }
 
     return "Great performance! Keep up the good work.";
-  } catch (error) {
-    console.error("Error generating tournament feedback:", error);
+  } catch {
+    // Error generating tournament feedback
     // Return a default message if AI feedback fails
     return "Tournament recorded successfully! Keep practicing to improve your game.";
   }
@@ -84,7 +83,7 @@ export async function getTournaments(
     offset: number;
     sort: "date_asc" | "date_desc";
   }
-): Promise<{ data: TournamentSummaryDTO[] | null; error: any }> {
+): Promise<{ data: TournamentSummaryDTO[] | null; error: ServiceError }> {
   try {
     // Build query with tournaments and their results
     let query = supabase
@@ -145,7 +144,7 @@ export async function getTournamentById(
   supabase: SupabaseClient,
   tournamentId: string,
   userId: string
-): Promise<{ data: TournamentDetailDTO | null; error: any }> {
+): Promise<{ data: TournamentDetailDTO | null; error: ServiceError }> {
   try {
     const { data, error } = await supabase
       .from("tournaments")
@@ -212,10 +211,9 @@ export async function createTournament(
   supabase: SupabaseClient,
   userId: string,
   command: CreateTournamentCommand
-): Promise<{ data: CreateTournamentResponseDTO | null; error: any }> {
+): Promise<{ data: CreateTournamentResponseDTO | null; error: ServiceError }> {
   try {
-    console.log("Creating tournament with command:", JSON.stringify(command, null, 2));
-    console.log("User ID:", userId);
+    // Creating tournament with command and User ID
 
     // Insert tournament
     const { data: tournament, error: tournamentError } = await supabase
@@ -229,11 +227,11 @@ export async function createTournament(
       .single();
 
     if (tournamentError) {
-      console.error("Error inserting tournament:", tournamentError);
+      // Error inserting tournament
       return { data: null, error: tournamentError };
     }
 
-    console.log("Tournament created successfully:", tournament);
+    // Tournament created successfully
 
     // Insert tournament result
     const resultData = {
@@ -251,25 +249,25 @@ export async function createTournament(
       worst_leg: command.result.worst_leg,
     };
 
-    console.log("Inserting result with data:", JSON.stringify(resultData, null, 2));
+    // Inserting result with data
 
     const { error: resultError } = await supabase.from("tournament_match_results").insert(resultData);
 
     if (resultError) {
       // If result insertion fails, we should ideally rollback the tournament
       // For now, return the error
-      console.error("Error inserting tournament result:", resultError);
+      // Error inserting tournament result
       return { data: null, error: resultError };
     }
 
-    console.log("Tournament result created successfully");
+    // Tournament result created successfully
 
     // Generate AI feedback based on performance (optional)
     let feedback: string | undefined;
     const apiKey = import.meta.env.OPENROUTER_API_KEY;
 
     if (!apiKey) {
-      console.log("OPENROUTER_API_KEY is not configured. Skipping AI feedback generation.");
+      // OPENROUTER_API_KEY is not configured. Skipping AI feedback generation.
     } else {
       feedback = await generateTournamentFeedback(command, apiKey);
     }
@@ -282,7 +280,7 @@ export async function createTournament(
 
     return { data: response, error: null };
   } catch (error) {
-    console.error("Unexpected error in createTournament:", error);
+    // Unexpected error in createTournament
     return { data: null, error };
   }
 }

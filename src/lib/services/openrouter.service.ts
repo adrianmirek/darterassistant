@@ -7,7 +7,7 @@ import type {
   OpenRouterErrorResponse,
 } from "../../types/openrouter.types";
 import { OpenRouterApiError, OpenRouterNetworkError, OpenRouterValidationError } from "../errors/openrouter.errors";
-import Ajv, { type ValidateFunction } from "ajv";
+import Ajv from "ajv";
 
 /**
  * OpenRouter API Service
@@ -18,8 +18,8 @@ export class OpenRouterService {
   private readonly apiKey: string;
   private readonly baseUrl: string;
   private defaultModel: string;
-  private defaultParams: Record<string, any>;
-  private readonly logger?: (level: string, message: string, data?: any) => void;
+  private defaultParams: Record<string, unknown>;
+  private readonly logger?: (level: string, message: string, data?: unknown) => void;
   private readonly ajv: InstanceType<typeof Ajv>;
 
   // Constants
@@ -106,7 +106,7 @@ export class OpenRouterService {
    * Merge parameters into default model parameters
    * @param params Parameters to merge
    */
-  public setDefaultParams(params: Record<string, any>): void {
+  public setDefaultParams(params: Record<string, unknown>): void {
     this.defaultParams = { ...this.defaultParams, ...params };
     this.log("debug", "Default params updated", { params: this.defaultParams });
   }
@@ -122,7 +122,7 @@ export class OpenRouterService {
     messages: ChatMessage[],
     responseFormat?: ResponseFormat,
     overrides?: SendChatOverrides
-  ): Record<string, any> {
+  ): Record<string, unknown> {
     // Inject default system message if absent
     const hasSystemMessage = messages.some((msg) => msg.role === "system");
     const finalMessages = hasSystemMessage
@@ -139,7 +139,7 @@ export class OpenRouterService {
     const model = overrides?.model || this.defaultModel;
     const params = { ...this.defaultParams, ...overrides?.params };
 
-    const payload: Record<string, any> = {
+    const payload: Record<string, unknown> = {
       model,
       messages: finalMessages,
       ...params,
@@ -173,7 +173,7 @@ export class OpenRouterService {
     }
 
     // Parse JSON content
-    let parsedContent: any;
+    let parsedContent: unknown;
     try {
       parsedContent = JSON.parse(content);
     } catch (error) {
@@ -201,7 +201,7 @@ export class OpenRouterService {
    * @param payload Request payload
    * @returns Promise resolving to chat response
    */
-  private async request(endpoint: string, payload: Record<string, any>): Promise<ChatResponse> {
+  private async request(endpoint: string, payload: Record<string, unknown>): Promise<ChatResponse> {
     let lastError: Error | null = null;
 
     for (let attempt = 0; attempt < OpenRouterService.MAX_RETRIES; attempt++) {
@@ -297,7 +297,7 @@ export class OpenRouterService {
    * @param message Log message
    * @param data Optional data to log
    */
-  private log(level: string, message: string, data?: any): void {
+  private log(level: string, message: string, data?: unknown): void {
     if (this.logger) {
       this.logger(level, message, data);
     }

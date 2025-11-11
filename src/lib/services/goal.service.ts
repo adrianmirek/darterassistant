@@ -1,6 +1,8 @@
 import type { SupabaseClient } from "../../db/supabase.client";
 import type { GoalDTO, CreateGoalCommand, CreateGoalResponseDTO, GoalProgressDTO } from "../../types";
 
+type ServiceError = { message: string } | null;
+
 /**
  * Service for goal-related business logic
  */
@@ -15,7 +17,7 @@ export async function getGoals(
     limit: number;
     offset: number;
   }
-): Promise<{ data: GoalDTO[] | null; error: any }> {
+): Promise<{ data: GoalDTO[] | null; error: ServiceError }> {
   try {
     const { data, error } = await supabase
       .from("goals")
@@ -49,7 +51,7 @@ export async function getGoalById(
   supabase: SupabaseClient,
   goalId: string,
   userId: string
-): Promise<{ data: GoalDTO | null; error: any }> {
+): Promise<{ data: GoalDTO | null; error: ServiceError }> {
   try {
     const { data, error } = await supabase
       .from("goals")
@@ -83,7 +85,7 @@ export async function createGoal(
   supabase: SupabaseClient,
   userId: string,
   command: CreateGoalCommand
-): Promise<{ data: CreateGoalResponseDTO | null; error: any }> {
+): Promise<{ data: CreateGoalResponseDTO | null; error: ServiceError }> {
   try {
     const { data, error } = await supabase
       .from("goals")
@@ -121,7 +123,7 @@ export async function getGoalProgress(
     limit: number;
     offset: number;
   }
-): Promise<{ data: GoalProgressDTO[] | null; error: any }> {
+): Promise<{ data: GoalProgressDTO[] | null; error: ServiceError }> {
   try {
     const { data, error } = await supabase
       .from("goal_progress")
@@ -153,7 +155,7 @@ export async function getGoalProgressById(
   supabase: SupabaseClient,
   goalId: string,
   userId: string
-): Promise<{ data: GoalProgressDTO | null; error: any }> {
+): Promise<{ data: GoalProgressDTO | null; error: ServiceError }> {
   try {
     const { data, error } = await supabase
       .from("goal_progress")

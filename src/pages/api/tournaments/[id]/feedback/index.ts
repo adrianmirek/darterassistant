@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
-import type { GenerateFeedbackCommand, FeedbackResponseDTO } from "../../../../../types";
+import type { GenerateFeedbackCommand } from "../../../../../types";
 // TODO: Reimplement using OpenRouterService
 // import { generateFeedback } from '../../../../../lib/services/feedback.service';
 
@@ -44,8 +44,6 @@ export const POST: APIRoute = async ({ params, locals, request }) => {
       });
     }
 
-    const tournamentId = idResult.data;
-
     // Parse and validate request body (optional)
     let body: GenerateFeedbackCommand | undefined;
     try {
@@ -68,7 +66,7 @@ export const POST: APIRoute = async ({ params, locals, request }) => {
         }
         body = validationResult.data;
       }
-    } catch (error) {
+    } catch {
       return new Response(JSON.stringify({ error: "Invalid JSON in request body" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
@@ -90,8 +88,8 @@ export const POST: APIRoute = async ({ params, locals, request }) => {
         headers: { "Content-Type": "application/json" },
       }
     );
-  } catch (error) {
-    console.error("Unexpected error in POST /api/tournaments/:id/feedback:", error);
+  } catch {
+    // Unexpected error in POST /api/tournaments/:id/feedback
     return new Response(JSON.stringify({ error: "Failed to generate feedback" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },

@@ -10,7 +10,9 @@ describe("Utils", () => {
     });
 
     it("should handle conditional classes", () => {
-      const result = cn("base", true && "conditional", false && "excluded");
+      const isConditional = true;
+      const isExcluded = false;
+      const result = cn("base", isConditional && "conditional", isExcluded && "excluded");
       expect(result).toContain("base");
       expect(result).toContain("conditional");
       expect(result).not.toContain("excluded");

@@ -1,4 +1,4 @@
-import { expect, afterEach, vi } from "vitest";
+import { afterEach, vi } from "vitest";
 import { cleanup } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 
@@ -27,23 +27,27 @@ Object.defineProperty(window, "matchMedia", {
 });
 
 // Mock IntersectionObserver
+/* eslint-disable @typescript-eslint/no-useless-constructor, @typescript-eslint/no-empty-function */
 global.IntersectionObserver = class IntersectionObserver {
   constructor() {}
   disconnect() {}
   observe() {}
-  takeRecords() {
+  takeRecords(): unknown[] {
     return [];
   }
   unobserve() {}
-} as any;
+} as unknown as typeof IntersectionObserver;
+/* eslint-enable @typescript-eslint/no-useless-constructor, @typescript-eslint/no-empty-function */
 
 // Mock ResizeObserver
+/* eslint-disable @typescript-eslint/no-useless-constructor, @typescript-eslint/no-empty-function */
 global.ResizeObserver = class ResizeObserver {
   constructor() {}
   disconnect() {}
   observe() {}
   unobserve() {}
-} as any;
+} as unknown as typeof ResizeObserver;
+/* eslint-enable @typescript-eslint/no-useless-constructor, @typescript-eslint/no-empty-function */
 
 // Set up environment variables for testing
 process.env.NODE_ENV = "test";

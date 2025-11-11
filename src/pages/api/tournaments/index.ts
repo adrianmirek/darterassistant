@@ -122,7 +122,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
     let body;
     try {
       body = await request.json();
-    } catch (error) {
+    } catch {
       return new Response(JSON.stringify({ error: "Invalid JSON in request body" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
@@ -165,8 +165,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
         );
       }
 
-      console.error("Error creating tournament:", error);
-      console.error("Error details:", JSON.stringify(error, null, 2));
+      // Error creating tournament
       return new Response(
         JSON.stringify({
           error: "Failed to create tournament",
@@ -180,14 +179,21 @@ export const POST: APIRoute = async ({ locals, request }) => {
       );
     }
 
-    const response: CreateTournamentResponseDTO = data!;
+    if (!data) {
+      return new Response(JSON.stringify({ error: "Failed to create tournament" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const response: CreateTournamentResponseDTO = data;
 
     return new Response(JSON.stringify(response), {
       status: 201,
       headers: { "Content-Type": "application/json" },
     });
-  } catch (error) {
-    console.error("Unexpected error in POST /api/tournaments:", error);
+  } catch {
+    // Unexpected error in POST /api/tournaments
     return new Response(JSON.stringify({ error: "Failed to create tournament" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },

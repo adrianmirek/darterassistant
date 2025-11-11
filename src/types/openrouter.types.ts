@@ -21,11 +21,11 @@ export interface ChatMessage {
  */
 export interface JsonSchema {
   type: string;
-  properties?: Record<string, any>;
+  properties?: Record<string, unknown>;
   required?: string[];
-  items?: any;
+  items?: unknown;
   additionalProperties?: boolean;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -58,7 +58,7 @@ export interface ChatResponse {
     completion_tokens: number;
     total_tokens: number;
   };
-  parsedContent?: any; // Parsed JSON content when responseFormat is provided
+  parsedContent?: unknown; // Parsed JSON content when responseFormat is provided
 }
 
 /**
@@ -79,8 +79,8 @@ export interface OpenRouterServiceOptions {
   apiKey: string;
   baseUrl?: string;
   defaultModel?: string;
-  defaultParams?: Record<string, any>;
-  logger?: (level: string, message: string, data?: any) => void;
+  defaultParams?: Record<string, unknown>;
+  logger?: (level: string, message: string, data?: unknown) => void;
 }
 
 /**
@@ -88,5 +88,5 @@ export interface OpenRouterServiceOptions {
  */
 export interface SendChatOverrides {
   model?: string;
-  params?: Record<string, any>;
+  params?: Record<string, unknown>;
 }

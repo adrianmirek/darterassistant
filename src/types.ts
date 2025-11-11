@@ -104,7 +104,7 @@ export interface GoalProgressDTO {
 /**
  * Preferences for tone of feedback (open-ended structure)
  */
-export type TonePreferencesDTO = Record<string, any>;
+export type TonePreferencesDTO = Record<string, unknown>;
 
 /**
  * Command Model for generating motivational feedback

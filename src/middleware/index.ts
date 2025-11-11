@@ -69,7 +69,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       // Valid authenticated user exists
       context.locals.user = {
         id: user.id,
-        email: user.email!,
+        email: user.email ?? "",
         created_at: user.created_at,
       } as UserDTO;
 
