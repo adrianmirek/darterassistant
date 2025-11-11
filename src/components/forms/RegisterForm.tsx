@@ -1,21 +1,14 @@
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Toaster, toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
-import { PasswordInput } from './fields/PasswordInput';
-import { PasswordStrengthIndicator } from './fields/PasswordStrengthIndicator';
-import { useAuthApi } from '@/lib/hooks/useAuthApi';
-import { registerSchema, type RegisterFormData } from '@/lib/utils/validation.schemas';
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Toaster, toast } from "sonner";
+import { Loader2 } from "lucide-react";
+import { PasswordInput } from "./fields/PasswordInput";
+import { PasswordStrengthIndicator } from "./fields/PasswordStrengthIndicator";
+import { useAuthApi } from "@/lib/hooks/useAuthApi";
+import { registerSchema, type RegisterFormData } from "@/lib/utils/validation.schemas";
 
 export default function RegisterForm() {
   const { register } = useAuthApi();
@@ -23,14 +16,14 @@ export default function RegisterForm() {
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      email: '',
-      password: '',
-      confirmPassword: '',
+      email: "",
+      password: "",
+      confirmPassword: "",
     },
-    mode: 'onBlur',
+    mode: "onBlur",
   });
 
-  const password = form.watch('password');
+  const password = form.watch("password");
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
@@ -39,16 +32,17 @@ export default function RegisterForm() {
         password: data.password,
       });
 
-      toast.success('Registration successful!', {
-        description: 'Please sign in with your new account',
+      toast.success("Registration successful!", {
+        description: "Please sign in with your new account",
       });
 
       setTimeout(() => {
-        window.location.href = '/auth/login';
+        // eslint-disable-next-line react-compiler/react-compiler
+        window.location.href = "/auth/login";
       }, 1500);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-      toast.error('Registration failed', {
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      toast.error("Registration failed", {
         description: errorMessage,
       });
     }
@@ -122,18 +116,14 @@ export default function RegisterForm() {
               )}
             />
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={form.formState.isSubmitting}
-            >
+            <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
               {form.formState.isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Creating account...
                 </>
               ) : (
-                'Create account'
+                "Create account"
               )}
             </Button>
           </form>
@@ -151,4 +141,3 @@ export default function RegisterForm() {
     </>
   );
 }
-

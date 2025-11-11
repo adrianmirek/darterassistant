@@ -1,5 +1,5 @@
-import type { APIRoute } from 'astro';
-import type { MatchTypeDTO } from '../../../types';
+import type { APIRoute } from "astro";
+import type { MatchTypeDTO } from "../../../types";
 
 export const prerender = false;
 
@@ -14,21 +14,15 @@ export const GET: APIRoute = async ({ locals }) => {
     const supabase = locals.supabase;
 
     // Query match_types table
-    const { data, error } = await supabase
-      .from('match_types')
-      .select('id, name')
-      .order('id', { ascending: true });
+    const { data, error } = await supabase.from("match_types").select("id, name").order("id", { ascending: true });
 
     // Handle database errors
     if (error) {
-      console.error('Error fetching match types:', error);
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+      console.error("Error fetching match types:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // Transform to DTO format
@@ -37,18 +31,14 @@ export const GET: APIRoute = async ({ locals }) => {
     // Return successful response
     return new Response(JSON.stringify(matchTypes), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
     // Catch unexpected errors
-    console.error('Unexpected error in GET /api/match-types:', error);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+    console.error("Unexpected error in GET /api/match-types:", error);
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 };
-

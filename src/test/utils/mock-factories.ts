@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 /**
  * Factory for creating mock Supabase client
@@ -42,13 +42,13 @@ export const createMockAPIResponse = <T>(data: T, status = 200) => ({
  * Factory for creating mock form events
  */
 export const createMockFormEvent = <T extends HTMLElement>(
-  values: Record<string, any> = {},
+  values: Record<string, unknown> = {}
 ): React.FormEvent<T> => {
-  const target = document.createElement('form') as any;
+  const target = document.createElement("form") as unknown as HTMLFormElement;
   Object.keys(values).forEach((key) => {
-    const input = document.createElement('input');
+    const input = document.createElement("input");
     input.name = key;
-    input.value = values[key];
+    input.value = String(values[key]);
     target.appendChild(input);
   });
 
@@ -57,7 +57,5 @@ export const createMockFormEvent = <T extends HTMLElement>(
     stopPropagation: vi.fn(),
     currentTarget: target,
     target,
-  } as any;
+  } as unknown as React.FormEvent<T>;
 };
-
-

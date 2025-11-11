@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { useState, useCallback } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 /**
  * Custom hook for managing password visibility toggle
@@ -8,14 +8,14 @@ import { Eye, EyeOff } from 'lucide-react';
  */
 export function usePasswordToggle(initialState = false) {
   const [isVisible, setIsVisible] = useState(initialState);
-  
+
   const toggle = useCallback(() => {
-    setIsVisible(prev => !prev);
+    setIsVisible((prev) => !prev);
   }, []);
-  
-  const inputType = isVisible ? 'text' : 'password';
+
+  const inputType = isVisible ? "text" : "password";
   const Icon = isVisible ? EyeOff : Eye;
-  
+
   return {
     isVisible,
     toggle,
@@ -23,4 +23,3 @@ export function usePasswordToggle(initialState = false) {
     Icon,
   };
 }
-

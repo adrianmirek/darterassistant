@@ -1,6 +1,6 @@
 ---
-import Layout from '@/layouts/Layout.astro';
-import AddTournamentForm from '@/components/forms/AddTournamentForm';
+import Layout from "@/layouts/Layout.astro";
+import AddTournamentForm from "@/components/forms/AddTournamentForm";
 
 export const prerender = false;
 
@@ -14,8 +14,7 @@ export const prerender = false;
       <h1 class="text-3xl font-bold tracking-tight mb-2">Add Tournament</h1>
       <p class="text-muted-foreground">Record the results of your latest darts tournament</p>
     </div>
-    
+
     <AddTournamentForm client:load />
   </div>
 </Layout>
-

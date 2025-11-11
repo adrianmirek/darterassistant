@@ -1,22 +1,21 @@
 ---
-import Layout from '@/layouts/Layout.astro';
-import RegisterForm from '@/components/forms/RegisterForm';
-import GuestNav from '@/components/navigation/GuestNav';
+import Layout from "@/layouts/Layout.astro";
+import RegisterForm from "@/components/forms/RegisterForm";
+import GuestNav from "@/components/navigation/GuestNav";
 
 export const prerender = false;
 
 // Check authentication state and redirect if already authenticated
 // Middleware already handles this, but we add this as a safety check
 if (Astro.locals.user) {
-  return Astro.redirect('/');
+  return Astro.redirect("/");
 }
 ---
 
 <Layout title="Create Account - Darter Assistant">
   <GuestNav client:load />
-  
+
   <main class="min-h-[calc(100vh-73px)] flex items-center justify-center p-4">
     <RegisterForm client:load />
   </main>
 </Layout>
-

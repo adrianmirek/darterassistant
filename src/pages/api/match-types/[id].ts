@@ -1,6 +1,6 @@
-import type { APIRoute } from 'astro';
-import { z } from 'zod';
-import type { MatchTypeDTO } from '../../../types';
+import type { APIRoute } from "astro";
+import { z } from "zod";
+import type { MatchTypeDTO } from "../../../types";
 
 export const prerender = false;
 
@@ -18,13 +18,10 @@ export const GET: APIRoute = async ({ params, locals }) => {
     const idResult = idSchema.safeParse(params.id);
 
     if (!idResult.success) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid match type ID' }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+      return new Response(JSON.stringify({ error: "Invalid match type ID" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const id = idResult.data;
@@ -33,33 +30,23 @@ export const GET: APIRoute = async ({ params, locals }) => {
     const supabase = locals.supabase;
 
     // Query match_types table for specific ID
-    const { data, error } = await supabase
-      .from('match_types')
-      .select('id, name')
-      .eq('id', id)
-      .single();
+    const { data, error } = await supabase.from("match_types").select("id, name").eq("id", id).single();
 
     // Handle not found error
-    if (error && error.code === 'PGRST116') {
-      return new Response(
-        JSON.stringify({ error: 'Match type not found' }),
-        {
-          status: 404,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+    if (error && error.code === "PGRST116") {
+      return new Response(JSON.stringify({ error: "Match type not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // Handle other database errors
     if (error) {
-      console.error('Error fetching match type:', error);
-      return new Response(
-        JSON.stringify({ error: 'Internal server error' }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+      console.error("Error fetching match type:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // Transform to DTO format
@@ -68,18 +55,14 @@ export const GET: APIRoute = async ({ params, locals }) => {
     // Return successful response
     return new Response(JSON.stringify(matchType), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
     // Catch unexpected errors
-    console.error('Unexpected error in GET /api/match-types/:id:', error);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+    console.error("Unexpected error in GET /api/match-types/:id:", error);
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 };
-

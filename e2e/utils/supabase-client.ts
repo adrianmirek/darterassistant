@@ -1,5 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
-import type { Database } from '../../src/db/database.types';
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "../../src/db/database.types";
 
 /**
  * Creates a Supabase client for E2E testing purposes
@@ -10,11 +10,8 @@ export function createSupabaseE2EClient() {
   const supabasePublicKey = process.env.SUPABASE_PUBLIC_KEY;
 
   if (!supabaseUrl || !supabasePublicKey) {
-    throw new Error(
-      'SUPABASE_URL and SUPABASE_PUBLIC_KEY must be set in environment variables',
-    );
+    throw new Error("SUPABASE_URL and SUPABASE_PUBLIC_KEY must be set in environment variables");
   }
 
   return createClient<Database>(supabaseUrl, supabasePublicKey);
 }
-

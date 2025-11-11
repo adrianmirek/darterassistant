@@ -4,7 +4,7 @@
 export class OpenRouterError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'OpenRouterError';
+    this.name = "OpenRouterError";
     Object.setPrototypeOf(this, OpenRouterError.prototype);
   }
 }
@@ -17,14 +17,9 @@ export class OpenRouterApiError extends OpenRouterError {
   public readonly errorType?: string;
   public readonly errorCode?: string;
 
-  constructor(
-    message: string,
-    statusCode: number,
-    errorType?: string,
-    errorCode?: string
-  ) {
+  constructor(message: string, statusCode: number, errorType?: string, errorCode?: string) {
     super(message);
-    this.name = 'OpenRouterApiError';
+    this.name = "OpenRouterApiError";
     this.statusCode = statusCode;
     this.errorType = errorType;
     this.errorCode = errorCode;
@@ -36,11 +31,11 @@ export class OpenRouterApiError extends OpenRouterError {
  * Error thrown when response validation fails
  */
 export class OpenRouterValidationError extends OpenRouterError {
-  public readonly validationErrors: any[];
+  public readonly validationErrors: unknown[];
 
-  constructor(message: string, validationErrors: any[] = []) {
+  constructor(message: string, validationErrors: unknown[] = []) {
     super(message);
-    this.name = 'OpenRouterValidationError';
+    this.name = "OpenRouterValidationError";
     this.validationErrors = validationErrors;
     Object.setPrototypeOf(this, OpenRouterValidationError.prototype);
   }
@@ -54,9 +49,8 @@ export class OpenRouterNetworkError extends OpenRouterError {
 
   constructor(message: string, originalError?: Error) {
     super(message);
-    this.name = 'OpenRouterNetworkError';
+    this.name = "OpenRouterNetworkError";
     this.originalError = originalError;
     Object.setPrototypeOf(this, OpenRouterNetworkError.prototype);
   }
 }
-

@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { calculatePasswordStrength, type PasswordStrengthResult } from '@/lib/utils/password.utils';
+import { useMemo } from "react";
+import { calculatePasswordStrength, type PasswordStrengthResult } from "@/lib/utils/password.utils";
 
 /**
  * Custom hook for calculating password strength
@@ -12,7 +12,6 @@ export function usePasswordStrength(password: string): PasswordStrengthResult | 
     if (!password) return null;
     return calculatePasswordStrength(password);
   }, [password]);
-  
+
   return strength;
 }
-

@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 interface StepperNavigationProps {
   currentStep: number;
@@ -16,19 +16,14 @@ export default function StepperNavigation({ currentStep, steps }: StepperNavigat
               <div className="relative flex items-center justify-center">
                 <div
                   className={cn(
-                    'flex h-10 w-10 items-center justify-center rounded-full border-2 transition-colors',
-                    index < currentStep && 'border-primary bg-primary text-primary-foreground',
-                    index === currentStep && 'border-primary bg-background text-primary',
-                    index > currentStep && 'border-muted bg-background text-muted-foreground'
+                    "flex h-10 w-10 items-center justify-center rounded-full border-2 transition-colors",
+                    index < currentStep && "border-primary bg-primary text-primary-foreground",
+                    index === currentStep && "border-primary bg-background text-primary",
+                    index > currentStep && "border-muted bg-background text-muted-foreground"
                   )}
                 >
                   {index < currentStep ? (
-                    <svg
-                      className="h-5 w-5"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
+                    <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                       <path
                         fillRule="evenodd"
                         d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -45,8 +40,8 @@ export default function StepperNavigation({ currentStep, steps }: StepperNavigat
               <div className="ml-3 flex-1">
                 <p
                   className={cn(
-                    'text-sm font-medium transition-colors',
-                    index <= currentStep ? 'text-foreground' : 'text-muted-foreground'
+                    "text-sm font-medium transition-colors",
+                    index <= currentStep ? "text-foreground" : "text-muted-foreground"
                   )}
                 >
                   {step}
@@ -56,10 +51,7 @@ export default function StepperNavigation({ currentStep, steps }: StepperNavigat
               {/* Connecting Line */}
               {index < steps.length - 1 && (
                 <div
-                  className={cn(
-                    'mx-4 h-0.5 flex-1 transition-colors',
-                    index < currentStep ? 'bg-primary' : 'bg-muted'
-                  )}
+                  className={cn("mx-4 h-0.5 flex-1 transition-colors", index < currentStep ? "bg-primary" : "bg-muted")}
                   aria-hidden="true"
                 />
               )}
@@ -70,4 +62,3 @@ export default function StepperNavigation({ currentStep, steps }: StepperNavigat
     </nav>
   );
 }
-

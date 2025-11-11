@@ -1,11 +1,7 @@
-import type { APIRoute } from 'astro';
-import { z } from 'zod';
-import type {
-  TournamentSummaryDTO,
-  CreateTournamentCommand,
-  CreateTournamentResponseDTO,
-} from '../../../types';
-import { getTournaments, createTournament } from '../../../lib/services/tournament.service';
+import type { APIRoute } from "astro";
+import { z } from "zod";
+import type { TournamentSummaryDTO, CreateTournamentCommand, CreateTournamentResponseDTO } from "../../../types";
+import { getTournaments, createTournament } from "../../../lib/services/tournament.service";
 
 export const prerender = false;
 
@@ -13,7 +9,7 @@ export const prerender = false;
 const querySchema = z.object({
   limit: z.coerce.number().int().positive().max(100).default(10),
   offset: z.coerce.number().int().min(0).default(0),
-  sort: z.enum(['date_asc', 'date_desc']).default('date_desc'),
+  sort: z.enum(["date_asc", "date_desc"]).default("date_desc"),
 });
 
 // Validation schema for creating tournament result
@@ -47,17 +43,17 @@ export const GET: APIRoute = async ({ locals, url }) => {
   try {
     // Check authentication
     if (!locals.user) {
-      return new Response(JSON.stringify({ error: 'Authentication required' }), {
+      return new Response(JSON.stringify({ error: "Authentication required" }), {
         status: 401,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
       });
     }
 
     // Parse and validate query parameters
     const queryParams = {
-      limit: url.searchParams.get('limit'),
-      offset: url.searchParams.get('offset'),
-      sort: url.searchParams.get('sort'),
+      limit: url.searchParams.get("limit"),
+      offset: url.searchParams.get("offset"),
+      sort: url.searchParams.get("sort"),
     };
 
     const validationResult = querySchema.safeParse(queryParams);
@@ -65,12 +61,12 @@ export const GET: APIRoute = async ({ locals, url }) => {
     if (!validationResult.success) {
       return new Response(
         JSON.stringify({
-          error: 'Invalid query parameters',
+          error: "Invalid query parameters",
           details: validationResult.error.errors,
         }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
@@ -85,10 +81,10 @@ export const GET: APIRoute = async ({ locals, url }) => {
     });
 
     if (error) {
-      console.error('Error fetching tournaments:', error);
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Error fetching tournaments:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
       });
     }
 
@@ -96,13 +92,13 @@ export const GET: APIRoute = async ({ locals, url }) => {
 
     return new Response(JSON.stringify(tournaments), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error('Unexpected error in GET /api/tournaments:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+    console.error("Unexpected error in GET /api/tournaments:", error);
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     });
   }
 };
@@ -116,9 +112,9 @@ export const POST: APIRoute = async ({ locals, request }) => {
   try {
     // Check authentication
     if (!locals.user) {
-      return new Response(JSON.stringify({ error: 'Authentication required' }), {
+      return new Response(JSON.stringify({ error: "Authentication required" }), {
         status: 401,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
       });
     }
 
@@ -126,14 +122,11 @@ export const POST: APIRoute = async ({ locals, request }) => {
     let body;
     try {
       body = await request.json();
-    } catch (error) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid JSON in request body' }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+    } catch {
+      return new Response(JSON.stringify({ error: "Invalid JSON in request body" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // Validate request body
@@ -142,12 +135,12 @@ export const POST: APIRoute = async ({ locals, request }) => {
     if (!validationResult.success) {
       return new Response(
         JSON.stringify({
-          error: 'Validation failed',
+          error: "Validation failed",
           details: validationResult.error.errors,
         }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
@@ -155,57 +148,55 @@ export const POST: APIRoute = async ({ locals, request }) => {
     const command: CreateTournamentCommand = validationResult.data;
 
     // Create tournament using service
-    const { data, error } = await createTournament(
-      locals.supabase,
-      locals.user.id,
-      command
-    );
+    const { data, error } = await createTournament(locals.supabase, locals.user.id, command);
 
     if (error) {
       // Check for foreign key violation (invalid match_type_id)
-      if (error.code === '23503') {
+      if (error.code === "23503") {
         return new Response(
           JSON.stringify({
-            error: 'Validation failed',
-            details: ['Invalid match_type_id'],
+            error: "Validation failed",
+            details: ["Invalid match_type_id"],
           }),
           {
             status: 400,
-            headers: { 'Content-Type': 'application/json' },
+            headers: { "Content-Type": "application/json" },
           }
         );
       }
 
-      console.error('Error creating tournament:', error);
-      console.error('Error details:', JSON.stringify(error, null, 2));
+      // Error creating tournament
       return new Response(
-        JSON.stringify({ 
-          error: 'Failed to create tournament',
-          details: error.message || 'Unknown error',
-          code: error.code || 'UNKNOWN'
+        JSON.stringify({
+          error: "Failed to create tournament",
+          details: error.message || "Unknown error",
+          code: error.code || "UNKNOWN",
         }),
         {
           status: 500,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
 
-    const response: CreateTournamentResponseDTO = data!;
+    if (!data) {
+      return new Response(JSON.stringify({ error: "Failed to create tournament" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const response: CreateTournamentResponseDTO = data;
 
     return new Response(JSON.stringify(response), {
       status: 201,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     });
-  } catch (error) {
-    console.error('Unexpected error in POST /api/tournaments:', error);
-    return new Response(
-      JSON.stringify({ error: 'Failed to create tournament' }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
+  } catch {
+    // Unexpected error in POST /api/tournaments
+    return new Response(JSON.stringify({ error: "Failed to create tournament" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 };
-

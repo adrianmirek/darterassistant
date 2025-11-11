@@ -1,22 +1,15 @@
-import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Button } from '@/components/ui/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Toaster, toast } from 'sonner';
-import { Loader2, AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { PasswordInput } from './fields/PasswordInput';
-import { PasswordStrengthIndicator } from './fields/PasswordStrengthIndicator';
-import { useAuthApi } from '@/lib/hooks/useAuthApi';
-import { resetPasswordSchema, type ResetPasswordFormData } from '@/lib/utils/validation.schemas';
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Toaster, toast } from "sonner";
+import { Loader2, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { PasswordInput } from "./fields/PasswordInput";
+import { PasswordStrengthIndicator } from "./fields/PasswordStrengthIndicator";
+import { useAuthApi } from "@/lib/hooks/useAuthApi";
+import { resetPasswordSchema, type ResetPasswordFormData } from "@/lib/utils/validation.schemas";
 
 interface ResetPasswordFormProps {
   token: string | null;
@@ -29,27 +22,27 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   const form = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
-      password: '',
-      confirmPassword: '',
+      password: "",
+      confirmPassword: "",
     },
-    mode: 'onBlur',
+    mode: "onBlur",
   });
 
-  const password = form.watch('password');
+  const password = form.watch("password");
 
   useEffect(() => {
     // Validate token on component mount
     if (!token) {
-      setTokenError('Invalid reset link. Please request a new password reset.');
+      setTokenError("Invalid reset link. Please request a new password reset.");
     }
-    
+
     // TODO: Validate token with backend
     // For now, just check if token exists
   }, [token]);
 
   const onSubmit = async (data: ResetPasswordFormData) => {
     if (!token) {
-      toast.error('Invalid reset token');
+      toast.error("Invalid reset token");
       return;
     }
 
@@ -58,17 +51,18 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
         token,
         password: data.password,
       });
-      
-      toast.success('Password reset successful!', {
-        description: 'You can now sign in with your new password.',
+
+      toast.success("Password reset successful!", {
+        description: "You can now sign in with your new password.",
       });
-      
+
       setTimeout(() => {
-        window.location.href = '/auth/login';
+        // eslint-disable-next-line react-compiler/react-compiler
+        window.location.href = "/auth/login";
       }, 1500);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-      toast.error('Password reset failed', {
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      toast.error("Password reset failed", {
         description: errorMessage,
       });
     }
@@ -85,32 +79,16 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Invalid or expired link</AlertTitle>
-            <AlertDescription>
-              {tokenError}
-            </AlertDescription>
+            <AlertDescription>{tokenError}</AlertDescription>
           </Alert>
 
           <div className="space-y-2">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              asChild
-            >
-              <a href="/auth/forgot-password">
-                Request new reset link
-              </a>
+            <Button type="button" variant="outline" className="w-full" asChild>
+              <a href="/auth/forgot-password">Request new reset link</a>
             </Button>
-            
-            <Button
-              type="button"
-              variant="ghost"
-              className="w-full"
-              asChild
-            >
-              <a href="/auth/login">
-                Back to sign in
-              </a>
+
+            <Button type="button" variant="ghost" className="w-full" asChild>
+              <a href="/auth/login">Back to sign in</a>
             </Button>
           </div>
         </div>
@@ -169,18 +147,14 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
               )}
             />
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={form.formState.isSubmitting}
-            >
+            <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
               {form.formState.isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Resetting password...
                 </>
               ) : (
-                'Reset password'
+                "Reset password"
               )}
             </Button>
           </form>
@@ -197,4 +171,3 @@ export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
     </>
   );
 }
-

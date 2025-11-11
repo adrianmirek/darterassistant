@@ -1,7 +1,7 @@
-import type { APIRoute } from 'astro';
-import { z } from 'zod';
-import type { GoalDTO, CreateGoalCommand, CreateGoalResponseDTO } from '../../../types';
-import { getGoals, createGoal } from '../../../lib/services/goal.service';
+import type { APIRoute } from "astro";
+import { z } from "zod";
+import type { GoalDTO, CreateGoalCommand, CreateGoalResponseDTO } from "../../../types";
+import { getGoals, createGoal } from "../../../lib/services/goal.service";
 
 export const prerender = false;
 
@@ -19,8 +19,8 @@ const createGoalSchema = z
     end_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   })
   .refine((data) => new Date(data.end_date) > new Date(data.start_date), {
-    message: 'end_date must be after start_date',
-    path: ['end_date'],
+    message: "end_date must be after start_date",
+    path: ["end_date"],
   });
 
 /**
@@ -32,16 +32,16 @@ export const GET: APIRoute = async ({ locals, url }) => {
   try {
     // Check authentication
     if (!locals.user) {
-      return new Response(JSON.stringify({ error: 'Authentication required' }), {
+      return new Response(JSON.stringify({ error: "Authentication required" }), {
         status: 401,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
       });
     }
 
     // Parse and validate query parameters
     const queryParams = {
-      limit: url.searchParams.get('limit'),
-      offset: url.searchParams.get('offset'),
+      limit: url.searchParams.get("limit"),
+      offset: url.searchParams.get("offset"),
     };
 
     const validationResult = querySchema.safeParse(queryParams);
@@ -49,12 +49,12 @@ export const GET: APIRoute = async ({ locals, url }) => {
     if (!validationResult.success) {
       return new Response(
         JSON.stringify({
-          error: 'Invalid query parameters',
+          error: "Invalid query parameters",
           details: validationResult.error.errors,
         }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
@@ -68,10 +68,10 @@ export const GET: APIRoute = async ({ locals, url }) => {
     });
 
     if (error) {
-      console.error('Error fetching goals:', error);
-      return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      console.error("Error fetching goals:", error);
+      return new Response(JSON.stringify({ error: "Internal server error" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
       });
     }
 
@@ -79,13 +79,13 @@ export const GET: APIRoute = async ({ locals, url }) => {
 
     return new Response(JSON.stringify(goals), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error('Unexpected error in GET /api/goals:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+    console.error("Unexpected error in GET /api/goals:", error);
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     });
   }
 };
@@ -99,9 +99,9 @@ export const POST: APIRoute = async ({ locals, request }) => {
   try {
     // Check authentication
     if (!locals.user) {
-      return new Response(JSON.stringify({ error: 'Authentication required' }), {
+      return new Response(JSON.stringify({ error: "Authentication required" }), {
         status: 401,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
       });
     }
 
@@ -109,14 +109,11 @@ export const POST: APIRoute = async ({ locals, request }) => {
     let body;
     try {
       body = await request.json();
-    } catch (error) {
-      return new Response(
-        JSON.stringify({ error: 'Invalid JSON in request body' }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
+    } catch {
+      return new Response(JSON.stringify({ error: "Invalid JSON in request body" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     // Validate request body
@@ -125,12 +122,12 @@ export const POST: APIRoute = async ({ locals, request }) => {
     if (!validationResult.success) {
       return new Response(
         JSON.stringify({
-          error: 'Validation failed',
+          error: "Validation failed",
           details: validationResult.error.errors,
         }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
@@ -142,35 +139,38 @@ export const POST: APIRoute = async ({ locals, request }) => {
 
     if (error) {
       // Check for exclusion constraint violation (overlapping dates)
-      if (error.code === '23P01') {
-        return new Response(
-          JSON.stringify({ error: 'Goal dates overlap with an existing goal' }),
-          {
-            status: 409,
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
+      if (error.code === "23P01") {
+        return new Response(JSON.stringify({ error: "Goal dates overlap with an existing goal" }), {
+          status: 409,
+          headers: { "Content-Type": "application/json" },
+        });
       }
 
-      console.error('Error creating goal:', error);
-      return new Response(JSON.stringify({ error: 'Failed to create goal' }), {
+      // Error creating goal
+      return new Response(JSON.stringify({ error: "Failed to create goal" }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
       });
     }
 
-    const response: CreateGoalResponseDTO = data!;
+    if (!data) {
+      return new Response(JSON.stringify({ error: "Failed to create goal" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const response: CreateGoalResponseDTO = data;
 
     return new Response(JSON.stringify(response), {
       status: 201,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     });
-  } catch (error) {
-    console.error('Unexpected error in POST /api/goals:', error);
-    return new Response(JSON.stringify({ error: 'Failed to create goal' }), {
+  } catch {
+    // Unexpected error in POST /api/goals
+    return new Response(JSON.stringify({ error: "Failed to create goal" }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     });
   }
 };
-

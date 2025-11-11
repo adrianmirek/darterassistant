@@ -1,24 +1,21 @@
 /**
  * Example API Endpoint: Generate Tournament Feedback
- * 
+ *
  * This file demonstrates how to use OpenRouterService in an Astro API endpoint.
  * Rename this file to `generate.ts` to activate it.
- * 
+ *
  * Endpoint: POST /api/feedback/generate
  */
 
-import type { APIRoute } from 'astro';
-import { z } from 'zod';
-import { OpenRouterService } from '../../../lib/services/openrouter.service';
+import type { APIRoute } from "astro";
+import { z } from "zod";
+import { OpenRouterService } from "../../../lib/services/openrouter.service";
 import {
   OpenRouterApiError,
   OpenRouterValidationError,
   OpenRouterNetworkError,
-} from '../../../lib/errors/openrouter.errors';
-import type {
-  ChatMessage,
-  ResponseFormat,
-} from '../../../types/openrouter.types';
+} from "../../../lib/errors/openrouter.errors";
+import type { ChatMessage, ResponseFormat } from "../../../types/openrouter.types";
 
 // Disable pre-rendering for this API route
 export const prerender = false;
@@ -31,50 +28,44 @@ const GenerateFeedbackSchema = z.object({
   score_180_count: z.number().int().min(0),
   high_finish: z.number().int().min(0).max(170),
   tone_preference: z
-    .enum(['encouraging', 'motivational', 'analytical', 'celebratory'])
+    .enum(["encouraging", "motivational", "analytical", "celebratory"])
     .optional()
-    .default('motivational'),
+    .default("motivational"),
 });
 
 // Response format for structured feedback
 const feedbackResponseFormat: ResponseFormat = {
-  type: 'json_schema',
+  type: "json_schema",
   json_schema: {
-    name: 'TournamentFeedback',
+    name: "TournamentFeedback",
     strict: true,
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
         message: {
-          type: 'string',
-          description: 'Main feedback message (2-3 paragraphs)',
+          type: "string",
+          description: "Main feedback message (2-3 paragraphs)",
         },
         tone: {
-          type: 'string',
-          enum: ['encouraging', 'motivational', 'analytical', 'celebratory'],
+          type: "string",
+          enum: ["encouraging", "motivational", "analytical", "celebratory"],
         },
         highlights: {
-          type: 'array',
-          items: { type: 'string' },
-          description: 'Key achievements from the tournament',
+          type: "array",
+          items: { type: "string" },
+          description: "Key achievements from the tournament",
         },
         areas_for_improvement: {
-          type: 'array',
-          items: { type: 'string' },
-          description: 'Specific areas to focus on',
+          type: "array",
+          items: { type: "string" },
+          description: "Specific areas to focus on",
         },
         next_practice_focus: {
-          type: 'string',
-          description: 'Recommended practice focus for next session',
+          type: "string",
+          description: "Recommended practice focus for next session",
         },
       },
-      required: [
-        'message',
-        'tone',
-        'highlights',
-        'areas_for_improvement',
-        'next_practice_focus',
-      ],
+      required: ["message", "tone", "highlights", "areas_for_improvement", "next_practice_focus"],
       additionalProperties: false,
     },
   },
@@ -87,10 +78,10 @@ const feedbackResponseFormat: ResponseFormat = {
 export const POST: APIRoute = async ({ request }) => {
   try {
     // Guard: Validate Content-Type
-    if (!request.headers.get('content-type')?.includes('application/json')) {
+    if (!request.headers.get("content-type")?.includes("application/json")) {
       return new Response(
         JSON.stringify({
-          error: 'Content-Type must be application/json',
+          error: "Content-Type must be application/json",
         }),
         { status: 415 }
       );
@@ -104,7 +95,7 @@ export const POST: APIRoute = async ({ request }) => {
     if (!validationResult.success) {
       return new Response(
         JSON.stringify({
-          error: 'Validation failed',
+          error: "Validation failed",
           details: validationResult.error.errors,
         }),
         { status: 400 }
@@ -116,10 +107,10 @@ export const POST: APIRoute = async ({ request }) => {
     // Guard: Check API key
     const apiKey = import.meta.env.OPENROUTER_API_KEY;
     if (!apiKey) {
-      console.error('OPENROUTER_API_KEY is not configured');
+      console.error("OPENROUTER_API_KEY is not configured");
       return new Response(
         JSON.stringify({
-          error: 'AI service is not configured',
+          error: "AI service is not configured",
         }),
         { status: 503 }
       );
@@ -128,14 +119,14 @@ export const POST: APIRoute = async ({ request }) => {
     // Initialize OpenRouter service
     const openRouterService = new OpenRouterService({
       apiKey,
-      defaultModel: 'openai/gpt-4o-mini',
+      defaultModel: "openai/gpt-4o-mini",
       defaultParams: {
         temperature: 0.7, // Balanced creativity
         max_tokens: 800,
       },
       logger: (level, message, logData) => {
         // Custom logging for API endpoint
-        console.log(`[OpenRouter] [${level}] ${message}`, logData || '');
+        console.log(`[OpenRouter] [${level}] ${message}`, logData || "");
       },
     });
 
@@ -151,23 +142,20 @@ Tournament Performance Summary:
     // Build chat messages
     const messages: ChatMessage[] = [
       {
-        role: 'system',
+        role: "system",
         content: `You are an experienced darts coach providing personalized feedback. 
 Your tone should be ${data.tone_preference}. 
 Focus on being constructive, specific, and actionable in your advice.
 Acknowledge both strengths and areas for improvement.`,
       },
       {
-        role: 'user',
+        role: "user",
         content: `Generate feedback for this tournament performance:\n\n${tournamentSummary}`,
       },
     ];
 
     // Generate feedback using OpenRouter
-    const response = await openRouterService.sendChat(
-      messages,
-      feedbackResponseFormat
-    );
+    const response = await openRouterService.sendChat(messages, feedbackResponseFormat);
 
     // Extract parsed feedback
     const feedback = response.parsedContent;
@@ -192,14 +180,14 @@ Acknowledge both strengths and areas for improvement.`,
       {
         status: 200,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       }
     );
   } catch (error) {
     // Handle OpenRouter-specific errors
     if (error instanceof OpenRouterApiError) {
-      console.error('OpenRouter API Error:', {
+      console.error("OpenRouter API Error:", {
         statusCode: error.statusCode,
         message: error.message,
         errorType: error.errorType,
@@ -210,48 +198,48 @@ Acknowledge both strengths and areas for improvement.`,
 
       return new Response(
         JSON.stringify({
-          error: 'AI service error',
+          error: "AI service error",
           message: error.message,
-          type: 'api_error',
+          type: "api_error",
         }),
         { status: statusCode }
       );
     }
 
     if (error instanceof OpenRouterValidationError) {
-      console.error('OpenRouter Validation Error:', error.validationErrors);
+      console.error("OpenRouter Validation Error:", error.validationErrors);
 
       return new Response(
         JSON.stringify({
-          error: 'AI response validation failed',
+          error: "AI response validation failed",
           message: error.message,
-          type: 'validation_error',
+          type: "validation_error",
         }),
         { status: 500 }
       );
     }
 
     if (error instanceof OpenRouterNetworkError) {
-      console.error('OpenRouter Network Error:', error.message);
+      console.error("OpenRouter Network Error:", error.message);
 
       return new Response(
         JSON.stringify({
-          error: 'Network error',
-          message: 'Failed to connect to AI service',
-          type: 'network_error',
+          error: "Network error",
+          message: "Failed to connect to AI service",
+          type: "network_error",
         }),
         { status: 503 }
       );
     }
 
     // Handle unexpected errors
-    console.error('Unexpected error in feedback generation:', error);
+    console.error("Unexpected error in feedback generation:", error);
 
     return new Response(
       JSON.stringify({
-        error: 'Internal server error',
-        message: 'An unexpected error occurred',
-        type: 'unknown_error',
+        error: "Internal server error",
+        message: "An unexpected error occurred",
+        type: "unknown_error",
       }),
       { status: 500 }
     );
@@ -260,7 +248,7 @@ Acknowledge both strengths and areas for improvement.`,
 
 /**
  * Example cURL request:
- * 
+ *
  * curl -X POST http://localhost:4321/api/feedback/generate \
  *   -H "Content-Type: application/json" \
  *   -d '{
@@ -275,7 +263,7 @@ Acknowledge both strengths and areas for improvement.`,
 
 /**
  * Example fetch from frontend:
- * 
+ *
  * const response = await fetch('/api/feedback/generate', {
  *   method: 'POST',
  *   headers: { 'Content-Type': 'application/json' },
@@ -288,8 +276,7 @@ Acknowledge both strengths and areas for improvement.`,
  *     tone_preference: 'motivational'
  *   })
  * });
- * 
+ *
  * const data = await response.json();
  * console.log(data.feedback.message);
  */
-

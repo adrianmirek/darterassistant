@@ -1,15 +1,15 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createMockSupabaseClient } from '@/test/utils/mock-factories';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { createMockSupabaseClient } from "@/test/utils/mock-factories";
 
 // Note: Import your actual auth service here when implementing
 // import { authService } from './auth.service';
 
 // Mock the Supabase client module
-vi.mock('@/db/supabase.client', () => ({
+vi.mock("@/db/supabase.client", () => ({
   createClient: vi.fn(),
 }));
 
-describe('AuthService', () => {
+describe("AuthService", () => {
   let mockSupabase: ReturnType<typeof createMockSupabaseClient>;
 
   beforeEach(() => {
@@ -19,13 +19,13 @@ describe('AuthService', () => {
 
   // Example tests for AuthService
   // Uncomment and implement these tests when you have your actual auth.service
-  
-  describe.skip('signIn', () => {
-    it('should call signInWithPassword with correct credentials', async () => {
+
+  describe.skip("signIn", () => {
+    it("should call signInWithPassword with correct credentials", async () => {
       const mockResponse = {
         data: {
-          user: { id: '123', email: 'test@example.com' },
-          session: { access_token: 'token123' },
+          user: { id: "123", email: "test@example.com" },
+          session: { access_token: "token123" },
         },
         error: null,
       };
@@ -34,8 +34,8 @@ describe('AuthService', () => {
 
       // Note: You'll need to adjust this based on your actual auth.service implementation
       // This is an example of how to test the service
-      const email = 'test@example.com';
-      const password = 'password123';
+      const email = "test@example.com";
+      const password = "password123";
 
       // await authService.signIn(email, password);
 
@@ -45,10 +45,10 @@ describe('AuthService', () => {
       });
     });
 
-    it('should handle sign in errors', async () => {
+    it("should handle sign in errors", async () => {
       const mockError = {
         data: { user: null, session: null },
-        error: { message: 'Invalid credentials' },
+        error: { message: "Invalid credentials" },
       };
 
       mockSupabase.auth.signInWithPassword.mockResolvedValue(mockError);
@@ -58,11 +58,11 @@ describe('AuthService', () => {
     });
   });
 
-  describe.skip('signUp', () => {
-    it('should call signUp with correct user data', async () => {
+  describe.skip("signUp", () => {
+    it("should call signUp with correct user data", async () => {
       const mockResponse = {
         data: {
-          user: { id: '123', email: 'newuser@example.com' },
+          user: { id: "123", email: "newuser@example.com" },
           session: null,
         },
         error: null,
@@ -70,8 +70,8 @@ describe('AuthService', () => {
 
       mockSupabase.auth.signUp.mockResolvedValue(mockResponse);
 
-      const email = 'newuser@example.com';
-      const password = 'password123';
+      const email = "newuser@example.com";
+      const password = "password123";
 
       // await authService.signUp(email, password);
 
@@ -82,8 +82,8 @@ describe('AuthService', () => {
     });
   });
 
-  describe.skip('signOut', () => {
-    it('should call signOut method', async () => {
+  describe.skip("signOut", () => {
+    it("should call signOut method", async () => {
       mockSupabase.auth.signOut.mockResolvedValue({ error: null });
 
       // await authService.signOut();
@@ -92,4 +92,3 @@ describe('AuthService', () => {
     });
   });
 });
-

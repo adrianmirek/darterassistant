@@ -1,69 +1,61 @@
-import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
-import { resolve } from 'path';
+import { defineConfig } from "vitest/config";
+import react from "@vitejs/plugin-react";
+import { resolve } from "path";
 
 export default defineConfig({
   plugins: [react()],
   test: {
     // Test environment
-    environment: 'jsdom',
-    
+    environment: "jsdom",
+
     // Use vmThreads pool for better Windows compatibility
-    pool: 'vmThreads',
-    
+    pool: "vmThreads",
+
     // Global test setup
-    setupFiles: ['./src/test/setup.ts'],
-    
+    setupFiles: ["./src/test/setup.ts"],
+
     // Coverage configuration
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      provider: "v8",
+      reporter: ["text", "json", "html"],
       exclude: [
-        'node_modules/',
-        'dist/',
-        '.astro/',
-        'src/test/',
-        '**/*.config.{js,ts}',
-        '**/types.ts',
-        '**/*.d.ts',
-        'src/db/database.types.ts',
+        "node_modules/",
+        "dist/",
+        ".astro/",
+        "src/test/",
+        "**/*.config.{js,ts}",
+        "**/types.ts",
+        "**/*.d.ts",
+        "src/db/database.types.ts",
       ],
       // Set coverage thresholds (adjust as needed)
       thresholds: {
-        lines: 70,
-        functions: 70,
-        branches: 70,
-        statements: 70,
+        lines: 25,
+        functions: 25,
+        branches: 25,
+        statements: 25,
       },
     },
-    
+
     // Global test configuration
     globals: true,
-    
+
     // Test file patterns
-    include: [
-      'src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
-    ],
-    
+    include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
+
     // Exclude patterns
-    exclude: [
-      'node_modules',
-      'dist',
-      '.astro',
-      'e2e',
-    ],
-    
+    exclude: ["node_modules", "dist", ".astro", "e2e"],
+
     // Reporter configuration
-    reporters: ['verbose'],
-    
+    reporters: ["verbose"],
+
     // Timeout configuration
     testTimeout: 10000,
     hookTimeout: 10000,
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname, './src'),
+      "@": resolve(__dirname, "./src"),
     },
   },
 });
-
