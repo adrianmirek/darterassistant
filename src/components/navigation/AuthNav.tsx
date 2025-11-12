@@ -6,6 +6,26 @@ interface AuthNavProps {
 }
 
 export default function AuthNav({ userEmail }: AuthNavProps) {
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "same-origin", // Ensure cookies are sent
+      });
+
+      // Always redirect after logout attempt, regardless of response
+      // Use replace to prevent back button from returning to authenticated page
+      window.location.replace("/auth/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      // Redirect anyway to ensure user is logged out
+      window.location.replace("/auth/login");
+    }
+  };
+
   return (
     <header className="border-b bg-background">
       <div className="container mx-auto px-4 py-4">
@@ -22,11 +42,9 @@ export default function AuthNav({ userEmail }: AuthNavProps) {
               <span className="font-medium text-foreground">{userEmail}</span>
             </div>
 
-            <Button variant="outline" size="sm" asChild>
-              <a href="/auth/logout">
-                <LogOut className="h-4 w-4 mr-2" />
-                Logout
-              </a>
+            <Button variant="outline" size="sm" onClick={handleLogout}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
             </Button>
           </div>
         </div>
