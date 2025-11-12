@@ -115,7 +115,7 @@ export async function loginUser(
 export async function logoutUser(supabase: SupabaseClient): Promise<{ error: AuthError }> {
   try {
     // Sign out with 'global' scope to clear all sessions across all devices
-    const { error } = await supabase.auth.signOut({ scope: 'global' });
+    const { error } = await supabase.auth.signOut({ scope: "global" });
     return { error };
   } catch {
     // Logout error
