@@ -142,10 +142,11 @@ export interface SessionDTO {
 
 /**
  * Response DTO for registration
+ * Session will be null if email confirmation is required
  */
 export interface RegisterResponseDTO {
   user: UserDTO;
-  session: SessionDTO;
+  session: SessionDTO | null;
 }
 
 /**
