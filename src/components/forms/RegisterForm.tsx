@@ -27,19 +27,26 @@ export default function RegisterForm() {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      await register({
+      const result = await register({
         email: data.email,
         password: data.password,
       });
 
-      toast.success("Registration successful!", {
-        description: "Please sign in with your new account",
-      });
+      // Check if email confirmation is required (session will be null)
+      if (result.session === null) {
+        toast.success("Registration successful!", {
+          description: "Please check your email to verify your account before signing in",
+        });
+      } else {
+        toast.success("Registration successful!", {
+          description: "Please sign in with your new account",
+        });
+      }
 
       setTimeout(() => {
         // eslint-disable-next-line react-compiler/react-compiler
         window.location.href = "/auth/login";
-      }, 1500);
+      }, 2500);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
       toast.error("Registration failed", {

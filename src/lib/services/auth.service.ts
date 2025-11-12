@@ -21,10 +21,10 @@ export async function registerUser(
       return { data: null, error };
     }
 
-    if (!data.session || !data.user) {
+    if (!data.user) {
       return {
         data: null,
-        error: { message: "No session returned from registration" },
+        error: { message: "User registration failed" },
       };
     }
 
@@ -34,12 +34,16 @@ export async function registerUser(
       created_at: data.user.created_at,
     };
 
-    const sessionDTO: SessionDTO = {
-      access_token: data.session.access_token,
-      refresh_token: data.session.refresh_token,
-      expires_at: data.session.expires_at || 0,
-      user: userDTO,
-    };
+    // Handle case where email confirmation is required (session will be null)
+    let sessionDTO: SessionDTO | null = null;
+    if (data.session) {
+      sessionDTO = {
+        access_token: data.session.access_token,
+        refresh_token: data.session.refresh_token,
+        expires_at: data.session.expires_at || 0,
+        user: userDTO,
+      };
+    }
 
     const registerResponse: RegisterResponseDTO = {
       user: userDTO,
