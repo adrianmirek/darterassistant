@@ -28,6 +28,20 @@ export async function registerUser(
       };
     }
 
+    // Check if this is a new user or existing user by comparing created_at timestamp
+    // If user was created more than 10 seconds ago, they already existed
+    const userCreatedAt = new Date(data.user.created_at);
+    const now = new Date();
+    const secondsSinceCreation = (now.getTime() - userCreatedAt.getTime()) / 1000;
+
+    // If user was created more than 10 seconds ago, this is a duplicate registration attempt
+    if (secondsSinceCreation > 10) {
+      return {
+        data: null,
+        error: { message: "An account with this email already exists" },
+      };
+    }
+
     const userDTO: UserDTO = {
       id: data.user.id,
       email: data.user.email ?? "",
