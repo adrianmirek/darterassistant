@@ -1,11 +1,24 @@
 name = "darterassistant"
-compatibility_date = "2024-11-01"
+compatibility_flags = [ "nodejs_compat", "disable_nodejs_process_v2" ]
+compatibility_date = "2025-10-14"
 pages_build_output_dir = "dist"
+
+# KV Namespaces for session storage
+# Create the KV namespace in Cloudflare Dashboard first, then add the binding
+# [[kv_namespaces]]
+# binding = "SESSION"
+# id = "your-kv-namespace-id"
 
 [env.production]
 # Environment variables should be set in Cloudflare Pages dashboard
 # This file only defines the structure
+# [[env.production.kv_namespaces]]
+# binding = "SESSION"
+# id = "your-production-kv-namespace-id"
 
 [env.preview]
 # Preview environment configuration
+# [[env.preview.kv_namespaces]]
+# binding = "SESSION"
+# id = "your-preview-kv-namespace-id"
 
