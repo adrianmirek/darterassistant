@@ -56,7 +56,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
       if (error.message?.includes("already registered") || error.message?.includes("already exists")) {
         statusCode = 409;
-        errorMessage = "Email already registered";
+        errorMessage = error.message; // Use the exact error message from the service
       } else if (error.message?.includes("Invalid email")) {
         statusCode = 400;
         errorMessage = "Invalid email address";
@@ -85,10 +85,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     // This prevents auto-login and allows redirect to login page
     await supabase.auth.signOut();
 
-    // Return user data (session is not relevant since we signed out)
+    // Return user data and session status (null when email confirmation is required)
     return new Response(
       JSON.stringify({
         user: data.user,
+        session: data.session, // Will be null if email confirmation is required
       }),
       {
         status: 201,
