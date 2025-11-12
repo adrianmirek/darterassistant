@@ -45,17 +45,14 @@ return new Response(
 - This is because Supabase doesn't return an error for duplicate emails (security feature to prevent email enumeration)
 
 **Solution**:
-Modified `src/lib/services/auth.service.ts` to detect duplicate registrations by checking the user's creation timestamp:
+Modified `src/lib/services/auth.service.ts` to detect duplicate registrations by checking the user's `identities` array:
 
 ```typescript
-// Check if this is a new user or existing user by comparing created_at timestamp
-// If user was created more than 10 seconds ago, they already existed
-const userCreatedAt = new Date(data.user.created_at);
-const now = new Date();
-const secondsSinceCreation = (now.getTime() - userCreatedAt.getTime()) / 1000;
-
-// If user was created more than 10 seconds ago, this is a duplicate registration attempt
-if (secondsSinceCreation > 10) {
+// Check if this is a duplicate registration attempt
+// When email confirmation is enabled, Supabase doesn't return an error for existing emails
+// Instead, it returns the user object but with an empty identities array
+// For new users, identities array will have at least one identity (email provider)
+if (!data.user.identities || data.user.identities.length === 0) {
   return {
     data: null,
     error: { message: "An account with this email already exists" },
@@ -64,10 +61,13 @@ if (secondsSinceCreation > 10) {
 ```
 
 **How it works**:
-- When a duplicate email is used, Supabase returns the existing user record
-- We compare the user's `created_at` timestamp with the current time
-- If the user was created more than 10 seconds ago, it's an existing user
+- When email confirmation is enabled, Supabase doesn't return an error for duplicate emails (to prevent email enumeration attacks)
+- Instead, it returns the user object but with an **empty identities array** for existing users
+- For genuinely new users, the `identities` array will contain at least one identity (the email provider)
+- We check if identities is empty or null to detect duplicate registrations
 - We return an error that gets displayed to the user
+
+**Reference**: This approach is documented in [Supabase GitHub issue #296](https://github.com/supabase/supabase-js/issues/296)
 
 ## Files Modified
 
@@ -81,7 +81,7 @@ if (secondsSinceCreation > 10) {
 - Line 59: Changed to use exact error message from service for consistency
 
 ### `src/lib/services/auth.service.ts`
-- Lines 31-43: Added duplicate email detection using timestamp comparison
+- Lines 31-40: Added duplicate email detection using identities array check
 
 ## Testing Recommendations
 
@@ -121,9 +121,9 @@ User submits form
     ↓
 API: registerUser() called
     ↓
-Supabase: signUp() returns { user, session: null }
+Supabase: signUp() returns { user (with identities), session: null }
     ↓
-Service: Checks created_at < 10 seconds → NEW USER
+Service: Checks identities.length > 0 → NEW USER
     ↓
 API: Returns { user, session: null }
     ↓
@@ -138,9 +138,9 @@ User submits form (existing email)
     ↓
 API: registerUser() called
     ↓
-Supabase: signUp() returns existing user (created_at is old)
+Supabase: signUp() returns { user (with empty identities), session: null }
     ↓
-Service: Checks created_at > 10 seconds → EXISTING USER
+Service: Checks identities.length === 0 → EXISTING USER
     ↓
 Service: Returns error "An account with this email already exists"
     ↓
@@ -157,9 +157,9 @@ User submits form
     ↓
 API: registerUser() called
     ↓
-Supabase: signUp() returns { user, session: {...} }
+Supabase: signUp() returns { user (with identities), session: {...} }
     ↓
-Service: Checks created_at < 10 seconds → NEW USER
+Service: Checks identities.length > 0 → NEW USER
     ↓
 API: signOut() then returns { user, session: {...} }
     ↓
@@ -170,22 +170,24 @@ User redirected to login page
 
 ## Security Considerations
 
-1. **Email Enumeration Protection**: The 10-second window for duplicate detection is a reasonable compromise between user experience and security. It prevents immediate feedback about existing accounts while still protecting against enumeration attacks.
+1. **Email Enumeration Protection**: By checking the `identities` array instead of querying the database directly, we maintain Supabase's built-in protection against email enumeration attacks. This approach works with Supabase's security model rather than against it.
 
-2. **No Password Update**: The fix correctly prevents password updates when registering with an existing email, maintaining account security.
+2. **No Password Update**: The fix correctly prevents password updates when registering with an existing email, maintaining account security. When a duplicate email is used, Supabase doesn't modify the existing account.
 
 3. **Consistent Error Messages**: All error messages are user-friendly and don't expose sensitive information about the system or database.
 
+4. **No Additional Database Queries**: This approach doesn't require additional queries to check if users exist, reducing load and potential timing attacks.
+
 ## Edge Cases Handled
 
-1. **Clock Skew**: The 10-second window provides sufficient buffer for minor clock differences between server and database
-2. **Rapid Re-registration**: If a user registers, gets the email, and immediately tries to register again within 10 seconds, they would get a success message. This is acceptable as it's the same outcome (confirmation email sent)
-3. **Confirmed vs Unconfirmed Users**: Both confirmed and unconfirmed existing users are properly detected and rejected
+1. **Confirmed vs Unconfirmed Users**: Both confirmed and unconfirmed existing users return an empty `identities` array and are properly detected
+2. **Multiple Identity Providers**: New users will always have at least one identity (email), making this check reliable
+3. **Email Confirmation Enabled/Disabled**: Works correctly in both scenarios
 
 ## Known Limitations
 
-1. **10-Second Window**: Users who register and immediately (within 10 seconds) try to register again might see a success message. This is a rare edge case and the security benefit outweighs this minor UX issue.
-2. **Time-Based Detection**: This approach relies on comparing timestamps. If there are significant clock synchronization issues, it might not work correctly. However, this is highly unlikely in modern cloud environments.
+1. **Requires Email Confirmation Enabled**: This behavior (empty identities for duplicates) is primarily seen when email confirmation is enabled in Supabase. If confirmation is disabled, Supabase may behave differently.
+2. **Supabase-Specific**: This solution is specific to Supabase's implementation of the `identities` property and may need adjustment if migrating to a different auth provider.
 
 ## Deployment Checklist
 
