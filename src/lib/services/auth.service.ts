@@ -28,14 +28,11 @@ export async function registerUser(
       };
     }
 
-    // Check if this is a new user or existing user by comparing created_at timestamp
-    // If user was created more than 10 seconds ago, they already existed
-    const userCreatedAt = new Date(data.user.created_at);
-    const now = new Date();
-    const secondsSinceCreation = (now.getTime() - userCreatedAt.getTime()) / 1000;
-
-    // If user was created more than 10 seconds ago, this is a duplicate registration attempt
-    if (secondsSinceCreation > 10) {
+    // Check if this is a duplicate registration attempt
+    // When email confirmation is enabled, Supabase doesn't return an error for existing emails
+    // Instead, it returns the user object but with an empty identities array
+    // For new users, identities array will have at least one identity (email provider)
+    if (!data.user.identities || data.user.identities.length === 0) {
       return {
         data: null,
         error: { message: "An account with this email already exists" },
