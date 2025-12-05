@@ -9,10 +9,19 @@ type Tables = Database["public"]["Tables"];
 export type MatchTypeDTO = Pick<Tables["match_types"]["Row"], "id" | "name">;
 
 /**
+ * DTO for tournament types (read-only lookup)
+ */
+export type TournamentTypeDTO = Pick<Tables["tournament_types"]["Row"], "id" | "name">;
+
+/**
  * Summary view for listing tournaments with aggregated average score
  */
-export type TournamentSummaryDTO = Pick<Tables["tournaments"]["Row"], "id" | "name" | "date"> & {
+export type TournamentSummaryDTO = Pick<
+  Tables["tournaments"]["Row"], 
+  "id" | "name" | "date" | "tournament_type_id"
+> & {
   average_score: number;
+  tournament_type_name?: string; // Optional: include type name for display
 };
 
 /**
@@ -30,12 +39,18 @@ export interface TournamentResultDTO {
   high_finish: number;
   best_leg: number;
   worst_leg: number;
+  opponent_id: string | null;      // NEW: UUID of opponent user
+  full_name: string | null;        // NEW: Free-text opponent name
 }
 
 /**
  * Detailed view for a single tournament including results
  */
-export type TournamentDetailDTO = Pick<Tables["tournaments"]["Row"], "id" | "name" | "date"> & {
+export type TournamentDetailDTO = Pick<
+  Tables["tournaments"]["Row"], 
+  "id" | "name" | "date" | "tournament_type_id"
+> & {
+  tournament_type_name?: string;   // NEW: Optional type name for display
   results: TournamentResultDTO[];
 };
 
@@ -46,12 +61,13 @@ export type TournamentDetailDTO = Pick<Tables["tournaments"]["Row"], "id" | "nam
 export type CreateTournamentResultCommand = Omit<Tables["tournament_match_results"]["Insert"], "id" | "tournament_id">;
 
 /**
- * Command Model for creating a tournament along with its initial result
+ * Command Model for creating a tournament along with its matches
  */
 export interface CreateTournamentCommand {
   name: Tables["tournaments"]["Insert"]["name"];
   date: Tables["tournaments"]["Insert"]["date"];
-  result: CreateTournamentResultCommand;
+  tournament_type_id?: Tables["tournaments"]["Insert"]["tournament_type_id"]; // Optional, defaults to 1
+  matches: CreateTournamentResultCommand[];
 }
 
 /**

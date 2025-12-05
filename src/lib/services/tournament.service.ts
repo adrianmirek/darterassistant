@@ -16,7 +16,7 @@ type ServiceError = { message: string } | null;
  */
 
 /**
- * Generate AI-powered performance feedback based on tournament results
+ * Generate AI-powered performance feedback based on tournament results with multiple matches
  */
 async function generateTournamentFeedback(command: CreateTournamentCommand, apiKey: string): Promise<string> {
   try {
@@ -27,20 +27,38 @@ async function generateTournamentFeedback(command: CreateTournamentCommand, apiK
     });
 
     // Build prompt with tournament performance data
-    const result = command.result;
-    const prompt = `Analyze this darts tournament performance and provide constructive feedback:
+    const matches = command.matches;
+    let prompt = `Analyze this darts tournament performance and provide constructive feedback:
 
 Tournament: ${command.name}
 Date: ${command.date}
+Total Matches: ${matches.length}
 
-Performance Metrics:
-- Average Score: ${result.average_score}
-- First Nine Average: ${result.first_nine_avg}
-- Checkout Percentage: ${result.checkout_percentage}%
-- High Finish: ${result.high_finish}
-- Best Leg: ${result.best_leg} darts
-- Worst Leg: ${result.worst_leg} darts
-- Score Counts: ${result.score_60_count} (60+), ${result.score_100_count} (100+), ${result.score_140_count} (140+), ${result.score_180_count} (180s)
+`;
+
+    // Add individual match details
+    matches.forEach((match, index) => {
+      prompt += `Match ${index + 1}:
+- Average Score: ${match.average_score}
+- First Nine Average: ${match.first_nine_avg}
+- Checkout Percentage: ${match.checkout_percentage}%
+- High Finish: ${match.high_finish}
+- Best Leg: ${match.best_leg} darts
+- Worst Leg: ${match.worst_leg} darts
+- Score Counts: ${match.score_60_count} (60+), ${match.score_100_count} (100+), ${match.score_140_count} (140+), ${match.score_180_count} (180s)
+
+`;
+    });
+
+    // Add overall statistics
+    const avgScore = matches.reduce((sum, m) => sum + (m.average_score || 0), 0) / matches.length;
+    const total180s = matches.reduce((sum, m) => sum + (m.score_180_count || 0), 0);
+    const bestLeg = Math.min(...matches.map((m) => m.best_leg || 9));
+
+    prompt += `Overall Statistics:
+- Average Score (all matches): ${avgScore.toFixed(2)}
+- Total 180s: ${total180s}
+- Best Leg: ${bestLeg} darts
 
 Provide brief, encouraging feedback (2-3 sentences) highlighting:
 1. Key strengths based on the metrics
@@ -93,6 +111,10 @@ export async function getTournaments(
         id,
         name,
         date,
+        tournament_type_id,
+        tournament_types (
+          name
+        ),
         tournament_match_results (
           average_score
         )
@@ -127,13 +149,15 @@ export async function getTournaments(
         id: tournament.id,
         name: tournament.name,
         date: tournament.date,
+        tournament_type_id: tournament.tournament_type_id,
+        tournament_type_name: tournament.tournament_types?.name,
         average_score: averageScore,
       };
     });
 
     return { data: tournaments, error: null };
   } catch (error) {
-    return { data: null, error };
+    return { data: null, error: error as ServiceError };
   }
 }
 
@@ -153,6 +177,10 @@ export async function getTournamentById(
         id,
         name,
         date,
+        tournament_type_id,
+        tournament_types (
+          name
+        ),
         tournament_match_results (
           match_type_id,
           average_score,
@@ -164,7 +192,9 @@ export async function getTournamentById(
           score_180_count,
           high_finish,
           best_leg,
-          worst_leg
+          worst_leg,
+          opponent_id,
+          full_name
         )
       `
       )
@@ -189,23 +219,27 @@ export async function getTournamentById(
       high_finish: result.high_finish,
       best_leg: result.best_leg,
       worst_leg: result.worst_leg,
+      opponent_id: result.opponent_id,
+      full_name: result.full_name,
     }));
 
     const tournament: TournamentDetailDTO = {
       id: data.id,
       name: data.name,
       date: data.date,
+      tournament_type_id: data.tournament_type_id,
+      tournament_type_name: data.tournament_types?.name,
       results,
     };
 
     return { data: tournament, error: null };
   } catch (error) {
-    return { data: null, error };
+    return { data: null, error: error as ServiceError };
   }
 }
 
 /**
- * Creates a new tournament with an initial result and AI-generated feedback
+ * Creates a new tournament with multiple matches and AI-generated feedback
  */
 export async function createTournament(
   supabase: SupabaseClient,
@@ -222,6 +256,7 @@ export async function createTournament(
         user_id: userId,
         name: command.name,
         date: command.date,
+        tournament_type_id: command.tournament_type_id || 1, // Default to 1
       })
       .select("id, created_at")
       .single();
@@ -233,34 +268,34 @@ export async function createTournament(
 
     // Tournament created successfully
 
-    // Insert tournament result
-    const resultData = {
+    // Insert all tournament matches
+    const matchInserts = command.matches.map((match) => ({
       tournament_id: tournament.id,
-      match_type_id: command.result.match_type_id,
-      average_score: command.result.average_score,
-      first_nine_avg: command.result.first_nine_avg,
-      checkout_percentage: command.result.checkout_percentage,
-      score_60_count: command.result.score_60_count,
-      score_100_count: command.result.score_100_count,
-      score_140_count: command.result.score_140_count,
-      score_180_count: command.result.score_180_count,
-      high_finish: command.result.high_finish,
-      best_leg: command.result.best_leg,
-      worst_leg: command.result.worst_leg,
-    };
+      match_type_id: match.match_type_id,
+      average_score: match.average_score,
+      first_nine_avg: match.first_nine_avg,
+      checkout_percentage: match.checkout_percentage,
+      score_60_count: match.score_60_count,
+      score_100_count: match.score_100_count,
+      score_140_count: match.score_140_count,
+      score_180_count: match.score_180_count,
+      high_finish: match.high_finish,
+      best_leg: match.best_leg,
+      worst_leg: match.worst_leg,
+      opponent_id: match.opponent_id || null,
+      full_name: match.full_name || null,
+    }));
 
-    // Inserting result with data
+    const { error: matchesError } = await supabase.from("tournament_match_results").insert(matchInserts);
 
-    const { error: resultError } = await supabase.from("tournament_match_results").insert(resultData);
-
-    if (resultError) {
-      // If result insertion fails, we should ideally rollback the tournament
-      // For now, return the error
-      // Error inserting tournament result
-      return { data: null, error: resultError };
+    if (matchesError) {
+      // If match insertion fails, rollback by deleting the tournament
+      await supabase.from("tournaments").delete().eq("id", tournament.id);
+      // Error inserting tournament matches
+      return { data: null, error: matchesError };
     }
 
-    // Tournament result created successfully
+    // Tournament matches created successfully
 
     // Generate AI feedback based on performance (optional)
     let feedback: string | undefined;
@@ -281,6 +316,6 @@ export async function createTournament(
     return { data: response, error: null };
   } catch (error) {
     // Unexpected error in createTournament
-    return { data: null, error };
+    return { data: null, error: error as ServiceError };
   }
 }

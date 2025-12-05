@@ -1,17 +1,81 @@
 import { useFormContext } from "react-hook-form";
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import type { AddTournamentFormViewModel } from "./AddTournamentForm";
+import type { MatchTypeDTO } from "@/types";
 
-export default function Step2_Metrics() {
+interface Step2_MetricsProps {
+  matchTypes: MatchTypeDTO[];
+  isLoadingMatchTypes: boolean;
+  matchTypesError: string | null;
+  onSaveMatch: () => void;
+}
+
+export default function Step2_Metrics({
+  matchTypes,
+  isLoadingMatchTypes,
+  matchTypesError,
+  onSaveMatch,
+}: Step2_MetricsProps) {
   const form = useFormContext<AddTournamentFormViewModel>();
 
   return (
     <div className="space-y-6">
+      {/* Match Type Field - Moved from Step1 */}
       <div className="space-y-4">
         <FormField
           control={form.control}
-          name="final_placement"
+          name="current_match.match_type_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Match Type</FormLabel>
+              {matchTypesError ? (
+                <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{matchTypesError}</div>
+              ) : (
+                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoadingMatchTypes}>
+                  <FormControl>
+                    <SelectTrigger data-testid="match-type-select">
+                      <SelectValue
+                        placeholder={isLoadingMatchTypes ? "Loading match types..." : "Select a match type"}
+                      />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {matchTypes.map((type) => (
+                      <SelectItem key={type.id} value={type.id.toString()}>
+                        {type.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* NEW: Opponent Name Field */}
+        <FormField
+          control={form.control}
+          name="current_match.opponent_name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Opponent Name (Optional)</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter opponent name" maxLength={255} {...field} data-testid="opponent-name-input" />
+              </FormControl>
+              <FormDescription>Leave blank if not applicable</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Final Placement Field */}
+        <FormField
+          control={form.control}
+          name="current_match.final_placement"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Final Placement</FormLabel>
@@ -23,9 +87,10 @@ export default function Step2_Metrics() {
                   placeholder="1"
                   {...field}
                   onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 0)}
+                  data-testid="final-placement-input"
                 />
               </FormControl>
-              <FormDescription>Your final position in the tournament</FormDescription>
+              <FormDescription>Your final position in this match</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -38,7 +103,7 @@ export default function Step2_Metrics() {
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField
             control={form.control}
-            name="average_score"
+            name="current_match.average_score"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Average Score</FormLabel>
@@ -51,6 +116,7 @@ export default function Step2_Metrics() {
                     placeholder="0.00"
                     {...field}
                     onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                    data-testid="average-score-input"
                   />
                 </FormControl>
                 <FormMessage />
@@ -60,7 +126,7 @@ export default function Step2_Metrics() {
 
           <FormField
             control={form.control}
-            name="first_nine_avg"
+            name="current_match.first_nine_avg"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>First Nine Average</FormLabel>
@@ -73,6 +139,7 @@ export default function Step2_Metrics() {
                     placeholder="0.00"
                     {...field}
                     onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                    data-testid="first-nine-avg-input"
                   />
                 </FormControl>
                 <FormMessage />
@@ -82,7 +149,7 @@ export default function Step2_Metrics() {
 
           <FormField
             control={form.control}
-            name="checkout_percentage"
+            name="current_match.checkout_percentage"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Checkout Percentage</FormLabel>
@@ -95,6 +162,7 @@ export default function Step2_Metrics() {
                     placeholder="0.00"
                     {...field}
                     onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                    data-testid="checkout-percentage-input"
                   />
                 </FormControl>
                 <FormMessage />
@@ -104,7 +172,7 @@ export default function Step2_Metrics() {
 
           <FormField
             control={form.control}
-            name="high_finish"
+            name="current_match.high_finish"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>High Finish</FormLabel>
@@ -117,6 +185,7 @@ export default function Step2_Metrics() {
                     placeholder="0"
                     {...field}
                     onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 0)}
+                    data-testid="high-finish-input"
                   />
                 </FormControl>
                 <FormDescription>Enter 0 if no high finish</FormDescription>
@@ -133,7 +202,7 @@ export default function Step2_Metrics() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <FormField
             control={form.control}
-            name="score_60_count"
+            name="current_match.score_60_count"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>60+ Scores</FormLabel>
@@ -145,6 +214,7 @@ export default function Step2_Metrics() {
                     placeholder="0"
                     {...field}
                     onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 0)}
+                    data-testid="score-60-count-input"
                   />
                 </FormControl>
                 <FormMessage />
@@ -154,7 +224,7 @@ export default function Step2_Metrics() {
 
           <FormField
             control={form.control}
-            name="score_100_count"
+            name="current_match.score_100_count"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>100+ Scores</FormLabel>
@@ -166,6 +236,7 @@ export default function Step2_Metrics() {
                     placeholder="0"
                     {...field}
                     onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 0)}
+                    data-testid="score-100-count-input"
                   />
                 </FormControl>
                 <FormMessage />
@@ -175,7 +246,7 @@ export default function Step2_Metrics() {
 
           <FormField
             control={form.control}
-            name="score_140_count"
+            name="current_match.score_140_count"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>140+ Scores</FormLabel>
@@ -187,6 +258,7 @@ export default function Step2_Metrics() {
                     placeholder="0"
                     {...field}
                     onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 0)}
+                    data-testid="score-140-count-input"
                   />
                 </FormControl>
                 <FormMessage />
@@ -196,7 +268,7 @@ export default function Step2_Metrics() {
 
           <FormField
             control={form.control}
-            name="score_180_count"
+            name="current_match.score_180_count"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>180 Scores</FormLabel>
@@ -208,6 +280,7 @@ export default function Step2_Metrics() {
                     placeholder="0"
                     {...field}
                     onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 0)}
+                    data-testid="score-180-count-input"
                   />
                 </FormControl>
                 <FormMessage />
@@ -223,7 +296,7 @@ export default function Step2_Metrics() {
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField
             control={form.control}
-            name="best_leg"
+            name="current_match.best_leg"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Best Leg (darts)</FormLabel>
@@ -235,6 +308,7 @@ export default function Step2_Metrics() {
                     placeholder="9"
                     {...field}
                     onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 9)}
+                    data-testid="best-leg-input"
                   />
                 </FormControl>
                 <FormDescription>Minimum 9 darts</FormDescription>
@@ -245,7 +319,7 @@ export default function Step2_Metrics() {
 
           <FormField
             control={form.control}
-            name="worst_leg"
+            name="current_match.worst_leg"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Worst Leg (darts)</FormLabel>
@@ -257,6 +331,7 @@ export default function Step2_Metrics() {
                     placeholder="9"
                     {...field}
                     onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 9)}
+                    data-testid="worst-leg-input"
                   />
                 </FormControl>
                 <FormDescription>Minimum 9 darts</FormDescription>
@@ -265,6 +340,13 @@ export default function Step2_Metrics() {
             )}
           />
         </div>
+      </div>
+
+      {/* NEW: New Match Button */}
+      <div className="flex justify-end pt-4 border-t">
+        <Button type="button" variant="secondary" onClick={onSaveMatch} data-testid="new-match-button">
+          New Match
+        </Button>
       </div>
     </div>
   );
