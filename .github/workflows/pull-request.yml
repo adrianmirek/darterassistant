@@ -3,7 +3,7 @@ name: Pull Request CI
 on:
   pull_request:
     branches:
-      - main
+      - dev
 
 # Cancel in-progress runs for the same PR
 concurrency:
