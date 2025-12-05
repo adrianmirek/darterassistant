@@ -82,15 +82,9 @@ export default function Step1_BasicInfo({
             <FormItem>
               <FormLabel>Tournament Type</FormLabel>
               {tournamentTypesError ? (
-                <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                  {tournamentTypesError}
-                </div>
+                <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{tournamentTypesError}</div>
               ) : (
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  disabled={isLoadingTournamentTypes}
-                >
+                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoadingTournamentTypes}>
                   <FormControl>
                     <SelectTrigger data-testid="tournament-type-select">
                       <SelectValue
