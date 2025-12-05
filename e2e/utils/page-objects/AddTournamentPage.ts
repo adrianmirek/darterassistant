@@ -110,11 +110,7 @@ export class AddTournamentPage extends BasePage {
   /**
    * Fill Step 1: Basic Info
    */
-  async fillBasicInfo(data: {
-    name: string;
-    date: string;
-    tournamentTypeId: string;
-  }) {
+  async fillBasicInfo(data: { name: string; date: string; tournamentTypeId: string }) {
     await this.tournamentNameInput.fill(data.name);
     await this.selectDate(data.date);
     await this.selectTournamentType(data.tournamentTypeId);
@@ -126,23 +122,25 @@ export class AddTournamentPage extends BasePage {
   async selectDate(dateString: string) {
     // Click the date picker button to open the popover
     await this.tournamentDateInput.click();
-    
+
     // Wait for calendar popover to appear
-    await this.page.waitForSelector('[role="dialog"]', { state: 'visible', timeout: 5000 });
-    
+    await this.page.waitForSelector('[role="dialog"]', { state: "visible", timeout: 5000 });
+
     // Parse the date string (format: YYYY-MM-DD or YYYY-M-D)
     const date = new Date(dateString);
     const day = date.getDate();
-    
+
     // Click on the date button in the calendar
     // Shadcn calendar uses button elements with the date number
     // Try to find the button with matching date text in the calendar grid
-    const dateButton = this.page.locator(`[role="dialog"] [role="gridcell"]:not([data-disabled]) button`).filter({ hasText: new RegExp(`^${day}$`) });
+    const dateButton = this.page
+      .locator(`[role="dialog"] [role="gridcell"]:not([data-disabled]) button`)
+      .filter({ hasText: new RegExp(`^${day}$`) });
     await dateButton.first().click();
-    
+
     // Close the popover by pressing Escape (Shadcn popover doesn't auto-close on calendar date selection)
-    await this.page.keyboard.press('Escape');
-    
+    await this.page.keyboard.press("Escape");
+
     // Wait a moment for the popover to close
     await this.page.waitForTimeout(300);
   }
@@ -153,23 +151,23 @@ export class AddTournamentPage extends BasePage {
   async selectTournamentType(value: string) {
     // Wait for the select to be enabled (data loaded)
     // The select is disabled while tournament types are loading
-    await this.tournamentTypeSelect.waitFor({ state: 'visible' });
-    
+    await this.tournamentTypeSelect.waitFor({ state: "visible" });
+
     // Wait until enabled (Playwright will wait for it)
     await expect(this.tournamentTypeSelect).toBeEnabled({ timeout: 10000 });
-    
+
     // For shadcn Select component, we need to click the trigger then select the option
     await this.tournamentTypeSelect.click();
-    
+
     // Wait for the dropdown content to appear (Shadcn Select uses Radix UI which portals content)
-    await this.page.waitForSelector('[role="listbox"]', { state: 'visible', timeout: 5000 });
-    
+    await this.page.waitForSelector('[role="listbox"]', { state: "visible", timeout: 5000 });
+
     // Map IDs to tournament type names
-    const typeNames: { [key: string]: string } = {
+    const typeNames: Record<string, string> = {
       "1": "Leagues + SKO",
-      "2": "SKO"
+      "2": "SKO",
     };
-    
+
     // Click the option by text content
     const typeName = typeNames[value] || value;
     await this.page.locator(`[role="option"]:has-text("${typeName}")`).click();
@@ -180,20 +178,20 @@ export class AddTournamentPage extends BasePage {
    */
   async selectMatchType(value: string) {
     // Wait for the select to be enabled (match types loaded)
-    await this.matchTypeSelect.waitFor({ state: 'visible' });
+    await this.matchTypeSelect.waitFor({ state: "visible" });
     await expect(this.matchTypeSelect).toBeEnabled({ timeout: 10000 });
-    
+
     await this.matchTypeSelect.click();
-    
+
     // Wait for the dropdown content to appear (Shadcn Select uses Radix UI which portals content)
-    await this.page.waitForSelector('[role="listbox"]', { state: 'visible', timeout: 5000 });
-    
+    await this.page.waitForSelector('[role="listbox"]', { state: "visible", timeout: 5000 });
+
     // Map IDs to match type names
-    const matchNames: { [key: string]: string } = {
+    const matchNames: Record<string, string> = {
       "1": "singles",
-      "2": "doubles"
+      "2": "doubles",
     };
-    
+
     // Click the option by text content
     const matchName = matchNames[value] || value;
     await this.page.locator(`[role="option"]:has-text("${matchName}")`).click();
@@ -226,13 +224,13 @@ export class AddTournamentPage extends BasePage {
     // Fill inputs and trigger blur to ensure React Hook Form detects changes
     await this.finalPlacementInput.fill(data.finalPlacement.toString());
     await this.finalPlacementInput.blur();
-    
+
     await this.averageScoreInput.fill(data.averageScore.toString());
     await this.averageScoreInput.blur();
-    
+
     await this.firstNineAvgInput.fill(data.firstNineAvg.toString());
     await this.firstNineAvgInput.blur();
-    
+
     await this.checkoutPercentageInput.fill(data.checkoutPercentage.toString());
     await this.checkoutPercentageInput.blur();
 
@@ -257,7 +255,7 @@ export class AddTournamentPage extends BasePage {
     if (data.worstLeg !== undefined) {
       await this.worstLegInput.fill(data.worstLeg.toString());
     }
-    
+
     // Wait for React Hook Form to process the changes and update form state
     await this.page.waitForTimeout(500);
   }
@@ -310,9 +308,7 @@ export class AddTournamentPage extends BasePage {
           const toaster = document.querySelector("[data-sonner-toaster]");
           if (!toaster) return false;
           const content = toaster.textContent || "";
-          return typeof args.text === "string"
-            ? content.includes(args.text)
-            : args.text.test(content);
+          return typeof args.text === "string" ? content.includes(args.text) : args.text.test(content);
         },
         { text }
       );
@@ -323,7 +319,7 @@ export class AddTournamentPage extends BasePage {
    * Get toast message text
    */
   async getToastText(): Promise<string> {
-    return await this.toastContainer.textContent() || "";
+    return (await this.toastContainer.textContent()) || "";
   }
 
   /**
@@ -367,9 +363,9 @@ export class AddTournamentPage extends BasePage {
     const row = this.reviewMatchesTable.locator("tbody tr").nth(matchIndex);
     return {
       matchType: await row.locator("td").nth(1).textContent(), // Column 1 (after #)
-      opponent: await row.locator("td").nth(2).textContent(),  // Column 2
+      opponent: await row.locator("td").nth(2).textContent(), // Column 2
       placement: await row.locator("td").nth(3).textContent(), // Column 3
-      avgScore: await row.locator("td").nth(4).textContent(),  // Column 4
+      avgScore: await row.locator("td").nth(4).textContent(), // Column 4
       firstNineAvg: await row.locator("td").nth(5).textContent(), // Column 5
       checkoutPct: await row.locator("td").nth(6).textContent(), // Column 6
     };
@@ -427,4 +423,3 @@ export class AddTournamentPage extends BasePage {
     await this.clickSubmit();
   }
 }
-
