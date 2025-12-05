@@ -163,10 +163,10 @@ export default function AddTournamentForm() {
   }, []);
 
   // Check if user can proceed from Step2 to Step3
+  const matches = form.watch("matches");
   const canProceedToReview = useMemo(() => {
-    const matches = form.watch("matches");
     return matches.length > 0; // At least 1 match saved
-  }, [form.watch("matches")]);
+  }, [matches]);
 
   const handleBack = () => {
     if (currentStep > 0) {
@@ -435,18 +435,13 @@ export default function AddTournamentForm() {
             )}
 
             {currentStep === 2 && (
-              <Step3_Review
-                matchTypes={matchTypes}
-                tournamentTypes={tournamentTypes}
-                matches={form.watch("matches")}
-              />
+              <Step3_Review matchTypes={matchTypes} tournamentTypes={tournamentTypes} matches={form.watch("matches")} />
             )}
 
             <FormControls
               currentStep={currentStep}
               totalSteps={STEPS.length}
               isSubmitting={isSubmitting}
-              canProceedToReview={canProceedToReview}
               onBack={handleBack}
               onNext={handleNext}
               onSubmit={handleSubmitClick}

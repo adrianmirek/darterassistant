@@ -29,15 +29,21 @@ export default function Step3_Review({ matchTypes, tournamentTypes, matches }: S
         <dl className="space-y-3">
           <div className="flex justify-between">
             <dt className="text-sm font-medium text-muted-foreground">Tournament Name</dt>
-            <dd className="text-sm font-semibold" data-testid="review-tournament-name">{values.name}</dd>
+            <dd className="text-sm font-semibold" data-testid="review-tournament-name">
+              {values.name}
+            </dd>
           </div>
           <div className="flex justify-between">
             <dt className="text-sm font-medium text-muted-foreground">Date</dt>
-            <dd className="text-sm font-semibold" data-testid="review-tournament-date">{values.date ? format(values.date, "PPP") : "-"}</dd>
+            <dd className="text-sm font-semibold" data-testid="review-tournament-date">
+              {values.date ? format(values.date, "PPP") : "-"}
+            </dd>
           </div>
           <div className="flex justify-between">
             <dt className="text-sm font-medium text-muted-foreground">Tournament Type</dt>
-            <dd className="text-sm font-semibold" data-testid="review-tournament-type">{selectedTournamentType?.name || "-"}</dd>
+            <dd className="text-sm font-semibold" data-testid="review-tournament-type">
+              {selectedTournamentType?.name || "-"}
+            </dd>
           </div>
         </dl>
       </div>
@@ -92,7 +98,10 @@ export default function Step3_Review({ matchTypes, tournamentTypes, matches }: S
             {/* Mobile Card View */}
             <div className="block sm:hidden space-y-3" data-testid="review-matches-cards">
               {matches.map((match, index) => (
-                <div key={index} className="rounded-lg border bg-muted/50 p-4 hover:bg-muted transition-colors match-card">
+                <div
+                  key={index}
+                  className="rounded-lg border bg-muted/50 p-4 hover:bg-muted transition-colors match-card"
+                >
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <h4 className="font-semibold">Match {index + 1}</h4>
