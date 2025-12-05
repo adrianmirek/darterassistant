@@ -5,7 +5,6 @@ interface FormControlsProps {
   currentStep: number;
   totalSteps: number;
   isSubmitting: boolean;
-  canProceedToReview: boolean;
   onBack: () => void;
   onNext: () => void;
   onSubmit: () => void;
@@ -16,7 +15,6 @@ export default function FormControls({
   currentStep,
   totalSteps,
   isSubmitting,
-  canProceedToReview,
   onBack,
   onNext,
   onSubmit,
@@ -27,10 +25,10 @@ export default function FormControls({
 
   return (
     <div className="flex justify-between gap-4 pt-6 border-t">
-      <Button 
-        type="button" 
-        variant="outline" 
-        onClick={onBack} 
+      <Button
+        type="button"
+        variant="outline"
+        onClick={onBack}
         disabled={isFirstStep || isSubmitting}
         data-testid="back-button"
       >
@@ -40,10 +38,10 @@ export default function FormControls({
       <div className="flex gap-4">
         {/* Add Match button - only visible on Step3 (Review) */}
         {isLastStep && onAddMatch && (
-          <Button 
-            type="button" 
-            variant="secondary" 
-            onClick={onAddMatch} 
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onAddMatch}
             disabled={isSubmitting}
             data-testid="add-match-button"
           >
@@ -53,23 +51,13 @@ export default function FormControls({
 
         {/* Submit button - only visible on Step3 */}
         {isLastStep ? (
-          <Button 
-            type="submit" 
-            onClick={onSubmit} 
-            disabled={isSubmitting}
-            data-testid="submit-button"
-          >
+          <Button type="submit" onClick={onSubmit} disabled={isSubmitting} data-testid="submit-button">
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isSubmitting ? "Submitting..." : "Submit"}
           </Button>
         ) : (
           /* Next button - visible on Step1 and Step2 */
-          <Button 
-            type="button" 
-            onClick={onNext} 
-            disabled={isSubmitting}
-            data-testid="next-button"
-          >
+          <Button type="button" onClick={onNext} disabled={isSubmitting} data-testid="next-button">
             Next
           </Button>
         )}
