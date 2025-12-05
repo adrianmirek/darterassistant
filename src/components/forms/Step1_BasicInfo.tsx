@@ -9,15 +9,19 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import type { AddTournamentFormViewModel } from "./AddTournamentForm";
-import type { MatchTypeDTO } from "@/types";
+import type { TournamentTypeDTO } from "@/types";
 
 interface Step1_BasicInfoProps {
-  matchTypes: MatchTypeDTO[];
-  isLoadingMatchTypes: boolean;
-  matchTypesError: string | null;
+  tournamentTypes: TournamentTypeDTO[];
+  isLoadingTournamentTypes: boolean;
+  tournamentTypesError: string | null;
 }
 
-export default function Step1_BasicInfo({ matchTypes, isLoadingMatchTypes, matchTypesError }: Step1_BasicInfoProps) {
+export default function Step1_BasicInfo({
+  tournamentTypes,
+  isLoadingTournamentTypes,
+  tournamentTypesError,
+}: Step1_BasicInfoProps) {
   const form = useFormContext<AddTournamentFormViewModel>();
 
   return (
@@ -30,7 +34,7 @@ export default function Step1_BasicInfo({ matchTypes, isLoadingMatchTypes, match
             <FormItem>
               <FormLabel>Tournament Name</FormLabel>
               <FormControl>
-                <Input placeholder="Enter tournament name" {...field} />
+                <Input placeholder="Enter tournament name" {...field} data-testid="tournament-name-input" />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -49,6 +53,7 @@ export default function Step1_BasicInfo({ matchTypes, isLoadingMatchTypes, match
                     <Button
                       variant="outline"
                       className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
+                      data-testid="tournament-date-input"
                     >
                       {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -72,23 +77,31 @@ export default function Step1_BasicInfo({ matchTypes, isLoadingMatchTypes, match
 
         <FormField
           control={form.control}
-          name="match_type_id"
+          name="tournament_type_id"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Match Type</FormLabel>
-              {matchTypesError ? (
-                <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{matchTypesError}</div>
+              <FormLabel>Tournament Type</FormLabel>
+              {tournamentTypesError ? (
+                <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+                  {tournamentTypesError}
+                </div>
               ) : (
-                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoadingMatchTypes}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  disabled={isLoadingTournamentTypes}
+                >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger data-testid="tournament-type-select">
                       <SelectValue
-                        placeholder={isLoadingMatchTypes ? "Loading match types..." : "Select a match type"}
+                        placeholder={
+                          isLoadingTournamentTypes ? "Loading tournament types..." : "Select a tournament type"
+                        }
                       />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {matchTypes.map((type) => (
+                    {tournamentTypes.map((type) => (
                       <SelectItem key={type.id} value={type.id.toString()}>
                         {type.name}
                       </SelectItem>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -9,22 +9,12 @@ import Step1_BasicInfo from "./Step1_BasicInfo";
 import Step2_Metrics from "./Step2_Metrics";
 import Step3_Review from "./Step3_Review";
 import FormControls from "./FormControls";
-import type { MatchTypeDTO, CreateTournamentCommand, CreateTournamentResponseDTO } from "@/types";
+import type { MatchTypeDTO, TournamentTypeDTO, CreateTournamentResponseDTO } from "@/types";
 
-// Zod schema for form validation
-const addTournamentFormSchema = z.object({
-  // Step 1: Basic Info
-  name: z.string().min(3, "Tournament name must be at least 3 characters"),
-  date: z
-    .date({
-      required_error: "Tournament date is required",
-    })
-    .refine((date) => date <= new Date(), {
-      message: "Tournament date cannot be in the future",
-    }),
+// Match-level validation schema
+const matchDataSchema = z.object({
   match_type_id: z.string().min(1, "Match type is required"),
-
-  // Step 2: Metrics
+  opponent_name: z.string().max(255).optional(),
   final_placement: z.number().int().positive("Final placement must be a positive number"),
   average_score: z.number().min(0, "Average score cannot be negative").max(180, "Average score cannot exceed 180"),
   first_nine_avg: z
@@ -49,9 +39,48 @@ const addTournamentFormSchema = z.object({
   worst_leg: z.number().int().min(9, "Worst leg must be at least 9 darts"),
 });
 
+export type MatchDataViewModel = z.infer<typeof matchDataSchema>;
+
+// Form-level validation schema
+const addTournamentFormSchema = z.object({
+  // Step 1: Basic Info
+  name: z.string().min(3, "Tournament name must be at least 3 characters"),
+  date: z
+    .date({
+      required_error: "Tournament date is required",
+    })
+    .refine((date) => date <= new Date(), {
+      message: "Tournament date cannot be in the future",
+    }),
+  tournament_type_id: z.string().min(1, "Tournament type is required"),
+
+  // Step 2: Current match being edited
+  current_match: matchDataSchema,
+
+  // Array of completed matches
+  matches: z.array(matchDataSchema),
+});
+
 export type AddTournamentFormViewModel = z.infer<typeof addTournamentFormSchema>;
 
 const STEPS = ["Basic Info", "Metrics", "Review"];
+
+// Default values for a new match
+const defaultMatchValues: MatchDataViewModel = {
+  match_type_id: "",
+  opponent_name: "",
+  final_placement: 1,
+  average_score: 0,
+  first_nine_avg: 0,
+  checkout_percentage: 0,
+  score_60_count: 0,
+  score_100_count: 0,
+  score_140_count: 0,
+  score_180_count: 0,
+  high_finish: 0,
+  best_leg: 9,
+  worst_leg: 9,
+};
 
 export default function AddTournamentForm() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -60,23 +89,18 @@ export default function AddTournamentForm() {
   const [matchTypes, setMatchTypes] = useState<MatchTypeDTO[]>([]);
   const [isLoadingMatchTypes, setIsLoadingMatchTypes] = useState(true);
   const [matchTypesError, setMatchTypesError] = useState<string | null>(null);
+  const [tournamentTypes, setTournamentTypes] = useState<TournamentTypeDTO[]>([]);
+  const [isLoadingTournamentTypes, setIsLoadingTournamentTypes] = useState(true);
+  const [tournamentTypesError, setTournamentTypesError] = useState<string | null>(null);
 
   const form = useForm<AddTournamentFormViewModel>({
     resolver: zodResolver(addTournamentFormSchema),
     defaultValues: {
       name: "",
-      match_type_id: "",
-      final_placement: 1,
-      average_score: 0,
-      first_nine_avg: 0,
-      checkout_percentage: 0,
-      score_60_count: 0,
-      score_100_count: 0,
-      score_140_count: 0,
-      score_180_count: 0,
-      high_finish: 0,
-      best_leg: 9,
-      worst_leg: 9,
+      date: new Date(),
+      tournament_type_id: "",
+      current_match: defaultMatchValues,
+      matches: [],
     },
   });
 
@@ -109,19 +133,155 @@ export default function AddTournamentForm() {
     fetchMatchTypes();
   }, []);
 
+  // Fetch tournament types on mount
+  useEffect(() => {
+    const fetchTournamentTypes = async () => {
+      try {
+        setIsLoadingTournamentTypes(true);
+        setTournamentTypesError(null);
+
+        const response = await fetch("/api/tournament-types");
+
+        if (!response.ok) {
+          throw new Error("Failed to load tournament types");
+        }
+
+        const data: TournamentTypeDTO[] = await response.json();
+        setTournamentTypes(data);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+        setTournamentTypesError(errorMessage);
+        toast.error("Failed to load tournament types", {
+          description: errorMessage,
+        });
+      } finally {
+        setIsLoadingTournamentTypes(false);
+      }
+    };
+
+    fetchTournamentTypes();
+  }, []);
+
+  // Check if user can proceed from Step2 to Step3
+  const canProceedToReview = useMemo(() => {
+    const matches = form.watch("matches");
+    return matches.length > 0; // At least 1 match saved
+  }, [form.watch("matches")]);
+
   const handleBack = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
   };
 
-  const handleNext = async () => {
-    // Validate current step fields before proceeding
-    const fieldsToValidate = getFieldsForStep(currentStep);
-    const isValid = await form.trigger(fieldsToValidate);
+  /**
+   * Validates and saves the current match to the matches array
+   * Resets current_match form fields (except match_type_id)
+   * Stays on Step2
+   */
+  const handleNewMatch = async () => {
+    // Validate current match fields
+    const isValid = await form.trigger("current_match");
 
-    if (isValid && currentStep < STEPS.length - 1) {
-      setCurrentStep(currentStep + 1);
+    if (!isValid) {
+      // Show validation errors, don't proceed
+      return;
+    }
+
+    // Get current match data
+    const currentMatch = form.getValues("current_match");
+
+    // Add to saved matches array
+    const currentMatches = form.getValues("matches");
+    form.setValue("matches", [...currentMatches, currentMatch]);
+
+    // Remember the match_type_id
+    const lastMatchTypeId = currentMatch.match_type_id;
+
+    // Reset current_match fields (except match_type_id)
+    form.setValue("current_match", {
+      ...defaultMatchValues,
+      match_type_id: lastMatchTypeId, // Pre-select same match type
+    });
+
+    // Clear validation errors
+    form.clearErrors("current_match");
+
+    // Show success notification
+    toast.success("Match saved!", {
+      description: `Match ${currentMatches.length + 1} has been added. Add another or proceed to review.`,
+    });
+  };
+
+  /**
+   * Validates current match and moves to Step3
+   * If current match has data, automatically save it
+   */
+  const handleNextFromStep2 = async () => {
+    // Check if current match has any data entered
+    const currentMatch = form.getValues("current_match");
+    const hasMatchData =
+      currentMatch.match_type_id !== "" || currentMatch.average_score > 0 || currentMatch.opponent_name !== "";
+
+    if (hasMatchData) {
+      // Validate current match
+      const isValid = await form.trigger("current_match");
+
+      if (!isValid) {
+        return; // Show validation errors
+      }
+
+      // Save current match to array if not already saved
+      const currentMatches = form.getValues("matches");
+      const isDuplicate = currentMatches.some((m) => JSON.stringify(m) === JSON.stringify(currentMatch));
+
+      if (!isDuplicate) {
+        form.setValue("matches", [...currentMatches, currentMatch]);
+      }
+    }
+
+    // Check if at least one match exists
+    const allMatches = form.getValues("matches");
+    if (allMatches.length === 0) {
+      // Show error: must have at least 1 match
+      toast.error("No matches added", {
+        description: "Please add at least one match before proceeding to review.",
+      });
+      return;
+    }
+
+    // Proceed to Step3
+    setCurrentStep(2);
+  };
+
+  /**
+   * Navigates back to Step2 to add another match
+   * Current match form should be reset with last match_type_id pre-selected
+   */
+  const handleAddMatchFromStep3 = () => {
+    const savedMatches = form.getValues("matches");
+    const lastMatchTypeId = savedMatches.length > 0 ? savedMatches[savedMatches.length - 1].match_type_id : "";
+
+    // Reset current match with pre-selected match type
+    form.setValue("current_match", {
+      ...defaultMatchValues,
+      match_type_id: lastMatchTypeId,
+    });
+
+    // Navigate to Step2
+    setCurrentStep(1);
+  };
+
+  const handleNext = async () => {
+    if (currentStep === 0) {
+      // Step1 -> Step2: Validate Step1 fields
+      const isValid = await form.trigger(["name", "date", "tournament_type_id"]);
+      if (isValid) {
+        setCurrentStep(1);
+      }
+    } else if (currentStep === 1) {
+      // Step2 -> Step3: Use special handler
+      await handleNextFromStep2();
     }
   };
 
@@ -142,29 +302,6 @@ export default function AddTournamentForm() {
     setCanSubmit(false);
   };
 
-  const getFieldsForStep = (step: number): (keyof AddTournamentFormViewModel)[] => {
-    switch (step) {
-      case 0:
-        return ["name", "date", "match_type_id"];
-      case 1:
-        return [
-          "final_placement",
-          "average_score",
-          "first_nine_avg",
-          "checkout_percentage",
-          "score_60_count",
-          "score_100_count",
-          "score_140_count",
-          "score_180_count",
-          "high_finish",
-          "best_leg",
-          "worst_leg",
-        ];
-      default:
-        return [];
-    }
-  };
-
   const onSubmit = async (data: AddTournamentFormViewModel) => {
     // Double-check: Only submit if we're on the final step (Review) and explicitly allowed
     if (currentStep !== STEPS.length - 1 || !canSubmit) {
@@ -174,23 +311,37 @@ export default function AddTournamentForm() {
     try {
       setIsSubmitting(true);
 
-      // Transform flat form data to nested CreateTournamentCommand structure
-      const command: CreateTournamentCommand = {
+      // Get all saved matches
+      const allMatches = data.matches;
+
+      if (allMatches.length === 0) {
+        toast.error("No matches to submit", {
+          description: "Cannot submit tournament without matches.",
+        });
+        return;
+      }
+
+      // Transform data for API
+      const tournamentData = {
         name: data.name,
         date: data.date.toISOString().split("T")[0], // Format as YYYY-MM-DD
-        result: {
-          match_type_id: parseInt(data.match_type_id, 10),
-          average_score: data.average_score,
-          first_nine_avg: data.first_nine_avg,
-          checkout_percentage: data.checkout_percentage,
-          score_60_count: data.score_60_count,
-          score_100_count: data.score_100_count,
-          score_140_count: data.score_140_count,
-          score_180_count: data.score_180_count,
-          high_finish: data.high_finish,
-          best_leg: data.best_leg,
-          worst_leg: data.worst_leg,
-        },
+        tournament_type_id: parseInt(data.tournament_type_id, 10),
+        matches: allMatches.map((match) => ({
+          match_type_id: parseInt(match.match_type_id, 10),
+          opponent_id: null, // Not using opponent_id for now
+          full_name: match.opponent_name || null,
+          final_placement: match.final_placement,
+          average_score: match.average_score,
+          first_nine_avg: match.first_nine_avg,
+          checkout_percentage: match.checkout_percentage,
+          score_60_count: match.score_60_count,
+          score_100_count: match.score_100_count,
+          score_140_count: match.score_140_count,
+          score_180_count: match.score_180_count,
+          high_finish: match.high_finish,
+          best_leg: match.best_leg,
+          worst_leg: match.worst_leg,
+        })),
       };
 
       const response = await fetch("/api/tournaments", {
@@ -198,7 +349,7 @@ export default function AddTournamentForm() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(command),
+        body: JSON.stringify(tournamentData),
       });
 
       if (!response.ok) {
@@ -215,7 +366,9 @@ export default function AddTournamentForm() {
 
       // Show success message
       toast.success("Tournament saved successfully!", {
-        description: `Tournament "${data.name}" has been recorded.`,
+        description: `Tournament "${data.name}" with ${allMatches.length} ${
+          allMatches.length === 1 ? "match" : "matches"
+        } has been recorded.`,
       });
 
       // Show AI feedback if available
@@ -227,6 +380,16 @@ export default function AddTournamentForm() {
           });
         }, 500); // Delay to show after success message
       }
+
+      // Reset form and navigate to Step1
+      form.reset({
+        name: "",
+        date: new Date(),
+        tournament_type_id: "",
+        current_match: defaultMatchValues,
+        matches: [],
+      });
+      setCurrentStep(0);
 
       // Redirect to dashboard after successful submission
       setTimeout(
@@ -248,29 +411,46 @@ export default function AddTournamentForm() {
   return (
     <>
       <div className="space-y-8">
-        <StepperNavigation currentStep={currentStep} steps={STEPS} />
+        <div data-testid="stepper-navigation">
+          <StepperNavigation currentStep={currentStep} steps={STEPS} />
+        </div>
 
         <Form {...form}>
           <form onSubmit={handleFormSubmit} className="space-y-8">
             {currentStep === 0 && (
               <Step1_BasicInfo
-                matchTypes={matchTypes}
-                isLoadingMatchTypes={isLoadingMatchTypes}
-                matchTypesError={matchTypesError}
+                tournamentTypes={tournamentTypes}
+                isLoadingTournamentTypes={isLoadingTournamentTypes}
+                tournamentTypesError={tournamentTypesError}
               />
             )}
 
-            {currentStep === 1 && <Step2_Metrics />}
+            {currentStep === 1 && (
+              <Step2_Metrics
+                matchTypes={matchTypes}
+                isLoadingMatchTypes={isLoadingMatchTypes}
+                matchTypesError={matchTypesError}
+                onSaveMatch={handleNewMatch}
+              />
+            )}
 
-            {currentStep === 2 && <Step3_Review matchTypes={matchTypes} />}
+            {currentStep === 2 && (
+              <Step3_Review
+                matchTypes={matchTypes}
+                tournamentTypes={tournamentTypes}
+                matches={form.watch("matches")}
+              />
+            )}
 
             <FormControls
               currentStep={currentStep}
               totalSteps={STEPS.length}
               isSubmitting={isSubmitting}
+              canProceedToReview={canProceedToReview}
               onBack={handleBack}
               onNext={handleNext}
               onSubmit={handleSubmitClick}
+              onAddMatch={handleAddMatchFromStep3}
             />
           </form>
         </Form>

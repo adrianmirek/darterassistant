@@ -15,6 +15,9 @@ const querySchema = z.object({
 // Validation schema for creating tournament result
 const createTournamentResultSchema = z.object({
   match_type_id: z.number().int().positive(),
+  opponent_id: z.string().uuid().nullable().optional(),
+  full_name: z.string().max(255).nullable().optional(),
+  final_placement: z.number().int().positive(),
   average_score: z.number().nonnegative(),
   first_nine_avg: z.number().nonnegative(),
   checkout_percentage: z.number().min(0).max(100),
@@ -27,11 +30,12 @@ const createTournamentResultSchema = z.object({
   worst_leg: z.number().int().min(0),
 });
 
-// Validation schema for creating tournament
+// Validation schema for creating tournament with multiple matches
 const createTournamentSchema = z.object({
   name: z.string().min(1).max(255),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  result: createTournamentResultSchema,
+  tournament_type_id: z.number().int().positive().optional(), // Optional, defaults to 1
+  matches: z.array(createTournamentResultSchema).min(1, "At least one match is required"),
 });
 
 /**
@@ -145,18 +149,24 @@ export const POST: APIRoute = async ({ locals, request }) => {
       );
     }
 
-    const command: CreateTournamentCommand = validationResult.data;
+    // Transform validated data to CreateTournamentCommand
+    const command: CreateTournamentCommand = {
+      name: validationResult.data.name,
+      date: validationResult.data.date,
+      tournament_type_id: validationResult.data.tournament_type_id,
+      matches: validationResult.data.matches,
+    };
 
     // Create tournament using service
     const { data, error } = await createTournament(locals.supabase, locals.user.id, command);
 
     if (error) {
-      // Check for foreign key violation (invalid match_type_id)
-      if (error.code === "23503") {
+      // Check for foreign key violation (invalid match_type_id, tournament_type_id, or opponent_id)
+      if ("code" in error && error.code === "23503") {
         return new Response(
           JSON.stringify({
             error: "Validation failed",
-            details: ["Invalid match_type_id"],
+            details: ["Invalid foreign key reference (match_type_id, tournament_type_id, or opponent_id)"],
           }),
           {
             status: 400,
@@ -170,7 +180,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
         JSON.stringify({
           error: "Failed to create tournament",
           details: error.message || "Unknown error",
-          code: error.code || "UNKNOWN",
+          code: "code" in error ? error.code : "UNKNOWN",
         }),
         {
           status: 500,
