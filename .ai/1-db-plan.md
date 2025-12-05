@@ -7,6 +7,11 @@
 - name: TEXT NOT NULL UNIQUE  
   *Lookup table for match types (e.g., singles, doubles)*
 
+### tournament_types
+- id: SERIAL PRIMARY KEY
+- name: TEXT NOT NULL UNIQUE  
+  *Lookup table for tournament types (e.g., Leagues + SKO, SKO, DKO)*
+
 ### users
 - this table is managed by Supabase Auth
 
@@ -16,6 +21,8 @@
 - name: TEXT NOT NULL
 - date: DATE NOT NULL
 - created_at: TIMESTAMPTZ NOT NULL DEFAULT now()
+- tournament_type_id: INTEGER NOT NULL REFERENCES tournament_types(id) DEFAULT 1  
+  *Defaults to seed ID=1 ('Leagues + SKO')*
 
 ### tournament_match_results
 - id: UUID PRIMARY KEY DEFAULT gen_random_uuid()
@@ -32,8 +39,11 @@
 - best_leg: INTEGER NOT NULL CHECK (best_leg >= 0)
 - worst_leg: INTEGER NOT NULL CHECK (worst_leg >= 0)
 - created_at: TIMESTAMPTZ NOT NULL DEFAULT now()
-
-### goals
+- opponent_id: UUID REFERENCES auth.users(id)
+- full_name: TEXT
+- Exclusion constraint to prevent overlapping goals per user:
+  
+  ### goals
 - id: UUID PRIMARY KEY DEFAULT gen_random_uuid()
 - user_id: UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE
 - target_avg: NUMERIC(5,2) NOT NULL CHECK (target_avg >= 0)
@@ -75,7 +85,7 @@
   GROUP BY g.id;
   ```
 
-## 2. Relationships
+  ## 2. Relationships
 
 - auth.users (1) ↔ (∞) tournaments via user_id
 - tournaments (1) ↔ (∞) tournament_match_results via tournament_id
