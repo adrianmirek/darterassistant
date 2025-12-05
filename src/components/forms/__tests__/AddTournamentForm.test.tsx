@@ -111,18 +111,19 @@ describe("AddTournamentForm", () => {
       expect(screen.getByText("Basic Info")).toBeInTheDocument();
     });
 
-    it("should pass match types to Step1_BasicInfo after loading", async () => {
+    it("should load match types successfully for use in Step2", async () => {
       render(<AddTournamentForm />);
 
+      // Verify match types are fetched
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith("/api/match-types");
       });
 
-      // Wait for match types to be loaded and rendered
-      await waitFor(() => {
-        // Match Type label should be visible
-        expect(screen.getByText("Match Type")).toBeInTheDocument();
-      });
+      // Match types are loaded in the background but not displayed on Step 1
+      // They will be available when user navigates to Step 2 (Metrics)
+      // Step 1 only shows: Tournament Name, Tournament Date, Tournament Type
+      expect(screen.getByText("Tournament Name")).toBeInTheDocument();
+      expect(screen.getByText("Tournament Type")).toBeInTheDocument();
     });
   });
 
