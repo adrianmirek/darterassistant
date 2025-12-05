@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -162,11 +162,8 @@ export default function AddTournamentForm() {
     fetchTournamentTypes();
   }, []);
 
-  // Check if user can proceed from Step2 to Step3
-  const matches = form.watch("matches");
-  const canProceedToReview = useMemo(() => {
-    return matches.length > 0; // At least 1 match saved
-  }, [matches]);
+  // Watch matches to enable form reactivity
+  form.watch("matches");
 
   const handleBack = () => {
     if (currentStep > 0) {
