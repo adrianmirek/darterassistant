@@ -16,7 +16,10 @@ export type TournamentTypeDTO = Pick<Tables["tournament_types"]["Row"], "id" | "
 /**
  * Summary view for listing tournaments with aggregated average score
  */
-export type TournamentSummaryDTO = Pick<Tables["tournaments"]["Row"], "id" | "name" | "date" | "tournament_type_id"> & {
+export type TournamentSummaryDTO = Pick<
+  Tables["tournaments"]["Row"],
+  "id" | "name" | "date" | "tournament_type_id" | "final_place"
+> & {
   average_score: number;
   tournament_type_name?: string; // Optional: include type name for display
 };
@@ -45,7 +48,10 @@ export interface TournamentResultDTO {
 /**
  * Detailed view for a single tournament including results
  */
-export type TournamentDetailDTO = Pick<Tables["tournaments"]["Row"], "id" | "name" | "date" | "tournament_type_id"> & {
+export type TournamentDetailDTO = Pick<
+  Tables["tournaments"]["Row"],
+  "id" | "name" | "date" | "tournament_type_id" | "final_place"
+> & {
   tournament_type_name?: string; // NEW: Optional type name for display
   results: TournamentResultDTO[];
 };
@@ -63,6 +69,7 @@ export interface CreateTournamentCommand {
   name: Tables["tournaments"]["Insert"]["name"];
   date: Tables["tournaments"]["Insert"]["date"];
   tournament_type_id?: Tables["tournaments"]["Insert"]["tournament_type_id"]; // Optional, defaults to 1
+  final_place?: Tables["tournaments"]["Insert"]["final_place"]; // Optional: final placement in the tournament
   matches: CreateTournamentResultCommand[];
 }
 

@@ -75,38 +75,66 @@ export default function Step1_BasicInfo({
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="tournament_type_id"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Tournament Type</FormLabel>
-              {tournamentTypesError ? (
-                <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{tournamentTypesError}</div>
-              ) : (
-                <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoadingTournamentTypes}>
-                  <FormControl>
-                    <SelectTrigger className="w-full" data-testid="tournament-type-select">
-                      <SelectValue
-                        placeholder={
-                          isLoadingTournamentTypes ? "Loading tournament types..." : "Select a tournament type"
-                        }
-                      />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {tournamentTypes.map((type) => (
-                      <SelectItem key={type.id} value={type.id.toString()}>
-                        {type.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="tournament_type_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tournament Type</FormLabel>
+                {tournamentTypesError ? (
+                  <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+                    {tournamentTypesError}
+                  </div>
+                ) : (
+                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoadingTournamentTypes}>
+                    <FormControl>
+                      <SelectTrigger className="w-full" data-testid="tournament-type-select">
+                        <SelectValue
+                          placeholder={
+                            isLoadingTournamentTypes ? "Loading tournament types..." : "Select a tournament type"
+                          }
+                        />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {tournamentTypes.map((type) => (
+                        <SelectItem key={type.id} value={type.id.toString()}>
+                          {type.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="final_place"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Final Place (Optional)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="Enter final placement (e.g., 1, 2, 3)"
+                    {...field}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      field.onChange(value === "" ? undefined : parseInt(value, 10));
+                    }}
+                    value={field.value ?? ""}
+                    data-testid="final-place-input"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
       </div>
     </div>
   );

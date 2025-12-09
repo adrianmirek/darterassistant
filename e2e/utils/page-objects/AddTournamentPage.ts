@@ -18,7 +18,6 @@ export class AddTournamentPage extends BasePage {
   // Step 2: Metrics (Current Match)
   readonly matchTypeSelect: Locator;
   readonly opponentNameInput: Locator;
-  readonly finalPlacementInput: Locator;
   readonly averageScoreInput: Locator;
   readonly firstNineAvgInput: Locator;
   readonly checkoutPercentageInput: Locator;
@@ -65,7 +64,6 @@ export class AddTournamentPage extends BasePage {
     // Step 2: Metrics
     this.matchTypeSelect = page.getByTestId("match-type-select");
     this.opponentNameInput = page.getByTestId("opponent-name-input");
-    this.finalPlacementInput = page.getByTestId("final-placement-input");
     this.averageScoreInput = page.getByTestId("average-score-input");
     this.firstNineAvgInput = page.getByTestId("first-nine-avg-input");
     this.checkoutPercentageInput = page.getByTestId("checkout-percentage-input");
@@ -203,7 +201,6 @@ export class AddTournamentPage extends BasePage {
   async fillMatchMetrics(data: {
     matchTypeId: string;
     opponentName?: string;
-    finalPlacement: number;
     averageScore: number;
     firstNineAvg: number;
     checkoutPercentage: number;
@@ -222,9 +219,6 @@ export class AddTournamentPage extends BasePage {
     }
 
     // Fill inputs and trigger blur to ensure React Hook Form detects changes
-    await this.finalPlacementInput.fill(data.finalPlacement.toString());
-    await this.finalPlacementInput.blur();
-
     await this.averageScoreInput.fill(data.averageScore.toString());
     await this.averageScoreInput.blur();
 
@@ -357,18 +351,31 @@ export class AddTournamentPage extends BasePage {
 
   /**
    * Get match data from review table (desktop view)
-   * Table columns: # | Match Type | Opponent | Placement | Avg | 1st 9 | CO% | 180s
+   * Table columns: # | Match Type | Opponent | Result | Avg | 1st 9 | CO% | 180s
    */
   async getMatchDataFromTable(matchIndex: number) {
     const row = this.reviewMatchesTable.locator("tbody tr").nth(matchIndex);
     return {
       matchType: await row.locator("td").nth(1).textContent(), // Column 1 (after #)
       opponent: await row.locator("td").nth(2).textContent(), // Column 2
-      placement: await row.locator("td").nth(3).textContent(), // Column 3
-      avgScore: await row.locator("td").nth(4).textContent(), // Column 4
+      avgScore: await row.locator("td").nth(4).textContent(), // Column 4 (after Result)
       firstNineAvg: await row.locator("td").nth(5).textContent(), // Column 5
       checkoutPct: await row.locator("td").nth(6).textContent(), // Column 6
     };
+  }
+
+  /**
+   * Get remove button for a specific match by index
+   */
+  getRemoveMatchButton(matchIndex: number): Locator {
+    return this.page.getByTestId(`remove-match-${matchIndex}`);
+  }
+
+  /**
+   * Remove a match by clicking its remove button
+   */
+  async removeMatch(matchIndex: number) {
+    await this.getRemoveMatchButton(matchIndex).click();
   }
 
   /**
@@ -387,7 +394,6 @@ export class AddTournamentPage extends BasePage {
     tournamentTypeId: string;
     matchTypeId: string;
     opponentName?: string;
-    finalPlacement: number;
     averageScore: number;
     firstNineAvg: number;
     checkoutPercentage: number;
@@ -408,7 +414,6 @@ export class AddTournamentPage extends BasePage {
     await this.fillMatchMetrics({
       matchTypeId: data.matchTypeId,
       opponentName: data.opponentName,
-      finalPlacement: data.finalPlacement,
       averageScore: data.averageScore,
       firstNineAvg: data.firstNineAvg,
       checkoutPercentage: data.checkoutPercentage,

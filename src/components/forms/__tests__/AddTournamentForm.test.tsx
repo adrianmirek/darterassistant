@@ -138,20 +138,6 @@ describe("AddTournamentForm", () => {
     });
   });
 
-  describe("Critical Bug Documentation", () => {
-    it("KNOWN BUG: final_placement field exists in form but not in submission", async () => {
-      // This test documents the bug where final_placement is collected but not submitted
-      // The field is defined in the Zod schema (line 30 of AddTournamentForm.tsx)
-      // But it's missing from the CreateTournamentCommand transformation (lines 179-195)
-
-      // When this bug is fixed, the following should be true:
-      // 1. final_placement should be included in the command.result object
-      // 2. The API endpoint should accept and save final_placement
-
-      expect(true).toBe(true); // Placeholder test to document the bug
-    });
-  });
-
   describe("Stepper Navigation Logic", () => {
     it("should initialize with currentStep state at 0", async () => {
       render(<AddTournamentForm />);
