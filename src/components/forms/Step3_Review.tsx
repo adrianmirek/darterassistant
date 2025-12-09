@@ -1,15 +1,18 @@
 import { useFormContext } from "react-hook-form";
 import { format } from "date-fns";
+import { Trash2 } from "lucide-react";
 import type { AddTournamentFormViewModel, MatchDataViewModel } from "./AddTournamentForm";
 import type { MatchTypeDTO, TournamentTypeDTO } from "@/types";
+import { Button } from "@/components/ui/button";
 
 interface Step3_ReviewProps {
   matchTypes: MatchTypeDTO[];
   tournamentTypes: TournamentTypeDTO[];
   matches: MatchDataViewModel[];
+  onRemoveMatch: (index: number) => void;
 }
 
-export default function Step3_Review({ matchTypes, tournamentTypes, matches }: Step3_ReviewProps) {
+export default function Step3_Review({ matchTypes, tournamentTypes, matches, onRemoveMatch }: Step3_ReviewProps) {
   const form = useFormContext<AddTournamentFormViewModel>();
   const values = form.getValues();
 
@@ -45,6 +48,14 @@ export default function Step3_Review({ matchTypes, tournamentTypes, matches }: S
               {selectedTournamentType?.name || "-"}
             </dd>
           </div>
+          {values.final_place && (
+            <div className="flex justify-between">
+              <dt className="text-sm font-medium text-muted-foreground">Final Place</dt>
+              <dd className="text-sm font-semibold" data-testid="review-final-place">
+                {values.final_place}
+              </dd>
+            </div>
+          )}
         </dl>
       </div>
 
@@ -70,11 +81,15 @@ export default function Step3_Review({ matchTypes, tournamentTypes, matches }: S
                     <th className="pb-3 font-medium text-muted-foreground">Match Type</th>
                     <th className="pb-3 font-medium text-muted-foreground">Opponent</th>
                     <th className="pb-3 font-medium text-muted-foreground text-center">Result</th>
-                    <th className="pb-3 font-medium text-muted-foreground">Placement</th>
                     <th className="pb-3 font-medium text-muted-foreground text-right">Avg</th>
-                    <th className="pb-3 font-medium text-muted-foreground text-right">1st 9</th>
                     <th className="pb-3 font-medium text-muted-foreground text-right">CO%</th>
+                    <th className="pb-3 font-medium text-muted-foreground text-right">60+</th>
+                    <th className="pb-3 font-medium text-muted-foreground text-right">100+</th>
+                    <th className="pb-3 font-medium text-muted-foreground text-right">140+</th>
                     <th className="pb-3 font-medium text-muted-foreground text-right">180s</th>
+                    <th className="pb-3 font-medium text-muted-foreground text-right">High Finish</th>
+                    <th className="pb-3 font-medium text-muted-foreground text-right">Best Leg</th>
+                    <th className="pb-3 font-medium text-muted-foreground text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -88,11 +103,27 @@ export default function Step3_Review({ matchTypes, tournamentTypes, matches }: S
                       <td className="py-3 text-center font-mono">
                         {match.player_score} : {match.opponent_score}
                       </td>
-                      <td className="py-3">{match.final_placement}</td>
                       <td className="py-3 text-right font-mono">{match.average_score.toFixed(2)}</td>
-                      <td className="py-3 text-right font-mono">{match.first_nine_avg.toFixed(2)}</td>
                       <td className="py-3 text-right font-mono">{match.checkout_percentage.toFixed(1)}%</td>
+                      <td className="py-3 text-right font-mono">{match.score_60_count}</td>
+                      <td className="py-3 text-right font-mono">{match.score_100_count}</td>
+                      <td className="py-3 text-right font-mono">{match.score_140_count}</td>
                       <td className="py-3 text-right font-mono">{match.score_180_count}</td>
+                      <td className="py-3 text-right font-mono">{match.high_finish || "-"}</td>
+                      <td className="py-3 text-right font-mono">{match.best_leg}</td>
+                      <td className="py-3 text-right">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onRemoveMatch(index)}
+                          className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          data-testid={`remove-match-${index}`}
+                          aria-label={`Remove match ${index + 1}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -106,14 +137,22 @@ export default function Step3_Review({ matchTypes, tournamentTypes, matches }: S
                   key={index}
                   className="rounded-lg border bg-muted/50 p-4 hover:bg-muted transition-colors match-card"
                 >
-                  <div className="flex items-start justify-between mb-3">
+                  <div className="mb-3 flex items-start justify-between">
                     <div>
                       <h4 className="font-semibold">Match {index + 1}</h4>
                       <p className="text-sm text-muted-foreground">{getMatchTypeName(match.match_type_id)}</p>
                     </div>
-                    <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
-                      Placement: {match.final_placement}
-                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onRemoveMatch(index)}
+                      className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      data-testid={`remove-match-${index}`}
+                      aria-label={`Remove match ${index + 1}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
 
                   {match.opponent_name && (
@@ -175,7 +214,25 @@ export default function Step3_Review({ matchTypes, tournamentTypes, matches }: S
               </dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-muted-foreground">Total 180s</dt>
+              <dt className="text-sm font-medium text-muted-foreground">CO%</dt>
+              <dd className="mt-1 text-2xl font-bold">
+                {(matches.reduce((sum, m) => sum + m.checkout_percentage, 0) / matches.length).toFixed(1)}%
+              </dd>
+            </div>
+            <div>
+              <dt className="text-sm font-medium text-muted-foreground">60+</dt>
+              <dd className="mt-1 text-2xl font-bold">{matches.reduce((sum, m) => sum + m.score_60_count, 0)}</dd>
+            </div>
+            <div>
+              <dt className="text-sm font-medium text-muted-foreground">100+</dt>
+              <dd className="mt-1 text-2xl font-bold">{matches.reduce((sum, m) => sum + m.score_100_count, 0)}</dd>
+            </div>
+            <div>
+              <dt className="text-sm font-medium text-muted-foreground">140+</dt>
+              <dd className="mt-1 text-2xl font-bold">{matches.reduce((sum, m) => sum + m.score_140_count, 0)}</dd>
+            </div>
+            <div>
+              <dt className="text-sm font-medium text-muted-foreground">180s</dt>
               <dd className="mt-1 text-2xl font-bold">{matches.reduce((sum, m) => sum + m.score_180_count, 0)}</dd>
             </div>
             <div>

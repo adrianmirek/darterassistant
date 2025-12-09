@@ -112,6 +112,7 @@ export async function getTournaments(
         name,
         date,
         tournament_type_id,
+        final_place,
         tournament_types (
           name
         ),
@@ -150,6 +151,7 @@ export async function getTournaments(
         name: tournament.name,
         date: tournament.date,
         tournament_type_id: tournament.tournament_type_id,
+        final_place: tournament.final_place,
         tournament_type_name: tournament.tournament_types?.name,
         average_score: averageScore,
       };
@@ -178,6 +180,7 @@ export async function getTournamentById(
         name,
         date,
         tournament_type_id,
+        final_place,
         tournament_types (
           name
         ),
@@ -228,6 +231,7 @@ export async function getTournamentById(
       name: data.name,
       date: data.date,
       tournament_type_id: data.tournament_type_id,
+      final_place: data.final_place,
       tournament_type_name: data.tournament_types?.name,
       results,
     };
@@ -257,6 +261,7 @@ export async function createTournament(
         name: command.name,
         date: command.date,
         tournament_type_id: command.tournament_type_id || 1, // Default to 1
+        final_place: command.final_place || null, // Optional final placement
       })
       .select("id, created_at")
       .single();

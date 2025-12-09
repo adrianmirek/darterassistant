@@ -354,9 +354,9 @@ export default function Step2_Metrics({
                     type="number"
                     min="9"
                     step="1"
-                    placeholder="24"
+                    placeholder="21"
                     {...field}
-                    onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 9)}
+                    onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 21)}
                     data-testid="best-leg-input"
                   />
                 </FormControl>
@@ -379,7 +379,7 @@ export default function Step2_Metrics({
                     step="1"
                     placeholder="33"
                     {...field}
-                    onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 9)}
+                    onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 33)}
                     data-testid="worst-leg-input"
                   />
                 </FormControl>
