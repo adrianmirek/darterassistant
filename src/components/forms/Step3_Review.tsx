@@ -69,6 +69,7 @@ export default function Step3_Review({ matchTypes, tournamentTypes, matches }: S
                     <th className="pb-3 font-medium text-muted-foreground">#</th>
                     <th className="pb-3 font-medium text-muted-foreground">Match Type</th>
                     <th className="pb-3 font-medium text-muted-foreground">Opponent</th>
+                    <th className="pb-3 font-medium text-muted-foreground text-center">Result</th>
                     <th className="pb-3 font-medium text-muted-foreground">Placement</th>
                     <th className="pb-3 font-medium text-muted-foreground text-right">Avg</th>
                     <th className="pb-3 font-medium text-muted-foreground text-right">1st 9</th>
@@ -83,6 +84,9 @@ export default function Step3_Review({ matchTypes, tournamentTypes, matches }: S
                       <td className="py-3 font-medium">{getMatchTypeName(match.match_type_id)}</td>
                       <td className="py-3">
                         {match.opponent_name || <span className="text-muted-foreground">-</span>}
+                      </td>
+                      <td className="py-3 text-center font-mono">
+                        {match.player_score} : {match.opponent_score}
                       </td>
                       <td className="py-3">{match.final_placement}</td>
                       <td className="py-3 text-right font-mono">{match.average_score.toFixed(2)}</td>
@@ -113,11 +117,18 @@ export default function Step3_Review({ matchTypes, tournamentTypes, matches }: S
                   </div>
 
                   {match.opponent_name && (
-                    <p className="text-sm mb-3">
+                    <p className="text-sm mb-2">
                       <span className="text-muted-foreground">vs</span>{" "}
                       <span className="font-medium">{match.opponent_name}</span>
                     </p>
                   )}
+
+                  <div className="text-sm mb-3">
+                    <span className="text-muted-foreground">Result:</span>{" "}
+                    <span className="font-mono font-semibold">
+                      {match.player_score} : {match.opponent_score}
+                    </span>
+                  </div>
 
                   <dl className="grid grid-cols-3 gap-3 text-sm">
                     <div>

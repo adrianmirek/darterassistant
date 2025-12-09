@@ -24,7 +24,7 @@ create extension if not exists btree_gist;
 -- =====================================================================
 
 -- Create match_types lookup table
--- This table stores different match types (e.g., singles, doubles)
+-- This table stores different match types (e.g., 501 DO, 301 SO)
 create table if not exists match_types (
   id serial primary key,
   name text not null unique
@@ -280,7 +280,12 @@ create policy delete_goals_authenticated on goals
 -- Insert common match types
 -- This provides initial reference data for the application
 insert into match_types (name) values
-  ('singles'),
-  ('doubles')
+  ('501 DO'),
+  ('501 DI DO'),
+  ('501 SO'),
+  ('301 DO'),
+  ('301 DI DO'),
+  ('301 SO'),
+  ('Other')
 on conflict (name) do nothing;
 

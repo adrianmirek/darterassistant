@@ -19,8 +19,7 @@ export default function AuthNav({ userEmail }: AuthNavProps) {
       // Always redirect after logout attempt, regardless of response
       // Use replace to prevent back button from returning to authenticated page
       window.location.replace("/auth/login");
-    } catch (error) {
-      console.error("Logout failed:", error);
+    } catch {
       // Redirect anyway to ensure user is logged out
       window.location.replace("/auth/login");
     }
