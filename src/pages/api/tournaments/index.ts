@@ -19,7 +19,6 @@ const createTournamentResultSchema = z.object({
   full_name: z.string().max(255).nullable().optional(),
   player_score: z.number().int().nonnegative(),
   opponent_score: z.number().int().nonnegative(),
-  final_placement: z.number().int().positive(),
   average_score: z.number().positive(),
   first_nine_avg: z.number().positive(),
   checkout_percentage: z.number().min(0).max(100),
@@ -37,6 +36,7 @@ const createTournamentSchema = z.object({
   name: z.string().min(1).max(255),
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   tournament_type_id: z.number().int().positive().optional(), // Optional, defaults to 1
+  final_place: z.number().int().positive().optional(), // Optional final placement
   matches: z.array(createTournamentResultSchema).min(1, "At least one match is required"),
 });
 
@@ -156,6 +156,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
       name: validationResult.data.name,
       date: validationResult.data.date,
       tournament_type_id: validationResult.data.tournament_type_id,
+      final_place: validationResult.data.final_place,
       matches: validationResult.data.matches,
     };
 

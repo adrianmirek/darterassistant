@@ -17,7 +17,6 @@ const matchDataSchema = z.object({
   opponent_name: z.string().max(255).optional(),
   player_score: z.number().int().nonnegative("Player score cannot be negative"),
   opponent_score: z.number().int().nonnegative("Opponent score cannot be negative"),
-  final_placement: z.number().int().positive("Final placement must be a positive number"),
   average_score: z.number().positive("Average score is required").max(180, "Average score cannot exceed 180"),
   first_nine_avg: z
     .number()
@@ -55,6 +54,7 @@ const addTournamentFormSchema = z.object({
       message: "Tournament date cannot be in the future",
     }),
   tournament_type_id: z.string().min(1, "Tournament type is required"),
+  final_place: z.number().int().positive("Final place must be a positive number").optional().or(z.undefined()),
 
   // Step 2: Current match being edited
   current_match: matchDataSchema,
@@ -73,7 +73,6 @@ const defaultMatchValues: MatchDataViewModel = {
   opponent_name: "",
   player_score: 0,
   opponent_score: 0,
-  final_placement: 1,
   average_score: 0,
   first_nine_avg: 0,
   checkout_percentage: 0,
@@ -82,8 +81,8 @@ const defaultMatchValues: MatchDataViewModel = {
   score_140_count: 0,
   score_180_count: 0,
   high_finish: 0,
-  best_leg: 9,
-  worst_leg: 9,
+  best_leg: 21,
+  worst_leg: 33,
 };
 
 export default function AddTournamentForm() {
@@ -103,6 +102,7 @@ export default function AddTournamentForm() {
       name: "",
       date: new Date(),
       tournament_type_id: "",
+      final_place: undefined,
       current_match: defaultMatchValues,
       matches: [],
     },
@@ -288,10 +288,26 @@ export default function AddTournamentForm() {
     setCurrentStep(1);
   };
 
+  /**
+   * Removes a match from the matches array by index
+   */
+  const handleRemoveMatch = (index: number) => {
+    const currentMatches = form.getValues("matches");
+
+    // Remove the match at the specified index
+    const updatedMatches = currentMatches.filter((_, i) => i !== index);
+    form.setValue("matches", updatedMatches);
+
+    // Show success notification
+    toast.success("Match removed", {
+      description: `Match ${index + 1} has been removed.`,
+    });
+  };
+
   const handleNext = async () => {
     if (currentStep === 0) {
       // Step1 -> Step2: Validate Step1 fields
-      const isValid = await form.trigger(["name", "date", "tournament_type_id"]);
+      const isValid = await form.trigger(["name", "date", "tournament_type_id", "final_place"]);
       if (isValid) {
         setCurrentStep(1);
       }
@@ -342,13 +358,13 @@ export default function AddTournamentForm() {
         name: data.name,
         date: data.date.toISOString().split("T")[0], // Format as YYYY-MM-DD
         tournament_type_id: parseInt(data.tournament_type_id, 10),
+        final_place: data.final_place,
         matches: allMatches.map((match) => ({
           match_type_id: parseInt(match.match_type_id, 10),
           opponent_id: null, // Not using opponent_id for now
           full_name: match.opponent_name || null,
           player_score: match.player_score,
           opponent_score: match.opponent_score,
-          final_placement: match.final_placement,
           average_score: match.average_score,
           first_nine_avg: match.first_nine_avg,
           checkout_percentage: match.checkout_percentage,
@@ -404,6 +420,7 @@ export default function AddTournamentForm() {
         name: "",
         date: new Date(),
         tournament_type_id: "",
+        final_place: undefined,
         current_match: defaultMatchValues,
         matches: [],
       });
@@ -453,7 +470,12 @@ export default function AddTournamentForm() {
             )}
 
             {currentStep === 2 && (
-              <Step3_Review matchTypes={matchTypes} tournamentTypes={tournamentTypes} matches={form.watch("matches")} />
+              <Step3_Review
+                matchTypes={matchTypes}
+                tournamentTypes={tournamentTypes}
+                matches={form.watch("matches")}
+                onRemoveMatch={handleRemoveMatch}
+              />
             )}
 
             <FormControls
