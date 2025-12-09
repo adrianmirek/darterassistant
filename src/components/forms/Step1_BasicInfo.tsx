@@ -86,7 +86,7 @@ export default function Step1_BasicInfo({
               ) : (
                 <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoadingTournamentTypes}>
                   <FormControl>
-                    <SelectTrigger data-testid="tournament-type-select">
+                    <SelectTrigger className="w-full" data-testid="tournament-type-select">
                       <SelectValue
                         placeholder={
                           isLoadingTournamentTypes ? "Loading tournament types..." : "Select a tournament type"

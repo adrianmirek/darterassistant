@@ -15,11 +15,13 @@ import type { MatchTypeDTO, TournamentTypeDTO, CreateTournamentResponseDTO } fro
 const matchDataSchema = z.object({
   match_type_id: z.string().min(1, "Match type is required"),
   opponent_name: z.string().max(255).optional(),
+  player_score: z.number().int().nonnegative("Player score cannot be negative"),
+  opponent_score: z.number().int().nonnegative("Opponent score cannot be negative"),
   final_placement: z.number().int().positive("Final placement must be a positive number"),
-  average_score: z.number().min(0, "Average score cannot be negative").max(180, "Average score cannot exceed 180"),
+  average_score: z.number().positive("Average score is required").max(180, "Average score cannot exceed 180"),
   first_nine_avg: z
     .number()
-    .min(0, "First nine average cannot be negative")
+    .positive("First nine average is required")
     .max(180, "First nine average cannot exceed 180"),
   checkout_percentage: z
     .number()
@@ -69,6 +71,8 @@ const STEPS = ["Basic Info", "Metrics", "Review"];
 const defaultMatchValues: MatchDataViewModel = {
   match_type_id: "",
   opponent_name: "",
+  player_score: 0,
+  opponent_score: 0,
   final_placement: 1,
   average_score: 0,
   first_nine_avg: 0,
@@ -215,13 +219,30 @@ export default function AddTournamentForm() {
    * If current match has data, automatically save it
    */
   const handleNextFromStep2 = async () => {
-    // Check if current match has any data entered
+    // Get current match and saved matches
     const currentMatch = form.getValues("current_match");
-    const hasMatchData =
-      currentMatch.match_type_id !== "" || currentMatch.average_score > 0 || currentMatch.opponent_name !== "";
+    const savedMatches = form.getValues("matches");
 
+    // Check if current match has any data entered
+    const hasMatchData =
+      currentMatch.match_type_id !== "" ||
+      currentMatch.average_score > 0 ||
+      currentMatch.opponent_name !== "" ||
+      currentMatch.player_score > 0 ||
+      currentMatch.opponent_score > 0;
+
+    // If there are no saved matches and no current match data, require user to fill the form
+    if (savedMatches.length === 0 && !hasMatchData) {
+      // Trigger validation to show required field errors
+      await form.trigger("current_match");
+      toast.error("No matches added", {
+        description: "Please fill in the match details and click 'New Match' to add it.",
+      });
+      return;
+    }
+
+    // If user has entered data in current match, validate and save it
     if (hasMatchData) {
-      // Validate current match
       const isValid = await form.trigger("current_match");
 
       if (!isValid) {
@@ -229,18 +250,16 @@ export default function AddTournamentForm() {
       }
 
       // Save current match to array if not already saved
-      const currentMatches = form.getValues("matches");
-      const isDuplicate = currentMatches.some((m) => JSON.stringify(m) === JSON.stringify(currentMatch));
+      const isDuplicate = savedMatches.some((m) => JSON.stringify(m) === JSON.stringify(currentMatch));
 
       if (!isDuplicate) {
-        form.setValue("matches", [...currentMatches, currentMatch]);
+        form.setValue("matches", [...savedMatches, currentMatch]);
       }
     }
 
-    // Check if at least one match exists
+    // Check if at least one match exists (after potentially adding current match)
     const allMatches = form.getValues("matches");
     if (allMatches.length === 0) {
-      // Show error: must have at least 1 match
       toast.error("No matches added", {
         description: "Please add at least one match before proceeding to review.",
       });
@@ -327,6 +346,8 @@ export default function AddTournamentForm() {
           match_type_id: parseInt(match.match_type_id, 10),
           opponent_id: null, // Not using opponent_id for now
           full_name: match.opponent_name || null,
+          player_score: match.player_score,
+          opponent_score: match.opponent_score,
           final_placement: match.final_placement,
           average_score: match.average_score,
           first_nine_avg: match.first_nine_avg,

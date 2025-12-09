@@ -26,6 +26,8 @@ export type TournamentSummaryDTO = Pick<Tables["tournaments"]["Row"], "id" | "na
  */
 export interface TournamentResultDTO {
   match_type_id: number;
+  player_score: number;
+  opponent_score: number;
   average_score: number;
   first_nine_avg: number;
   checkout_percentage: number;
