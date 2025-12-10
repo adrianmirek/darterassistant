@@ -361,8 +361,7 @@ export default function AddTournamentForm() {
         final_place: data.final_place,
         matches: allMatches.map((match) => ({
           match_type_id: parseInt(match.match_type_id, 10),
-          opponent_id: null, // Not using opponent_id for now
-          full_name: match.opponent_name || null,
+          opponent_name: match.opponent_name || null,
           player_score: match.player_score,
           opponent_score: match.opponent_score,
           average_score: match.average_score,

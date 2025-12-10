@@ -196,8 +196,9 @@ export async function getTournamentById(
           high_finish,
           best_leg,
           worst_leg,
-          opponent_id,
-          full_name
+          opponent_name,
+          player_score,
+          opponent_score
         )
       `
       )
@@ -222,8 +223,9 @@ export async function getTournamentById(
       high_finish: result.high_finish,
       best_leg: result.best_leg,
       worst_leg: result.worst_leg,
-      opponent_id: result.opponent_id,
-      full_name: result.full_name,
+      opponent_name: result.opponent_name,
+      player_score: result.player_score,
+      opponent_score: result.opponent_score,
     }));
 
     const tournament: TournamentDetailDTO = {
@@ -287,8 +289,9 @@ export async function createTournament(
       high_finish: match.high_finish,
       best_leg: match.best_leg,
       worst_leg: match.worst_leg,
-      opponent_id: match.opponent_id || null,
-      full_name: match.full_name || null,
+      opponent_name: match.opponent_name || null,
+      player_score: match.player_score,
+      opponent_score: match.opponent_score,
     }));
 
     const { error: matchesError } = await supabase.from("tournament_match_results").insert(matchInserts);
