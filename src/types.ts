@@ -41,8 +41,7 @@ export interface TournamentResultDTO {
   high_finish: number;
   best_leg: number;
   worst_leg: number;
-  opponent_id: string | null; // NEW: UUID of opponent user
-  full_name: string | null; // NEW: Free-text opponent name
+  opponent_name: string | null; // Free-text opponent name
 }
 
 /**

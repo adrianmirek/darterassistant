@@ -15,8 +15,7 @@ const querySchema = z.object({
 // Validation schema for creating tournament result
 const createTournamentResultSchema = z.object({
   match_type_id: z.number().int().positive(),
-  opponent_id: z.string().uuid().nullable().optional(),
-  full_name: z.string().max(255).nullable().optional(),
+  opponent_name: z.string().max(255).nullable().optional(),
   player_score: z.number().int().nonnegative(),
   opponent_score: z.number().int().nonnegative(),
   average_score: z.number().positive(),
@@ -164,12 +163,12 @@ export const POST: APIRoute = async ({ locals, request }) => {
     const { data, error } = await createTournament(locals.supabase, locals.user.id, command);
 
     if (error) {
-      // Check for foreign key violation (invalid match_type_id, tournament_type_id, or opponent_id)
+      // Check for foreign key violation (invalid match_type_id or tournament_type_id)
       if ("code" in error && error.code === "23503") {
         return new Response(
           JSON.stringify({
             error: "Validation failed",
-            details: ["Invalid foreign key reference (match_type_id, tournament_type_id, or opponent_id)"],
+            details: ["Invalid foreign key reference (match_type_id or tournament_type_id)"],
           }),
           {
             status: 400,
