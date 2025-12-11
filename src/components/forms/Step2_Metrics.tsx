@@ -115,7 +115,7 @@ export default function Step2_Metrics({
             <FormField
               control={form.control}
               name="current_match.opponent_score"
-              render={({ field, fieldState }) => {
+              render={({ field }) => {
                 const playerScoreError = form.formState.errors.current_match?.player_score;
                 return (
                   <FormItem className="flex-1 space-y-1">
