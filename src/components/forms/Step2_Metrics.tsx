@@ -310,6 +310,7 @@ export default function Step2_Metrics({
                     step="1"
                     placeholder="0"
                     {...field}
+                    value={field.value || ""}
                     onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 0)}
                     data-testid="score-100-count-input"
                   />
@@ -332,6 +333,7 @@ export default function Step2_Metrics({
                     step="1"
                     placeholder="0"
                     {...field}
+                    value={field.value || ""}
                     onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 0)}
                     data-testid="score-140-count-input"
                   />
@@ -354,6 +356,7 @@ export default function Step2_Metrics({
                     step="1"
                     placeholder="0"
                     {...field}
+                    value={field.value || ""}
                     onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 0)}
                     data-testid="score-180-count-input"
                   />
