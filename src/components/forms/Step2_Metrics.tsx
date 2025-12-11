@@ -86,7 +86,7 @@ export default function Step2_Metrics({
             <FormField
               control={form.control}
               name="current_match.player_score"
-              render={({ field }) => (
+              render={({ field, fieldState }) => (
                 <FormItem className="flex-1 space-y-1">
                   <FormControl>
                     <Input
@@ -96,11 +96,18 @@ export default function Step2_Metrics({
                       placeholder="0"
                       {...field}
                       value={field.value || ""}
-                      onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 0)}
+                      onChange={(e) => {
+                        const newValue = parseInt(e.target.value, 10) || 0;
+                        field.onChange(newValue);
+                        // Clear error when result is no longer 0:0
+                        if (newValue > 0 || form.getValues("current_match.opponent_score") > 0) {
+                          form.clearErrors("current_match.player_score");
+                        }
+                      }}
                       data-testid="player-score-input"
+                      className={fieldState.error ? "border-destructive" : ""}
                     />
                   </FormControl>
-                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -108,25 +115,44 @@ export default function Step2_Metrics({
             <FormField
               control={form.control}
               name="current_match.opponent_score"
-              render={({ field }) => (
-                <FormItem className="flex-1 space-y-1">
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min="0"
-                      step="1"
-                      placeholder="0"
-                      {...field}
-                      value={field.value || ""}
-                      onChange={(e) => field.onChange(parseInt(e.target.value, 10) || 0)}
-                      data-testid="opponent-score-input"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              render={({ field, fieldState }) => {
+                const playerScoreError = form.formState.errors.current_match?.player_score;
+                return (
+                  <FormItem className="flex-1 space-y-1">
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="1"
+                        placeholder="0"
+                        {...field}
+                        value={field.value || ""}
+                        onChange={(e) => {
+                          const newValue = parseInt(e.target.value, 10) || 0;
+                          field.onChange(newValue);
+                          // Clear error when result is no longer 0:0
+                          if (form.getValues("current_match.player_score") > 0 || newValue > 0) {
+                            form.clearErrors("current_match.player_score");
+                          }
+                        }}
+                        data-testid="opponent-score-input"
+                        className={playerScoreError ? "border-destructive" : ""}
+                      />
+                    </FormControl>
+                  </FormItem>
+                );
+              }}
             />
           </div>
+          <FormField
+            control={form.control}
+            name="current_match.player_score"
+            render={() => (
+              <FormItem className="space-y-0">
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
       </div>
 
