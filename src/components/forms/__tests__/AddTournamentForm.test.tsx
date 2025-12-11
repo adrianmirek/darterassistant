@@ -198,7 +198,7 @@ describe("AddTournamentForm", () => {
         { id: 1, name: "League Match" },
         { id: 2, name: "Championship" },
       ];
-      
+
       mockFetch.mockResolvedValueOnce(createMockAPIResponse(mockMatchTypes));
       mockFetch.mockResolvedValueOnce(createMockAPIResponse(mockTournamentTypes));
 
@@ -212,7 +212,7 @@ describe("AddTournamentForm", () => {
     it("should handle tournament types fetch error gracefully", async () => {
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
-      
+
       mockFetch.mockResolvedValueOnce(createMockAPIResponse(mockMatchTypes));
       mockFetch.mockRejectedValueOnce(new Error("Failed to load tournament types"));
 

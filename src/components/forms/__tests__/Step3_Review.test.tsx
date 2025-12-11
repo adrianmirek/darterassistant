@@ -7,7 +7,13 @@ import type { MatchTypeDTO, TournamentTypeDTO } from "@/types";
 import type { AddTournamentFormViewModel, MatchDataViewModel } from "@/components/forms/AddTournamentForm";
 
 // Mock wrapper component to provide form context
-function TestWrapper({ children, defaultValues }: { children: React.ReactNode; defaultValues?: Partial<AddTournamentFormViewModel> }) {
+function TestWrapper({
+  children,
+  defaultValues,
+}: {
+  children: React.ReactNode;
+  defaultValues?: Partial<AddTournamentFormViewModel>;
+}) {
   const form = useForm<AddTournamentFormViewModel>({
     defaultValues: {
       name: "Test Tournament",
@@ -339,7 +345,7 @@ describe("Step3_Review", () => {
     });
 
     it("should display match results in correct format", () => {
-      const { container } = render(
+      render(
         <TestWrapper>
           <Step3_Review {...defaultProps} matches={mockMatches} />
         </TestWrapper>
@@ -351,7 +357,7 @@ describe("Step3_Review", () => {
     });
 
     it("should display average scores with 2 decimal places", () => {
-      const { container } = render(
+      render(
         <TestWrapper>
           <Step3_Review {...defaultProps} matches={mockMatches} />
         </TestWrapper>
@@ -363,7 +369,7 @@ describe("Step3_Review", () => {
     });
 
     it("should display checkout percentage with 1 decimal place", () => {
-      const { container } = render(
+      render(
         <TestWrapper>
           <Step3_Review {...defaultProps} matches={mockMatches} />
         </TestWrapper>
@@ -375,7 +381,7 @@ describe("Step3_Review", () => {
     });
 
     it("should display score counts correctly", () => {
-      const { container } = render(
+      render(
         <TestWrapper>
           <Step3_Review {...defaultProps} matches={mockMatches} />
         </TestWrapper>
@@ -390,7 +396,7 @@ describe("Step3_Review", () => {
     });
 
     it("should display high finish values", () => {
-      const { container } = render(
+      render(
         <TestWrapper>
           <Step3_Review {...defaultProps} matches={mockMatches} />
         </TestWrapper>
@@ -402,7 +408,7 @@ describe("Step3_Review", () => {
     });
 
     it("should display best leg values", () => {
-      const { container } = render(
+      render(
         <TestWrapper>
           <Step3_Review {...defaultProps} matches={mockMatches} />
         </TestWrapper>
@@ -415,7 +421,7 @@ describe("Step3_Review", () => {
 
     it("should display dash for missing opponent name", () => {
       const matchWithoutOpponent = { ...mockMatches[0], opponent_name: "" };
-      const { container } = render(
+      render(
         <TestWrapper>
           <Step3_Review {...defaultProps} matches={[matchWithoutOpponent]} />
         </TestWrapper>
@@ -616,7 +622,7 @@ describe("Step3_Review", () => {
     });
 
     it("should render trash icon in remove button", () => {
-      const { container } = render(
+      render(
         <TestWrapper>
           <Step3_Review {...defaultProps} matches={mockMatches} />
         </TestWrapper>
@@ -748,7 +754,7 @@ describe("Step3_Review", () => {
     });
 
     it("should have proper grid layout for stats", () => {
-      const { container } = render(
+      render(
         <TestWrapper>
           <Step3_Review {...defaultProps} matches={mockMatches} />
         </TestWrapper>
@@ -813,7 +819,7 @@ describe("Step3_Review", () => {
 
   describe("Responsive Design", () => {
     it("should have hidden class for mobile card view on desktop", () => {
-      const { container } = render(
+      render(
         <TestWrapper>
           <Step3_Review {...defaultProps} matches={mockMatches} />
         </TestWrapper>
@@ -872,4 +878,3 @@ describe("Step3_Review", () => {
     });
   });
 });
-
