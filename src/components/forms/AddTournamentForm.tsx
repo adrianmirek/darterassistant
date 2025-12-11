@@ -12,33 +12,44 @@ import FormControls from "./FormControls";
 import type { MatchTypeDTO, TournamentTypeDTO, CreateTournamentResponseDTO } from "@/types";
 
 // Match-level validation schema
-const matchDataSchema = z.object({
-  match_type_id: z.string().min(1, "Match type is required"),
-  opponent_name: z.string().max(255).optional(),
-  player_score: z.number().int().nonnegative("Player score cannot be negative"),
-  opponent_score: z.number().int().nonnegative("Opponent score cannot be negative"),
-  average_score: z.number().positive("Average score is required").max(180, "Average score cannot exceed 180"),
-  first_nine_avg: z
-    .number()
-    .positive("First nine average is required")
-    .max(180, "First nine average cannot exceed 180"),
-  checkout_percentage: z
-    .number()
-    .min(0, "Checkout percentage cannot be negative")
-    .max(100, "Checkout percentage cannot exceed 100"),
-  score_60_count: z.number().int().nonnegative("Count cannot be negative"),
-  score_100_count: z.number().int().nonnegative("Count cannot be negative"),
-  score_140_count: z.number().int().nonnegative("Count cannot be negative"),
-  score_180_count: z.number().int().nonnegative("Count cannot be negative"),
-  high_finish: z
-    .number()
-    .int()
-    .refine((val) => val === 0 || (val >= 2 && val <= 170), {
-      message: "High finish must be 0 or between 2 and 170",
-    }),
-  best_leg: z.number().int().min(9, "Best leg must be at least 9 darts"),
-  worst_leg: z.number().int().min(9, "Worst leg must be at least 9 darts"),
-});
+const matchDataSchema = z
+  .object({
+    match_type_id: z.string().min(1, "Match type is required"),
+    opponent_name: z.string().max(255).optional(),
+    player_score: z.number().int().nonnegative("Player score cannot be negative"),
+    opponent_score: z.number().int().nonnegative("Opponent score cannot be negative"),
+    average_score: z.number().positive("Average score is required").max(180, "Average score cannot exceed 180"),
+    first_nine_avg: z
+      .number()
+      .positive("First nine average is required")
+      .max(180, "First nine average cannot exceed 180"),
+    checkout_percentage: z
+      .number()
+      .min(0, "Checkout percentage cannot be negative")
+      .max(100, "Checkout percentage cannot exceed 100"),
+    score_60_count: z.number().int().nonnegative("Count cannot be negative"),
+    score_100_count: z.number().int().nonnegative("Count cannot be negative"),
+    score_140_count: z.number().int().nonnegative("Count cannot be negative"),
+    score_180_count: z.number().int().nonnegative("Count cannot be negative"),
+    high_finish: z
+      .number()
+      .int()
+      .refine((val) => val === 0 || (val >= 2 && val <= 170), {
+        message: "High finish must be 0 or between 2 and 170",
+      }),
+    best_leg: z.number().int().min(9, "Best leg must be at least 9 darts"),
+    worst_leg: z.number().int().min(9, "Worst leg must be at least 9 darts"),
+  })
+  .superRefine((data, ctx) => {
+    // Validate that result is not 0:0 - add error only to player_score path
+    if (data.player_score === 0 && data.opponent_score === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Result cannot be 0:0. Please enter a valid score.",
+        path: ["player_score"],
+      });
+    }
+  });
 
 export type MatchDataViewModel = z.infer<typeof matchDataSchema>;
 
