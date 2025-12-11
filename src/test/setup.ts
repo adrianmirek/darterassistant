@@ -51,3 +51,22 @@ global.ResizeObserver = class ResizeObserver {
 
 // Set up environment variables for testing
 process.env.NODE_ENV = "test";
+
+// Mock hasPointerCapture for Radix UI components in jsdom
+if (typeof HTMLElement !== "undefined" && !HTMLElement.prototype.hasPointerCapture) {
+  HTMLElement.prototype.hasPointerCapture = function () {
+    return false;
+  };
+}
+
+if (typeof HTMLElement !== "undefined" && !HTMLElement.prototype.setPointerCapture) {
+  HTMLElement.prototype.setPointerCapture = function () {
+    // no-op
+  };
+}
+
+if (typeof HTMLElement !== "undefined" && !HTMLElement.prototype.releasePointerCapture) {
+  HTMLElement.prototype.releasePointerCapture = function () {
+    // no-op
+  };
+}
