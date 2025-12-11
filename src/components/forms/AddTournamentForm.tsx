@@ -119,7 +119,7 @@ export default function AddTournamentForm() {
         }
       }
       return false; // No feedback to show
-    } catch (error) {
+    } catch {
       // Silently fail if feedback generation fails - tournament is already saved
       return false;
     }
