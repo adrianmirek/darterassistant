@@ -18,7 +18,7 @@ export type TournamentTypeDTO = Pick<Tables["tournament_types"]["Row"], "id" | "
  */
 export type TournamentSummaryDTO = Pick<
   Tables["tournaments"]["Row"],
-  "id" | "name" | "date" | "tournament_type_id" | "final_place"
+  "id" | "name" | "date" | "tournament_type_id" | "final_place" | "ai_feedback"
 > & {
   average_score: number;
   tournament_type_name?: string; // Optional: include type name for display
@@ -49,7 +49,7 @@ export interface TournamentResultDTO {
  */
 export type TournamentDetailDTO = Pick<
   Tables["tournaments"]["Row"],
-  "id" | "name" | "date" | "tournament_type_id" | "final_place"
+  "id" | "name" | "date" | "tournament_type_id" | "final_place" | "ai_feedback"
 > & {
   tournament_type_name?: string; // NEW: Optional type name for display
   results: TournamentResultDTO[];

@@ -96,6 +96,35 @@ export default function AddTournamentForm() {
   const [isLoadingTournamentTypes, setIsLoadingTournamentTypes] = useState(true);
   const [tournamentTypesError, setTournamentTypesError] = useState<string | null>(null);
 
+  // Helper function to generate AI feedback asynchronously
+  const generateAIFeedback = async (tournamentId: string): Promise<boolean> => {
+    try {
+      const feedbackResponse = await fetch(`/api/tournaments/${tournamentId}/feedback`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (feedbackResponse.ok) {
+        const feedbackData = await feedbackResponse.json();
+
+        if (feedbackData.feedback) {
+          // Show AI feedback toast
+          toast.info("Performance Analysis", {
+            description: feedbackData.feedback,
+            duration: 17000, // Display longer to allow reading
+          });
+          return true; // Feedback was shown
+        }
+      }
+      return false; // No feedback to show
+    } catch {
+      // Silently fail if feedback generation fails - tournament is already saved
+      return false;
+    }
+  };
+
   const form = useForm<AddTournamentFormViewModel>({
     resolver: zodResolver(addTournamentFormSchema),
     defaultValues: {
@@ -397,22 +426,12 @@ export default function AddTournamentForm() {
 
       const result: CreateTournamentResponseDTO = await response.json();
 
-      // Show success message
+      // Show success message immediately
       toast.success("Tournament saved successfully!", {
         description: `Tournament "${data.name}" with ${allMatches.length} ${
           allMatches.length === 1 ? "match" : "matches"
         } has been recorded.`,
       });
-
-      // Show AI feedback if available
-      if (result.feedback) {
-        setTimeout(() => {
-          toast.info("Performance Analysis", {
-            description: result.feedback,
-            duration: 17000, // Display longer to allow reading
-          });
-        }, 500); // Delay to show after success message
-      }
 
       // Reset form and navigate to Step1
       form.reset({
@@ -425,13 +444,17 @@ export default function AddTournamentForm() {
       });
       setCurrentStep(0);
 
-      // Redirect to dashboard after successful submission
-      setTimeout(
-        () => {
-          window.location.href = "/";
-        },
-        result.feedback ? 17500 : 1500
-      ); // Wait longer if feedback is shown
+      // Generate AI feedback in background (async)
+      // Wait for it to complete, then show toast, then redirect
+      generateAIFeedback(result.id).then((feedbackShown) => {
+        // Redirect after feedback is processed
+        setTimeout(
+          () => {
+            window.location.href = "/";
+          },
+          feedbackShown ? 17500 : 1500
+        );
+      });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
       toast.error("Failed to save tournament", {

@@ -1,8 +1,7 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
 import type { GenerateFeedbackCommand } from "../../../../../types";
-// TODO: Reimplement using OpenRouterService
-// import { generateFeedback } from '../../../../../lib/services/feedback.service';
+import { generateAndSaveFeedback } from "../../../../../lib/services/tournament.service";
 
 export const prerender = false;
 
@@ -73,21 +72,44 @@ export const POST: APIRoute = async ({ params, locals, request }) => {
       });
     }
 
-    // TODO: Reimplement feedback generation using OpenRouterService
-    // Example implementation:
-    // 1. Initialize OpenRouterService with API key
-    // 2. Fetch tournament data
-    // 3. Build prompt with tournament metrics
-    // 4. Call sendChat() with appropriate messages
-    // 5. Return structured feedback response
+    // Generate and save AI feedback
+    const { data, error } = await generateAndSaveFeedback(locals.supabase, idResult.data, locals.user.id);
 
-    return new Response(
-      JSON.stringify({ error: "Feedback generation temporarily unavailable - pending reimplementation" }),
-      {
-        status: 503,
-        headers: { "Content-Type": "application/json" },
+    if (error) {
+      // Check if it's a configuration error
+      if (error.message?.includes("not configured")) {
+        return new Response(JSON.stringify({ error: "AI service is not configured" }), {
+          status: 503,
+          headers: { "Content-Type": "application/json" },
+        });
       }
-    );
+
+      // Check if tournament not found
+      if (error.message?.includes("not found")) {
+        return new Response(JSON.stringify({ error: "Tournament not found" }), {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      // Generic error
+      return new Response(JSON.stringify({ error: "Failed to generate feedback", details: error.message }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    if (!data) {
+      return new Response(JSON.stringify({ error: "Failed to generate feedback" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response(JSON.stringify({ feedback: data.feedback }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch {
     // Unexpected error in POST /api/tournaments/:id/feedback
     return new Response(JSON.stringify({ error: "Failed to generate feedback" }), {
