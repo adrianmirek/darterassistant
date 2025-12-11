@@ -113,6 +113,7 @@ export async function getTournaments(
         date,
         tournament_type_id,
         final_place,
+        ai_feedback,
         tournament_types (
           name
         ),
@@ -152,6 +153,7 @@ export async function getTournaments(
         date: tournament.date,
         tournament_type_id: tournament.tournament_type_id,
         final_place: tournament.final_place,
+        ai_feedback: tournament.ai_feedback,
         tournament_type_name: tournament.tournament_types?.name,
         average_score: averageScore,
       };
@@ -181,6 +183,7 @@ export async function getTournamentById(
         date,
         tournament_type_id,
         final_place,
+        ai_feedback,
         tournament_types (
           name
         ),
@@ -234,6 +237,7 @@ export async function getTournamentById(
       date: data.date,
       tournament_type_id: data.tournament_type_id,
       final_place: data.final_place,
+      ai_feedback: data.ai_feedback,
       tournament_type_name: data.tournament_types?.name,
       results,
     };
@@ -245,7 +249,76 @@ export async function getTournamentById(
 }
 
 /**
- * Creates a new tournament with multiple matches and AI-generated feedback
+ * Generates AI feedback for an existing tournament and saves it to the database
+ */
+export async function generateAndSaveFeedback(
+  supabase: SupabaseClient,
+  tournamentId: string,
+  userId: string
+): Promise<{ data: { feedback: string } | null; error: ServiceError }> {
+  try {
+    // Check API key
+    const apiKey = import.meta.env.OPENROUTER_API_KEY;
+    if (!apiKey) {
+      return {
+        data: null,
+        error: { message: "AI service is not configured. OPENROUTER_API_KEY is missing." },
+      };
+    }
+
+    // Fetch tournament with all matches
+    const { data: tournamentData, error: fetchError } = await getTournamentById(supabase, tournamentId, userId);
+
+    if (fetchError || !tournamentData) {
+      return { data: null, error: fetchError || { message: "Tournament not found" } };
+    }
+
+    // Transform tournament data to CreateTournamentCommand format for feedback generation
+    const command: CreateTournamentCommand = {
+      name: tournamentData.name,
+      date: tournamentData.date,
+      tournament_type_id: tournamentData.tournament_type_id,
+      final_place: tournamentData.final_place,
+      matches: tournamentData.results.map((result) => ({
+        match_type_id: result.match_type_id,
+        average_score: result.average_score,
+        first_nine_avg: result.first_nine_avg,
+        checkout_percentage: result.checkout_percentage,
+        score_60_count: result.score_60_count,
+        score_100_count: result.score_100_count,
+        score_140_count: result.score_140_count,
+        score_180_count: result.score_180_count,
+        high_finish: result.high_finish,
+        best_leg: result.best_leg,
+        worst_leg: result.worst_leg,
+        opponent_name: result.opponent_name,
+        player_score: result.player_score,
+        opponent_score: result.opponent_score,
+      })),
+    };
+
+    // Generate AI feedback
+    const feedback = await generateTournamentFeedback(command, apiKey);
+
+    // Save feedback to database
+    const { error: updateError } = await supabase
+      .from("tournaments")
+      .update({ ai_feedback: feedback })
+      .eq("id", tournamentId)
+      .eq("user_id", userId); // Ensure user owns this tournament
+
+    if (updateError) {
+      return { data: null, error: updateError };
+    }
+
+    return { data: { feedback }, error: null };
+  } catch (error) {
+    return { data: null, error: error as ServiceError };
+  }
+}
+
+/**
+ * Creates a new tournament with multiple matches
  */
 export async function createTournament(
   supabase: SupabaseClient,
@@ -304,21 +377,11 @@ export async function createTournament(
     }
 
     // Tournament matches created successfully
-
-    // Generate AI feedback based on performance (optional)
-    let feedback: string | undefined;
-    const apiKey = import.meta.env.OPENROUTER_API_KEY;
-
-    if (!apiKey) {
-      // OPENROUTER_API_KEY is not configured. Skipping AI feedback generation.
-    } else {
-      feedback = await generateTournamentFeedback(command, apiKey);
-    }
+    // Return immediately - AI feedback will be generated in a separate request
 
     const response: CreateTournamentResponseDTO = {
       id: tournament.id,
       created_at: tournament.created_at,
-      feedback,
     };
 
     return { data: response, error: null };
