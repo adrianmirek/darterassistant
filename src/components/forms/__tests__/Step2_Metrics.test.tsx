@@ -7,7 +7,13 @@ import type { MatchTypeDTO } from "@/types";
 import type { AddTournamentFormViewModel } from "@/components/forms/AddTournamentForm";
 
 // Mock wrapper component to provide form context
-function TestWrapper({ children, defaultValues }: { children: React.ReactNode; defaultValues?: Partial<AddTournamentFormViewModel> }) {
+function TestWrapper({
+  children,
+  defaultValues,
+}: {
+  children: React.ReactNode;
+  defaultValues?: Partial<AddTournamentFormViewModel>;
+}) {
   const form = useForm<AddTournamentFormViewModel>({
     defaultValues: {
       name: "Test Tournament",
@@ -152,7 +158,7 @@ describe("Step2_Metrics", () => {
       // Verify select is rendered
       const selectTrigger = screen.getByTestId("match-type-select");
       expect(selectTrigger).toBeInTheDocument();
-      
+
       // Note: Testing Radix UI Select dropdown interaction is complex in jsdom
       // The match types are passed as props and rendered in SelectContent
       // This test verifies the select trigger renders correctly
@@ -216,7 +222,7 @@ describe("Step2_Metrics", () => {
         </TestWrapper>
       );
 
-      const separator = container.querySelector('span.text-lg.font-semibold');
+      const separator = container.querySelector("span.text-lg.font-semibold");
       expect(separator).toHaveTextContent(":");
     });
 
@@ -654,7 +660,7 @@ describe("Step2_Metrics", () => {
 
   describe("Form Integration", () => {
     it("should integrate with react-hook-form context", () => {
-      const { container } = render(
+      render(
         <TestWrapper>
           <Step2_Metrics {...defaultProps} />
         </TestWrapper>
@@ -759,4 +765,3 @@ describe("Step2_Metrics", () => {
     });
   });
 });
-

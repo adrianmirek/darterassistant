@@ -25,8 +25,7 @@ describe("Calendar", () => {
     it("should render current month by default", () => {
       render(<Calendar />);
       const currentMonth = new Date().toLocaleString("default", { month: "long" });
-      const currentYear = new Date().getFullYear().toString();
-      
+
       // The calendar should display current month
       expect(screen.getByText(new RegExp(currentMonth, "i"))).toBeInTheDocument();
     });
@@ -91,10 +90,10 @@ describe("Calendar", () => {
     it("should navigate to next month when next button clicked", async () => {
       const user = userEvent.setup();
       const { container } = render(<Calendar />);
-      
+
       const nextButton = container.querySelector('button[class*="button_next"]') as HTMLElement;
       expect(nextButton).toBeInTheDocument();
-      
+
       await user.click(nextButton);
       // Calendar should still be rendered after navigation
       expect(container.querySelector('[data-slot="calendar"]')).toBeInTheDocument();
@@ -103,10 +102,10 @@ describe("Calendar", () => {
     it("should navigate to previous month when prev button clicked", async () => {
       const user = userEvent.setup();
       const { container } = render(<Calendar />);
-      
+
       const prevButton = container.querySelector('button[class*="button_previous"]') as HTMLElement;
       expect(prevButton).toBeInTheDocument();
-      
+
       await user.click(prevButton);
       // Calendar should still be rendered after navigation
       expect(container.querySelector('[data-slot="calendar"]')).toBeInTheDocument();
@@ -115,10 +114,6 @@ describe("Calendar", () => {
 
   describe("Weekday Display", () => {
     it("should render all weekday names", () => {
-      render(<Calendar />);
-      
-      // Common weekday abbreviations
-      const weekdays = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
       // Check that weekdays are present (format may vary by locale)
       const { container } = render(<Calendar />);
       const weekdayElements = container.querySelectorAll('[class*="weekday"]');
@@ -131,17 +126,17 @@ describe("Calendar", () => {
       const onSelect = vi.fn();
       const user = userEvent.setup();
       const { container } = render(<Calendar onSelect={onSelect} mode="single" />);
-      
+
       // Calendar renders with buttons
-      const buttons = container.querySelectorAll('button');
+      const buttons = container.querySelectorAll("button");
       expect(buttons.length).toBeGreaterThan(0);
-      
+
       // Find clickable day buttons (not navigation buttons)
-      const dayButtons = Array.from(buttons).filter(btn => {
-        const dataDay = btn.getAttribute('data-day');
+      const dayButtons = Array.from(buttons).filter((btn) => {
+        const dataDay = btn.getAttribute("data-day");
         return dataDay && dataDay.length > 0;
       });
-      
+
       if (dayButtons.length > 0) {
         // Click first available day
         await user.click(dayButtons[0] as HTMLElement);
@@ -155,7 +150,7 @@ describe("Calendar", () => {
     it("should render selected date with different styling", () => {
       const selected = new Date();
       const { container } = render(<Calendar selected={selected} mode="single" />);
-      
+
       const selectedDay = container.querySelector('[data-selected-single="true"]');
       expect(selectedDay).toBeInTheDocument();
     });
@@ -200,10 +195,7 @@ describe("Calendar", () => {
     it("should use custom month dropdown formatter", () => {
       const customFormatter = (date: Date) => date.toLocaleString("default", { month: "short" });
       const { container } = render(
-        <Calendar
-          captionLayout="dropdown"
-          formatters={{ formatMonthDropdown: customFormatter }}
-        />
+        <Calendar captionLayout="dropdown" formatters={{ formatMonthDropdown: customFormatter }} />
       );
       expect(container.querySelector('[data-slot="calendar"]')).toBeInTheDocument();
     });
@@ -225,7 +217,7 @@ describe("Calendar", () => {
     it("should use CalendarDayButton component for days", () => {
       const { container } = render(<Calendar />);
       // Calendar uses buttons for days
-      const buttons = container.querySelectorAll('button');
+      const buttons = container.querySelectorAll("button");
       expect(buttons.length).toBeGreaterThan(0);
     });
 
@@ -268,7 +260,6 @@ describe("Calendar", () => {
 
     it("should render WeekNumber component when week numbers shown", () => {
       const { container } = render(<Calendar showWeekNumber />);
-      const weekNumbers = container.querySelectorAll('[class*="week_number"]');
       // Week numbers may or may not be visible depending on the month
       expect(container.querySelector('[data-slot="calendar"]')).toBeInTheDocument();
     });
@@ -282,9 +273,7 @@ describe("Calendar", () => {
     });
 
     it("should merge custom class names", () => {
-      const { container } = render(
-        <Calendar classNames={{ root: "custom-root", months: "custom-months" }} />
-      );
+      const { container } = render(<Calendar classNames={{ root: "custom-root", months: "custom-months" }} />);
       expect(container.querySelector('[data-slot="calendar"]')).toBeInTheDocument();
     });
 
@@ -305,7 +294,6 @@ describe("Calendar", () => {
   describe("Today Highlighting", () => {
     it("should highlight today's date", () => {
       const { container } = render(<Calendar />);
-      const todayButton = container.querySelector('[class*="today"]');
       // Today might not be rendered if we're viewing a different month
       // Just verify calendar renders
       expect(container.querySelector('[data-slot="calendar"]')).toBeInTheDocument();
@@ -356,7 +344,7 @@ describe("Calendar", () => {
     it("should support keyboard navigation", () => {
       const { container } = render(<Calendar />);
       // Calendar renders with navigable buttons
-      const buttons = container.querySelectorAll('button');
+      const buttons = container.querySelectorAll("button");
       expect(buttons.length).toBeGreaterThan(0);
       // Buttons should be keyboard accessible
       buttons.forEach((button) => {
@@ -409,10 +397,7 @@ describe("CalendarDayButton", () => {
   describe("Component Rendering", () => {
     it("should render CalendarDayButton", () => {
       const { container } = render(
-        <CalendarDayButton
-          day={mockDay}
-          modifiers={mockModifiers}
-        >
+        <CalendarDayButton day={mockDay} modifiers={mockModifiers}>
           15
         </CalendarDayButton>
       );
@@ -422,10 +407,7 @@ describe("CalendarDayButton", () => {
 
     it("should display day number", () => {
       render(
-        <CalendarDayButton
-          day={mockDay}
-          modifiers={mockModifiers}
-        >
+        <CalendarDayButton day={mockDay} modifiers={mockModifiers}>
           15
         </CalendarDayButton>
       );
@@ -435,10 +417,7 @@ describe("CalendarDayButton", () => {
 
     it("should have data-day attribute with date", () => {
       const { container } = render(
-        <CalendarDayButton
-          day={mockDay}
-          modifiers={mockModifiers}
-        >
+        <CalendarDayButton day={mockDay} modifiers={mockModifiers}>
           15
         </CalendarDayButton>
       );
@@ -451,10 +430,7 @@ describe("CalendarDayButton", () => {
   describe("Selection States", () => {
     it("should apply selected-single styling when selected alone", () => {
       const { container } = render(
-        <CalendarDayButton
-          day={mockDay}
-          modifiers={{ ...mockModifiers, selected: true }}
-        >
+        <CalendarDayButton day={mockDay} modifiers={{ ...mockModifiers, selected: true }}>
           15
         </CalendarDayButton>
       );
@@ -465,10 +441,7 @@ describe("CalendarDayButton", () => {
 
     it("should apply range-start styling", () => {
       const { container } = render(
-        <CalendarDayButton
-          day={mockDay}
-          modifiers={{ ...mockModifiers, range_start: true }}
-        >
+        <CalendarDayButton day={mockDay} modifiers={{ ...mockModifiers, range_start: true }}>
           15
         </CalendarDayButton>
       );
@@ -479,10 +452,7 @@ describe("CalendarDayButton", () => {
 
     it("should apply range-end styling", () => {
       const { container } = render(
-        <CalendarDayButton
-          day={mockDay}
-          modifiers={{ ...mockModifiers, range_end: true }}
-        >
+        <CalendarDayButton day={mockDay} modifiers={{ ...mockModifiers, range_end: true }}>
           15
         </CalendarDayButton>
       );
@@ -493,10 +463,7 @@ describe("CalendarDayButton", () => {
 
     it("should apply range-middle styling", () => {
       const { container } = render(
-        <CalendarDayButton
-          day={mockDay}
-          modifiers={{ ...mockModifiers, range_middle: true }}
-        >
+        <CalendarDayButton day={mockDay} modifiers={{ ...mockModifiers, range_middle: true }}>
           15
         </CalendarDayButton>
       );
@@ -507,10 +474,7 @@ describe("CalendarDayButton", () => {
 
     it("should not set selected-single when part of range", () => {
       const { container } = render(
-        <CalendarDayButton
-          day={mockDay}
-          modifiers={{ ...mockModifiers, selected: true, range_start: true }}
-        >
+        <CalendarDayButton day={mockDay} modifiers={{ ...mockModifiers, selected: true, range_start: true }}>
           15
         </CalendarDayButton>
       );
@@ -523,10 +487,7 @@ describe("CalendarDayButton", () => {
   describe("Button Styling", () => {
     it("should use ghost variant", () => {
       const { container } = render(
-        <CalendarDayButton
-          day={mockDay}
-          modifiers={mockModifiers}
-        >
+        <CalendarDayButton day={mockDay} modifiers={mockModifiers}>
           15
         </CalendarDayButton>
       );
@@ -537,10 +498,7 @@ describe("CalendarDayButton", () => {
 
     it("should have icon size styling", () => {
       const { container } = render(
-        <CalendarDayButton
-          day={mockDay}
-          modifiers={mockModifiers}
-        >
+        <CalendarDayButton day={mockDay} modifiers={mockModifiers}>
           15
         </CalendarDayButton>
       );
@@ -551,11 +509,7 @@ describe("CalendarDayButton", () => {
 
     it("should apply custom className", () => {
       const { container } = render(
-        <CalendarDayButton
-          day={mockDay}
-          modifiers={mockModifiers}
-          className="custom-day"
-        >
+        <CalendarDayButton day={mockDay} modifiers={mockModifiers} className="custom-day">
           15
         </CalendarDayButton>
       );
@@ -571,11 +525,7 @@ describe("CalendarDayButton", () => {
       const user = userEvent.setup();
 
       render(
-        <CalendarDayButton
-          day={mockDay}
-          modifiers={mockModifiers}
-          onClick={onClick}
-        >
+        <CalendarDayButton day={mockDay} modifiers={mockModifiers} onClick={onClick}>
           15
         </CalendarDayButton>
       );
@@ -588,10 +538,7 @@ describe("CalendarDayButton", () => {
 
     it("should be a button element", () => {
       const { container } = render(
-        <CalendarDayButton
-          day={mockDay}
-          modifiers={mockModifiers}
-        >
+        <CalendarDayButton day={mockDay} modifiers={mockModifiers}>
           15
         </CalendarDayButton>
       );
@@ -601,4 +548,3 @@ describe("CalendarDayButton", () => {
     });
   });
 });
-
