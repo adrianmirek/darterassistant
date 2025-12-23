@@ -18,6 +18,8 @@ export class AddTournamentPage extends BasePage {
   // Step 2: Metrics (Current Match)
   readonly matchTypeSelect: Locator;
   readonly opponentNameInput: Locator;
+  readonly playerScoreInput: Locator;
+  readonly opponentScoreInput: Locator;
   readonly averageScoreInput: Locator;
   readonly firstNineAvgInput: Locator;
   readonly checkoutPercentageInput: Locator;
@@ -64,6 +66,8 @@ export class AddTournamentPage extends BasePage {
     // Step 2: Metrics
     this.matchTypeSelect = page.getByTestId("match-type-select");
     this.opponentNameInput = page.getByTestId("opponent-name-input");
+    this.playerScoreInput = page.getByTestId("player-score-input");
+    this.opponentScoreInput = page.getByTestId("opponent-score-input");
     this.averageScoreInput = page.getByTestId("average-score-input");
     this.firstNineAvgInput = page.getByTestId("first-nine-avg-input");
     this.checkoutPercentageInput = page.getByTestId("checkout-percentage-input");
@@ -124,22 +128,32 @@ export class AddTournamentPage extends BasePage {
     // Wait for calendar popover to appear
     await this.page.waitForSelector('[role="dialog"]', { state: "visible", timeout: 5000 });
 
-    // Parse the date string (format: YYYY-MM-DD or YYYY-M-D)
-    const date = new Date(dateString);
+    // Parse the date string (format: YYYY-MM-DD)
+    const date = new Date(dateString + "T00:00:00"); // Force local timezone
     const day = date.getDate();
-
-    // Click on the date button in the calendar
-    // Shadcn calendar uses button elements with the date number
-    // Try to find the button with matching date text in the calendar grid
+    // Find and click the date button by its text content (more reliable)
+    // The calendar shows day numbers, so just find the button with that day number
+    // that's not disabled and in the current month view
     const dateButton = this.page
-      .locator(`[role="dialog"] [role="gridcell"]:not([data-disabled]) button`)
-      .filter({ hasText: new RegExp(`^${day}$`) });
-    await dateButton.first().click();
+      .locator(`[role="dialog"] button[data-day]:not([disabled])`)
+      .filter({ hasText: new RegExp(`^${day}$`) })
+      .first();
 
-    // Close the popover by pressing Escape (Shadcn popover doesn't auto-close on calendar date selection)
-    await this.page.keyboard.press("Escape");
+    await dateButton.waitFor({ state: "visible", timeout: 5000 });
+    await dateButton.click();
 
-    // Wait a moment for the popover to close
+    // Wait a bit for the Calendar's onSelect to fire and update React Hook Form
+    await this.page.waitForTimeout(500);
+
+    // Close the popover by clicking outside (more reliable than Escape)
+    await this.page.locator('h1:has-text("Add Tournament")').click();
+
+    // Wait for the popover to close
+    await this.page.waitForSelector('[role="dialog"]', { state: "hidden", timeout: 2000 });
+
+    // Verify the date was set and validation error is gone
+    await expect(this.tournamentDateInput).not.toContainText("Pick a date");
+    // Wait for React Hook Form validation to complete
     await this.page.waitForTimeout(300);
   }
 
@@ -168,7 +182,7 @@ export class AddTournamentPage extends BasePage {
 
     // Click the option by text content
     const typeName = typeNames[value] || value;
-    await this.page.locator(`[role="option"]:has-text("${typeName}")`).click();
+    await this.page.getByRole("option", { name: typeName, exact: true }).click();
   }
 
   /**
@@ -180,19 +194,24 @@ export class AddTournamentPage extends BasePage {
     await expect(this.matchTypeSelect).toBeEnabled({ timeout: 10000 });
 
     await this.matchTypeSelect.click();
-
     // Wait for the dropdown content to appear (Shadcn Select uses Radix UI which portals content)
     await this.page.waitForSelector('[role="listbox"]', { state: "visible", timeout: 5000 });
 
-    // Map IDs to match type names
+    // Map IDs to actual match type names in the database
+    // These are game formats like "501 DO", not "singles"/"doubles"
     const matchNames: Record<string, string> = {
-      "1": "singles",
-      "2": "doubles",
+      "1": "501 DO",
+      "2": "501 DI DO",
+      "3": "501 SO",
+      "4": "301 DO",
+      "5": "301 DI DO",
+      "6": "301 SO",
+      "7": "Other",
     };
 
     // Click the option by text content
     const matchName = matchNames[value] || value;
-    await this.page.locator(`[role="option"]:has-text("${matchName}")`).click();
+    await this.page.getByRole("option", { name: matchName, exact: true }).click();
   }
 
   /**
@@ -201,6 +220,8 @@ export class AddTournamentPage extends BasePage {
   async fillMatchMetrics(data: {
     matchTypeId: string;
     opponentName?: string;
+    playerScore: number;
+    opponentScore: number;
     averageScore: number;
     firstNineAvg: number;
     checkoutPercentage: number;
@@ -217,6 +238,13 @@ export class AddTournamentPage extends BasePage {
     if (data.opponentName) {
       await this.opponentNameInput.fill(data.opponentName);
     }
+
+    // Fill result scores
+    await this.playerScoreInput.fill(data.playerScore.toString());
+    await this.playerScoreInput.blur();
+
+    await this.opponentScoreInput.fill(data.opponentScore.toString());
+    await this.opponentScoreInput.blur();
 
     // Fill inputs and trigger blur to ensure React Hook Form detects changes
     await this.averageScoreInput.fill(data.averageScore.toString());
@@ -295,17 +323,17 @@ export class AddTournamentPage extends BasePage {
    * Wait for toast message to appear
    */
   async waitForToast(text?: string | RegExp) {
-    await this.toastContainer.waitFor({ state: "visible" });
+    // 1. Define the locator for the individual toast items inside the toaster
+    const toastItem = this.toastContainer.locator("[data-sonner-toast]");
+
+    // 2. Wait for at least one toast to be visible
+    await toastItem.first().waitFor({ state: "visible", timeout: 5000 });
+
+    // 3. If text is provided, assert that the toast contains it
     if (text) {
-      await this.page.waitForFunction(
-        (args) => {
-          const toaster = document.querySelector("[data-sonner-toaster]");
-          if (!toaster) return false;
-          const content = toaster.textContent || "";
-          return typeof args.text === "string" ? content.includes(args.text) : args.text.test(content);
-        },
-        { text }
-      );
+      // Playwright's built-in assertions are more stable than waitForFunction
+      // because they have internal retry logic
+      await expect(this.toastContainer).toContainText(text);
     }
   }
 
@@ -359,8 +387,13 @@ export class AddTournamentPage extends BasePage {
       matchType: await row.locator("td").nth(1).textContent(), // Column 1 (after #)
       opponent: await row.locator("td").nth(2).textContent(), // Column 2
       avgScore: await row.locator("td").nth(4).textContent(), // Column 4 (after Result)
-      firstNineAvg: await row.locator("td").nth(5).textContent(), // Column 5
-      checkoutPct: await row.locator("td").nth(6).textContent(), // Column 6
+      checkoutPct: await row.locator("td").nth(5).textContent(), // Column 6
+      score60Count: await row.locator("td").nth(6).textContent(), // Column 7
+      score100Count: await row.locator("td").nth(7).textContent(), // Column 8
+      score140Count: await row.locator("td").nth(8).textContent(), // Column 9
+      score180Count: await row.locator("td").nth(9).textContent(), // Column 10
+      highFinish: await row.locator("td").nth(10).textContent(), // Column 11
+      bestLeg: await row.locator("td").nth(11).textContent(), // Column 12
     };
   }
 
@@ -394,6 +427,8 @@ export class AddTournamentPage extends BasePage {
     tournamentTypeId: string;
     matchTypeId: string;
     opponentName?: string;
+    playerScore: number;
+    opponentScore: number;
     averageScore: number;
     firstNineAvg: number;
     checkoutPercentage: number;
@@ -414,6 +449,8 @@ export class AddTournamentPage extends BasePage {
     await this.fillMatchMetrics({
       matchTypeId: data.matchTypeId,
       opponentName: data.opponentName,
+      playerScore: data.playerScore,
+      opponentScore: data.opponentScore,
       averageScore: data.averageScore,
       firstNineAvg: data.firstNineAvg,
       checkoutPercentage: data.checkoutPercentage,

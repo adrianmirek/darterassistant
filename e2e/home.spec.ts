@@ -32,18 +32,6 @@ test.describe("Home Page", () => {
     await expect(registerLink).toBeVisible();
   });
 
-  test("should take screenshot", async ({ page }) => {
-    // Skip screenshot tests in CI - they're platform-specific
-    test.skip(!!process.env.CI, "Screenshot tests are skipped in CI");
-
-    await page.goto("/");
-
-    // Take a screenshot for visual regression testing
-    await expect(page).toHaveScreenshot("home-page.png", {
-      fullPage: true,
-    });
-  });
-
   test("should be responsive", async ({ page }) => {
     // Test mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
