@@ -32,8 +32,22 @@ export class LoginPage extends BasePage {
    * Perform login action
    */
   async login(email: string, password: string) {
+    // Fill email and verify it was set correctly
+    await this.emailInput.click();
     await this.emailInput.fill(email);
+    await this.page.waitForTimeout(100);
+    // Verify the email was actually filled
+    const emailValue = await this.emailInput.inputValue();
+    if (emailValue !== email) {
+      // Retry if fill didn't work
+      await this.emailInput.clear();
+      await this.emailInput.fill(email);
+    }
+    // Fill password
+    await this.passwordInput.click();
     await this.passwordInput.fill(password);
+    await this.page.waitForTimeout(100);
+    // Click submit
     await this.submitButton.click();
   }
 
