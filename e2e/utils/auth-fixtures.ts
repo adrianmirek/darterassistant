@@ -16,8 +16,8 @@ interface AuthFixtures {
  * Configure in .env.test file
  */
 export const testUser = {
-  email: process.env.TEST_USER_EMAIL || "test@example.com",
-  password: process.env.TEST_USER_PASSWORD || "Test123!",
+  email: process.env.E2E_USERNAME || "test@example.com",
+  password: process.env.E2E_PASSWORD || "Test123!",
 };
 
 /**

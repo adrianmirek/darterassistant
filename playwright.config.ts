@@ -41,7 +41,7 @@ export default defineConfig({
 
     // Video on failure
     video: "retain-on-failure",
-    snapshotSuffix: "",
+    //snapshotSuffix: "",
   },
 
   // Configure projects for major browsers - Only Chromium as per guidelines
