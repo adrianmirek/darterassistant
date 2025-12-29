@@ -114,7 +114,32 @@
   * {
     @apply border-border outline-ring/50;
   }
+  
+  html {
+    /* Smooth transition between themes */
+    transition-property: background-color, color;
+    transition-duration: 200ms;
+    transition-timing-function: ease-in-out;
+  }
+  
   body {
     @apply bg-background text-foreground;
+  }
+  
+  /* Ensure proper scrollbar styling in dark mode */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-background;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted rounded-lg;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
   }
 }

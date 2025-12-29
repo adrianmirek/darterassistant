@@ -19,6 +19,10 @@ const user = Astro.locals.user;
     <link rel="icon" type="image/svg" href="/favicon.png" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    <!-- Theme initialization script - prevents flash of wrong theme -->
+    <script is:inline>
+      document.documentElement.classList.add(localStorage.getItem("darter-theme") || "dark");
+    </script>
   </head>
   <body>
     {showAuthNav && user && <AuthNav userEmail={user.email} client:load />}
