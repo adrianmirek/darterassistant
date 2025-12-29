@@ -25,8 +25,8 @@ const user = Astro.locals.user;
       document.documentElement.classList.add(localStorage.getItem("darter-theme") || "dark");
     </script>
     <!-- Sidebar state initialization - prevents flash on navigation -->
-    <!-- prettier-ignore -->
-    <script is:inline prettier-ignore>
+    <script is:inline>
+      const sidebarExpanded = localStorage.getItem("darter-sidebar-expanded") === "true";
       if (sidebarExpanded) {
         document.documentElement.style.setProperty("--sidebar-initial-width", "16rem");
         document.documentElement.style.setProperty("--sidebar-initial-opacity", "1");
