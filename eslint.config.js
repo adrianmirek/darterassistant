@@ -36,6 +36,7 @@ const jsxA11yConfig = tseslint.config({
 
 const reactConfig = tseslint.config({
   files: ["**/*.{js,jsx,ts,tsx}"],
+  ignores: ["e2e/**/*"],
   extends: [pluginReact.configs.flat.recommended],
   languageOptions: {
     ...pluginReact.configs.flat.recommended.languageOptions,
@@ -59,18 +60,11 @@ const reactConfig = tseslint.config({
 export default tseslint.config(
   includeIgnoreFile(gitignorePath),
   {
-    ignores: ["src/db/database.types.ts", "dist/", ".astro/", "node_modules/", "coverage/"],
+    ignores: ["src/db/database.types.ts", "src/layouts/Layout.astro"],
   },
   baseConfig,
   jsxA11yConfig,
   reactConfig,
   eslintPluginAstro.configs["flat/recommended"],
-  eslintPluginPrettier,
-  // Disable react-hooks rules for E2E tests (Playwright fixtures are not React hooks)
-  {
-    files: ["e2e/**/*.ts"],
-    rules: {
-      "react-hooks/rules-of-hooks": "off",
-    },
-  }
+  eslintPluginPrettier
 );
