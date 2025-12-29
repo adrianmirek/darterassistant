@@ -29,7 +29,7 @@ export default function AuthNav({ userEmail }: AuthNavProps) {
 
   return (
     <ThemeProvider>
-      <header className="border-b bg-background transition-colors duration-200">
+      <header className="fixed top-0 left-0 right-0 border-b bg-background transition-colors duration-200 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             {/* App Logo/Name */}

@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import AuthNav from "@/components/navigation/AuthNav";
+import LayoutWrapper from "@/components/navigation/LayoutWrapper";
 
 interface Props {
   title?: string;
@@ -23,10 +24,29 @@ const user = Astro.locals.user;
     <script is:inline>
       document.documentElement.classList.add(localStorage.getItem("darter-theme") || "dark");
     </script>
+    <!-- Sidebar state initialization - prevents flash on navigation -->
+    <!-- prettier-ignore -->
+    <script is:inline prettier-ignore>
+      if (sidebarExpanded) {
+        document.documentElement.style.setProperty("--sidebar-initial-width", "16rem");
+        document.documentElement.style.setProperty("--sidebar-initial-opacity", "1");
+      } else {
+        document.documentElement.style.setProperty("--sidebar-initial-width", "0px");
+        document.documentElement.style.setProperty("--sidebar-initial-opacity", "0");
+      }
+    </script>
   </head>
   <body>
     {showAuthNav && user && <AuthNav userEmail={user.email} client:load />}
-    <slot />
+    {
+      user ? (
+        <LayoutWrapper client:load>
+          <slot />
+        </LayoutWrapper>
+      ) : (
+        <slot />
+      )
+    }
   </body>
 </html>
 
