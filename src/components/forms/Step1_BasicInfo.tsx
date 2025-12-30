@@ -1,5 +1,6 @@
 import { useFormContext } from "react-hook-form";
 import { format } from "date-fns";
+import { enUS, pl } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -8,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import { useTranslation, useLanguage } from "@/lib/hooks/I18nProvider";
 import type { AddTournamentFormViewModel } from "./AddTournamentForm";
 import type { TournamentTypeDTO } from "@/types";
 
@@ -23,6 +25,11 @@ export default function Step1_BasicInfo({
   tournamentTypesError,
 }: Step1_BasicInfoProps) {
   const form = useFormContext<AddTournamentFormViewModel>();
+  const t = useTranslation();
+  const lang = useLanguage();
+
+  // Get the appropriate date-fns locale
+  const dateLocale = lang === "pl" ? pl : enUS;
 
   return (
     <div className="space-y-6">
@@ -32,9 +39,13 @@ export default function Step1_BasicInfo({
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Tournament Name</FormLabel>
+              <FormLabel>{t("tournaments.tournamentName")}</FormLabel>
               <FormControl>
-                <Input placeholder="Enter tournament name" {...field} data-testid="tournament-name-input" />
+                <Input
+                  placeholder={t("tournaments.tournamentNamePlaceholder")}
+                  {...field}
+                  data-testid="tournament-name-input"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -46,7 +57,7 @@ export default function Step1_BasicInfo({
           name="date"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel>Tournament Date</FormLabel>
+              <FormLabel>{t("tournaments.tournamentDate")}</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
@@ -55,7 +66,11 @@ export default function Step1_BasicInfo({
                       className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
                       data-testid="tournament-date-input"
                     >
-                      {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
+                      {field.value ? (
+                        format(field.value, "PPP", { locale: dateLocale })
+                      ) : (
+                        <span>{t("tournaments.pickDate")}</span>
+                      )}
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
                   </FormControl>
@@ -81,7 +96,7 @@ export default function Step1_BasicInfo({
             name="tournament_type_id"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Tournament Type</FormLabel>
+                <FormLabel>{t("tournaments.tournamentType")}</FormLabel>
                 {tournamentTypesError ? (
                   <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
                     {tournamentTypesError}
@@ -92,7 +107,7 @@ export default function Step1_BasicInfo({
                       <SelectTrigger className="w-full" data-testid="tournament-type-select">
                         <SelectValue
                           placeholder={
-                            isLoadingTournamentTypes ? "Loading tournament types..." : "Select a tournament type"
+                            isLoadingTournamentTypes ? t("common.loading") : t("tournaments.selectTournamentType")
                           }
                         />
                       </SelectTrigger>
@@ -116,11 +131,11 @@ export default function Step1_BasicInfo({
             name="final_place"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Final Place (Optional)</FormLabel>
+                <FormLabel>{t("tournaments.finalPlaceOptional")}</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
-                    placeholder="Enter final placement (e.g., 1, 2, 3)"
+                    placeholder={t("tournaments.finalPlacePlaceholder")}
                     {...field}
                     onChange={(e) => {
                       const value = e.target.value;
