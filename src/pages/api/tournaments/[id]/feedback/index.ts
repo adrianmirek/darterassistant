@@ -15,6 +15,7 @@ const tonePreferencesSchema = z.record(z.any()).optional();
 const generateFeedbackSchema = z
   .object({
     tone_preferences: tonePreferencesSchema,
+    language: z.enum(["en", "pl"]).optional(),
   })
   .optional();
 
@@ -72,8 +73,9 @@ export const POST: APIRoute = async ({ params, locals, request }) => {
       });
     }
 
-    // Generate and save AI feedback
-    const { data, error } = await generateAndSaveFeedback(locals.supabase, idResult.data, locals.user.id);
+    // Generate and save AI feedback with language support
+    const language = body?.language || "en";
+    const { data, error } = await generateAndSaveFeedback(locals.supabase, idResult.data, locals.user.id, language);
 
     if (error) {
       // Check if it's a configuration error

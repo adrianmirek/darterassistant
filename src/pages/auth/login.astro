@@ -2,6 +2,7 @@
 import Layout from "@/layouts/Layout.astro";
 import LoginForm from "@/components/forms/LoginForm";
 import GuestNav from "@/components/navigation/GuestNav";
+import { detectLanguageFromHeader, t } from "@/lib/i18n";
 
 export const prerender = false;
 
@@ -9,12 +10,17 @@ export const prerender = false;
 if (Astro.locals.user) {
   return Astro.redirect("/");
 }
+
+// Detect language from browser
+const acceptLanguage = Astro.request.headers.get("accept-language");
+const lang = detectLanguageFromHeader(acceptLanguage);
+const pageTitle = `${t(lang, "auth.loginTitle")} - ${t(lang, "common.appName")}`;
 ---
 
-<Layout title="Sign In - Darter Assistant" showAuthNav={false}>
-  <GuestNav client:load />
+<Layout title={pageTitle} showAuthNav={false}>
+  <GuestNav lang={lang} client:load />
 
   <main class="min-h-[calc(100vh-73px)] flex items-center justify-center p-4">
-    <LoginForm client:load />
+    <LoginForm lang={lang} client:load />
   </main>
 </Layout>

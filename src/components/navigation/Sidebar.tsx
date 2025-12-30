@@ -1,11 +1,13 @@
 import { Plus, ChevronRight, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSidebarContext } from "@/lib/hooks/SidebarProvider";
+import { useTranslation } from "@/lib/hooks/I18nProvider";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 
 export default function Sidebar() {
   const { isExpanded, toggleSidebar } = useSidebarContext();
+  const t = useTranslation();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -44,7 +46,7 @@ export default function Sidebar() {
               className="flex items-center gap-3 px-4 py-3 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors duration-200 group"
             >
               <Plus className="h-5 w-5 group-hover:scale-110 transition-transform duration-200" />
-              <span className="font-medium">Add Tournament</span>
+              <span className="font-medium">{t("nav.addTournament")}</span>
             </a>
           </nav>
         </div>
@@ -54,7 +56,7 @@ export default function Sidebar() {
           variant="ghost"
           size="icon"
           onClick={toggleSidebar}
-          aria-label="Close sidebar"
+          aria-label={t("nav.closeSidebar")}
           style={{
             opacity: mounted ? undefined : "var(--sidebar-initial-opacity, 0)",
           }}
@@ -73,7 +75,7 @@ export default function Sidebar() {
         variant="ghost"
         size="icon"
         onClick={toggleSidebar}
-        aria-label="Open sidebar"
+        aria-label={t("nav.openSidebar")}
         style={{
           opacity: mounted ? undefined : "calc(1 - var(--sidebar-initial-opacity, 0))",
         }}

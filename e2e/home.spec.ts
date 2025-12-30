@@ -20,7 +20,7 @@ test.describe("Home Page", () => {
     await page.goto("/");
 
     // After redirect, should show login page title
-    await expect(page).toHaveTitle(/sign in.*darter assistant/i);
+    await expect(page).toHaveTitle(/Login - Darter Assistant/i);
   });
 
   test("should display navigation on login page after redirect", async ({ page }) => {

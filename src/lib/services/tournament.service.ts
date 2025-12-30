@@ -18,7 +18,11 @@ type ServiceError = { message: string } | null;
 /**
  * Generate AI-powered performance feedback based on tournament results with multiple matches
  */
-async function generateTournamentFeedback(command: CreateTournamentCommand, apiKey: string): Promise<string> {
+async function generateTournamentFeedback(
+  command: CreateTournamentCommand,
+  apiKey: string,
+  language: "en" | "pl" = "en"
+): Promise<string> {
   try {
     // Initialize OpenRouter service
     const openRouter = new OpenRouterService({
@@ -28,24 +32,79 @@ async function generateTournamentFeedback(command: CreateTournamentCommand, apiK
 
     // Build prompt with tournament performance data
     const matches = command.matches;
-    let prompt = `Analyze this darts tournament performance and provide constructive feedback:
 
-Tournament: ${command.name}
-Date: ${command.date}
-Total Matches: ${matches.length}
+    // Language-specific prompts
+    const prompts = {
+      en: {
+        analyze: "Analyze this darts tournament performance and provide constructive feedback:",
+        tournament: "Tournament",
+        date: "Date",
+        totalMatches: "Total Matches",
+        match: "Match",
+        averageScore: "Average Score",
+        firstNineAverage: "First Nine Average",
+        checkoutPercentage: "Checkout Percentage",
+        highFinish: "High Finish",
+        bestLeg: "Best Leg",
+        worstLeg: "Worst Leg",
+        darts: "darts",
+        scoreCounts: "Score Counts",
+        overallStats: "Overall Statistics",
+        avgAllMatches: "Average Score (all matches)",
+        total180s: "Total 180s",
+        instructions: `Provide brief, encouraging feedback (2-3 sentences) highlighting:
+1. Key strengths based on the metrics
+2. One specific area for improvement
+3. Motivational closing
+
+Keep the tone positive, supportive, and professional.`,
+      },
+      pl: {
+        analyze: "Przeanalizuj wyniki tego turnieju w darty i przedstaw konstruktywną opinię:",
+        tournament: "Turniej",
+        date: "Data",
+        totalMatches: "Liczba Meczów",
+        match: "Mecz",
+        averageScore: "Średnia Punktów",
+        firstNineAverage: "Średnia z Pierwszych Dziewięciu",
+        checkoutPercentage: "Procent Checkout",
+        highFinish: "Najwyższe Wykończenie",
+        bestLeg: "Najlepszy Leg",
+        worstLeg: "Najgorszy Leg",
+        darts: "rzutek",
+        scoreCounts: "Liczba Wyników",
+        overallStats: "Statystyki Ogólne",
+        avgAllMatches: "Średnia Punktów (wszystkie mecze)",
+        total180s: "Łączna liczba 180",
+        instructions: `Przedstaw krótką, motywującą opinię (2-3 zdania) podkreślającą:
+1. Kluczowe mocne strony na podstawie metryk
+2. Jeden konkretny obszar do poprawy
+3. Motywujące zakończenie
+
+Zachowaj pozytywny, wspierający i profesjonalny ton. ODPOWIEDZ PO POLSKU.`,
+      },
+    };
+
+    const p = prompts[language];
+
+    let prompt = `${p.analyze}
+
+${p.tournament}: ${command.name}
+${p.date}: ${command.date}
+${p.totalMatches}: ${matches.length}
 
 `;
 
     // Add individual match details
     matches.forEach((match, index) => {
-      prompt += `Match ${index + 1}:
-- Average Score: ${match.average_score}
-- First Nine Average: ${match.first_nine_avg}
-- Checkout Percentage: ${match.checkout_percentage}%
-- High Finish: ${match.high_finish}
-- Best Leg: ${match.best_leg} darts
-- Worst Leg: ${match.worst_leg} darts
-- Score Counts: ${match.score_60_count} (60+), ${match.score_100_count} (100+), ${match.score_140_count} (140+), ${match.score_180_count} (180s)
+      prompt += `${p.match} ${index + 1}:
+- ${p.averageScore}: ${match.average_score}
+- ${p.firstNineAverage}: ${match.first_nine_avg}
+- ${p.checkoutPercentage}: ${match.checkout_percentage}%
+- ${p.highFinish}: ${match.high_finish}
+- ${p.bestLeg}: ${match.best_leg} ${p.darts}
+- ${p.worstLeg}: ${match.worst_leg} ${p.darts}
+- ${p.scoreCounts}: ${match.score_60_count} (60+), ${match.score_100_count} (100+), ${match.score_140_count} (140+), ${match.score_180_count} (180s)
 
 `;
     });
@@ -55,17 +114,12 @@ Total Matches: ${matches.length}
     const total180s = matches.reduce((sum, m) => sum + (m.score_180_count || 0), 0);
     const bestLeg = Math.min(...matches.map((m) => m.best_leg || 9));
 
-    prompt += `Overall Statistics:
-- Average Score (all matches): ${avgScore.toFixed(2)}
-- Total 180s: ${total180s}
-- Best Leg: ${bestLeg} darts
+    prompt += `${p.overallStats}:
+- ${p.avgAllMatches}: ${avgScore.toFixed(2)}
+- ${p.total180s}: ${total180s}
+- ${p.bestLeg}: ${bestLeg} ${p.darts}
 
-Provide brief, encouraging feedback (2-3 sentences) highlighting:
-1. Key strengths based on the metrics
-2. One specific area for improvement
-3. Motivational closing
-
-Keep the tone positive, supportive, and professional.`;
+${p.instructions}`;
 
     const messages: ChatMessage[] = [
       {
@@ -254,7 +308,8 @@ export async function getTournamentById(
 export async function generateAndSaveFeedback(
   supabase: SupabaseClient,
   tournamentId: string,
-  userId: string
+  userId: string,
+  language: "en" | "pl" = "en"
 ): Promise<{ data: { feedback: string } | null; error: ServiceError }> {
   try {
     // Check API key
@@ -297,8 +352,8 @@ export async function generateAndSaveFeedback(
       })),
     };
 
-    // Generate AI feedback
-    const feedback = await generateTournamentFeedback(command, apiKey);
+    // Generate AI feedback with language support
+    const feedback = await generateTournamentFeedback(command, apiKey, language);
 
     // Save feedback to database
     const { error: updateError } = await supabase
