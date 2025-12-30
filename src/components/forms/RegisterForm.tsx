@@ -8,13 +8,20 @@ import { Loader2 } from "lucide-react";
 import { PasswordInput } from "./fields/PasswordInput";
 import { PasswordStrengthIndicator } from "./fields/PasswordStrengthIndicator";
 import { useAuthApi } from "@/lib/hooks/useAuthApi";
-import { registerSchema, type RegisterFormData } from "@/lib/utils/validation.schemas";
+import { createRegisterSchema, type RegisterFormData } from "@/lib/utils/validation.schemas";
+import { I18nProvider, useTranslation } from "@/lib/hooks/I18nProvider";
+import { type Language } from "@/lib/i18n";
 
-export default function RegisterForm() {
+interface RegisterFormProps {
+  lang: Language;
+}
+
+function RegisterFormContent() {
   const { register } = useAuthApi();
+  const t = useTranslation();
 
   const form = useForm<RegisterFormData>({
-    resolver: zodResolver(registerSchema),
+    resolver: zodResolver(createRegisterSchema(t)),
     defaultValues: {
       email: "",
       password: "",
@@ -34,12 +41,12 @@ export default function RegisterForm() {
 
       // Check if email confirmation is required (session will be null)
       if (result.session === null) {
-        toast.success("Registration successful!", {
-          description: "Please check your email to verify your account before signing in",
+        toast.success(t("common.success"), {
+          description: t("auth.registerSubtitle"),
         });
       } else {
-        toast.success("Registration successful!", {
-          description: "Please sign in with your new account",
+        toast.success(t("common.success"), {
+          description: t("auth.registerSubtitle"),
         });
       }
 
@@ -48,8 +55,8 @@ export default function RegisterForm() {
         window.location.href = "/auth/login";
       }, 2500);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
-      toast.error("Registration failed", {
+      const errorMessage = error instanceof Error ? error.message : t("errors.generic");
+      toast.error(t("common.error"), {
         description: errorMessage,
       });
     }
@@ -59,8 +66,8 @@ export default function RegisterForm() {
     <>
       <div className="w-full max-w-md mx-auto space-y-6">
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Create an account</h1>
-          <p className="text-muted-foreground">Enter your details to get started</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t("auth.registerTitle")}</h1>
+          <p className="text-muted-foreground">{t("auth.registerSubtitle")}</p>
         </div>
 
         <Form {...form}>
@@ -70,11 +77,11 @@ export default function RegisterForm() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>{t("auth.email")}</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
-                      placeholder="your.email@example.com"
+                      placeholder={t("auth.emailPlaceholder")}
                       {...field}
                       disabled={form.formState.isSubmitting}
                     />
@@ -89,11 +96,11 @@ export default function RegisterForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>{t("auth.password")}</FormLabel>
                   <FormControl>
                     <div className="space-y-2">
                       <PasswordInput
-                        placeholder="Create a strong password"
+                        placeholder={t("auth.passwordPlaceholder")}
                         {...field}
                         disabled={form.formState.isSubmitting}
                       />
@@ -110,10 +117,10 @@ export default function RegisterForm() {
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirm Password</FormLabel>
+                  <FormLabel>{t("auth.confirmPassword")}</FormLabel>
                   <FormControl>
                     <PasswordInput
-                      placeholder="Confirm your password"
+                      placeholder={t("auth.confirmPasswordPlaceholder")}
                       {...field}
                       disabled={form.formState.isSubmitting}
                     />
@@ -127,24 +134,32 @@ export default function RegisterForm() {
               {form.formState.isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating account...
+                  {t("auth.creatingAccount")}
                 </>
               ) : (
-                "Create account"
+                t("auth.registerTitle")
               )}
             </Button>
           </form>
         </Form>
 
         <div className="text-center text-sm">
-          <span className="text-muted-foreground">Already have an account? </span>
+          <span className="text-muted-foreground">{t("auth.alreadyHaveAccount")} </span>
           <a href="/auth/login" className="text-primary hover:underline font-medium">
-            Sign in
+            {t("auth.signIn")}
           </a>
         </div>
       </div>
 
       <Toaster richColors position="top-right" />
     </>
+  );
+}
+
+export default function RegisterForm({ lang }: RegisterFormProps) {
+  return (
+    <I18nProvider lang={lang}>
+      <RegisterFormContent />
+    </I18nProvider>
   );
 }

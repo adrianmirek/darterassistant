@@ -7,14 +7,21 @@ import { Input } from "@/components/ui/input";
 import { Toaster, toast } from "sonner";
 import { Loader2, ArrowLeft, Mail } from "lucide-react";
 import { useAuthApi } from "@/lib/hooks/useAuthApi";
-import { forgotPasswordSchema, type ForgotPasswordFormData } from "@/lib/utils/validation.schemas";
+import { createForgotPasswordSchema, type ForgotPasswordFormData } from "@/lib/utils/validation.schemas";
+import { I18nProvider, useTranslation } from "@/lib/hooks/I18nProvider";
+import { type Language } from "@/lib/i18n";
 
-export default function ForgotPasswordForm() {
+interface ForgotPasswordFormProps {
+  lang: Language;
+}
+
+function ForgotPasswordFormContent() {
   const { forgotPassword } = useAuthApi();
   const [isSuccess, setIsSuccess] = useState(false);
+  const t = useTranslation();
 
   const form = useForm<ForgotPasswordFormData>({
-    resolver: zodResolver(forgotPasswordSchema),
+    resolver: zodResolver(createForgotPasswordSchema(t)),
     defaultValues: {
       email: "",
     },
@@ -27,13 +34,12 @@ export default function ForgotPasswordForm() {
 
       // Success - show confirmation
       setIsSuccess(true);
-      toast.success("Check your email", {
-        description:
-          result.message || "If an account exists with this email, you will receive password reset instructions.",
+      toast.success(t("common.success"), {
+        description: result.message || t("auth.resetLinkSent"),
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
-      toast.error("Failed to send reset email", {
+      const errorMessage = error instanceof Error ? error.message : t("errors.generic");
+      toast.error(t("common.error"), {
         description: errorMessage,
       });
     }
@@ -47,25 +53,20 @@ export default function ForgotPasswordForm() {
             <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
               <Mail className="h-8 w-8 text-primary" />
             </div>
-            <h1 className="text-3xl font-bold tracking-tight">Check your email</h1>
-            <p className="text-muted-foreground">
-              If an account exists with the email address you provided, you will receive password reset instructions
-              shortly.
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Didn&apos;t receive an email? Check your spam folder or try again.
-            </p>
+            <h1 className="text-3xl font-bold tracking-tight">{t("auth.forgotPasswordTitle")}</h1>
+            <p className="text-muted-foreground">{t("auth.resetLinkSent")}</p>
+            <p className="text-sm text-muted-foreground">{t("auth.forgotPasswordSubtitle")}</p>
           </div>
 
           <div className="space-y-4">
             <Button type="button" variant="outline" className="w-full" onClick={() => setIsSuccess(false)}>
-              Try another email
+              {t("common.reset")}
             </Button>
 
             <Button type="button" variant="ghost" className="w-full" asChild>
               <a href="/auth/login">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to sign in
+                {t("auth.backToLogin")}
               </a>
             </Button>
           </div>
@@ -80,10 +81,8 @@ export default function ForgotPasswordForm() {
     <>
       <div className="w-full max-w-md mx-auto space-y-6">
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Forgot password?</h1>
-          <p className="text-muted-foreground">
-            Enter your email address and we&apos;ll send you instructions to reset your password
-          </p>
+          <h1 className="text-3xl font-bold tracking-tight">{t("auth.forgotPasswordTitle")}</h1>
+          <p className="text-muted-foreground">{t("auth.forgotPasswordSubtitle")}</p>
         </div>
 
         <Form {...form}>
@@ -93,11 +92,11 @@ export default function ForgotPasswordForm() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>{t("auth.email")}</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
-                      placeholder="your.email@example.com"
+                      placeholder={t("auth.emailPlaceholder")}
                       {...field}
                       disabled={form.formState.isSubmitting}
                     />
@@ -111,10 +110,10 @@ export default function ForgotPasswordForm() {
               {form.formState.isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Sending...
+                  {t("auth.sendingResetLink")}
                 </>
               ) : (
-                "Send reset instructions"
+                t("auth.sendResetLink")
               )}
             </Button>
           </form>
@@ -124,7 +123,7 @@ export default function ForgotPasswordForm() {
           <Button type="button" variant="ghost" className="text-sm" asChild>
             <a href="/auth/login">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to sign in
+              {t("auth.backToLogin")}
             </a>
           </Button>
         </div>
@@ -132,5 +131,13 @@ export default function ForgotPasswordForm() {
 
       <Toaster richColors position="top-right" />
     </>
+  );
+}
+
+export default function ForgotPasswordForm({ lang }: ForgotPasswordFormProps) {
+  return (
+    <I18nProvider lang={lang}>
+      <ForgotPasswordFormContent />
+    </I18nProvider>
   );
 }

@@ -1,50 +1,58 @@
 import * as z from "zod";
 
-// Base schemas
-export const emailSchema = z.string().email("Invalid email address");
+// Type for translation function
+type TranslateFn = (key: string, params?: Record<string, string | number>) => string;
 
-export const passwordSchema = z
-  .string()
-  .min(8, "Password must be at least 8 characters")
-  .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-  .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-  .regex(/[0-9]/, "Password must contain at least one number");
+// Factory functions that create schemas with translations
+export const createEmailSchema = (t: TranslateFn) => z.string().email(t("auth.emailInvalid"));
 
-export const simplePasswordSchema = z.string().min(8, "Password must be at least 8 characters");
+export const createPasswordSchema = (t: TranslateFn) =>
+  z
+    .string()
+    .min(8, t("auth.passwordMinLength"))
+    .regex(/[A-Z]/, t("auth.passwordUppercase"))
+    .regex(/[a-z]/, t("auth.passwordLowercase"))
+    .regex(/[0-9]/, t("auth.passwordNumber"));
 
-// Composed schemas for forms
-export const loginSchema = z.object({
-  email: emailSchema,
-  password: simplePasswordSchema, // Less strict for login
-});
+export const createSimplePasswordSchema = (t: TranslateFn) => z.string().min(8, t("auth.passwordMinLength"));
 
-export const registerSchema = z
-  .object({
-    email: emailSchema,
-    password: passwordSchema,
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
+// Factory functions for composed schemas
+export const createLoginSchema = (t: TranslateFn) =>
+  z.object({
+    email: createEmailSchema(t),
+    password: createSimplePasswordSchema(t), // Less strict for login
   });
 
-export const resetPasswordSchema = z
-  .object({
-    password: passwordSchema,
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-  });
+export const createRegisterSchema = (t: TranslateFn) =>
+  z
+    .object({
+      email: createEmailSchema(t),
+      password: createPasswordSchema(t),
+      confirmPassword: z.string(),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: t("auth.passwordsNotMatch"),
+      path: ["confirmPassword"],
+    });
 
-export const forgotPasswordSchema = z.object({
-  email: emailSchema,
-});
+export const createResetPasswordSchema = (t: TranslateFn) =>
+  z
+    .object({
+      password: createPasswordSchema(t),
+      confirmPassword: z.string(),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: t("auth.passwordsNotMatch"),
+      path: ["confirmPassword"],
+    });
+
+export const createForgotPasswordSchema = (t: TranslateFn) =>
+  z.object({
+    email: createEmailSchema(t),
+  });
 
 // Export types for use in components
-export type LoginFormData = z.infer<typeof loginSchema>;
-export type RegisterFormData = z.infer<typeof registerSchema>;
-export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
-export type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+export type LoginFormData = z.infer<ReturnType<typeof createLoginSchema>>;
+export type RegisterFormData = z.infer<ReturnType<typeof createRegisterSchema>>;
+export type ResetPasswordFormData = z.infer<ReturnType<typeof createResetPasswordSchema>>;
+export type ForgotPasswordFormData = z.infer<ReturnType<typeof createForgotPasswordSchema>>;

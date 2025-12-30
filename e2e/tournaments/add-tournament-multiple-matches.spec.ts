@@ -14,7 +14,7 @@ test.describe("Add Tournament - Multiple Matches", () => {
   });
 
   test("Scenario 2: Create tournament with multiple matches (Happy Path)", async () => {
-    // Arrange - Step 1: Basic Info
+    // Arrange - Step 1: Data
     await tournamentPage.fillBasicInfo({
       name: "Sunday Tournament",
       date: "2025-12-05",

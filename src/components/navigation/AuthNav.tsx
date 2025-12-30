@@ -40,7 +40,7 @@ function AuthNavContent({ userEmail }: { userEmail: string }) {
           {/* App Logo/Name */}
           <div className="flex items-center gap-2 group">
             <Target className="h-6 w-6 text-blue-400 group-hover:text-purple-400 transition-colors duration-300" />
-            <h1 className="font-mono text-lg md:text-xl font-semibold bg-gradient-to-r from-blue-400 to-teal-400 bg-clip-text text-transparent group-hover:from-teal-400 group-hover:to-purple-400 transition-colors duration-300">
+            <h1 className="hidden md:block font-mono text-lg md:text-xl font-semibold bg-gradient-to-r from-blue-400 to-teal-400 bg-clip-text text-transparent group-hover:from-teal-400 group-hover:to-purple-400 transition-colors duration-300">
               {t("common.appName")}
             </h1>
           </div>
@@ -63,10 +63,10 @@ function AuthNavContent({ userEmail }: { userEmail: string }) {
               variant="outline"
               size="sm"
               onClick={handleLogout}
-              className="flex-shrink-0 w-[110px] justify-start"
+              className="flex-shrink-0 md:w-[110px] md:justify-start"
             >
-              <LogOut className="h-4 w-4 mr-2 flex-shrink-0" />
-              <span className="flex-1 text-center">{t("nav.logout")}</span>
+              <LogOut className="h-4 w-4 md:mr-2 flex-shrink-0" />
+              <span className="hidden md:inline md:flex-1 md:text-center">{t("nav.logout")}</span>
             </Button>
           </div>
         </div>

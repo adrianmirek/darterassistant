@@ -4,13 +4,13 @@ import { BasePage } from "./BasePage";
 
 /**
  * Page Object Model for Add Tournament Form
- * Follows the 3-step wizard pattern: Basic Info -> Metrics -> Review
+ * Follows the 3-step wizard pattern: Data -> Metrics -> Review
  */
 export class AddTournamentPage extends BasePage {
   // Step Navigation
   readonly stepperNavigation: Locator;
 
-  // Step 1: Basic Info
+  // Step 1: Data
   readonly tournamentNameInput: Locator;
   readonly tournamentDateInput: Locator;
   readonly tournamentTypeSelect: Locator;
@@ -58,7 +58,7 @@ export class AddTournamentPage extends BasePage {
     // Step Navigation
     this.stepperNavigation = page.getByTestId("stepper-navigation");
 
-    // Step 1: Basic Info (using data-testid convention)
+    // Step 1: Data (using data-testid convention)
     this.tournamentNameInput = page.getByTestId("tournament-name-input");
     this.tournamentDateInput = page.getByTestId("tournament-date-input");
     this.tournamentTypeSelect = page.getByTestId("tournament-type-select");
@@ -350,7 +350,7 @@ export class AddTournamentPage extends BasePage {
   async getCurrentStep(): Promise<number> {
     const activeStep = this.page.locator('[data-current="true"]');
     const stepText = await activeStep.textContent();
-    const steps = ["Basic Info", "Metrics", "Review"];
+    const steps = ["Data", "Metrics", "Review"];
     return steps.indexOf(stepText?.trim() || "");
   }
 
@@ -437,7 +437,7 @@ export class AddTournamentPage extends BasePage {
     bestLeg?: number;
     worstLeg?: number;
   }) {
-    // Step 1: Basic Info
+    // Step 1: Data
     await this.fillBasicInfo({
       name: data.tournamentName,
       date: data.date,
@@ -461,7 +461,7 @@ export class AddTournamentPage extends BasePage {
     });
     await this.clickNext();
 
-    // Step 3: Review & Submit
+    // Step 3: Review
     await this.clickSubmit();
   }
 }
