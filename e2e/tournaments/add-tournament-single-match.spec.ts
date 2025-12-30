@@ -17,7 +17,7 @@ test.describe("Add Tournament - Single Match", () => {
     // Arrange - Start on Step 1
     await expect(page).toHaveURL("/tournaments/new");
 
-    // Act - Step 1: Fill Basic Info
+    // Act - Step 1: Fill Data
     // Use yesterday's date to ensure it passes validation (date must be <= today)
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
@@ -32,7 +32,7 @@ test.describe("Add Tournament - Single Match", () => {
     // Verify - navigated to Step 2
     await expect(tournamentPage.matchTypeSelect).toBeVisible();
 
-    // Act - Step 2: Fill Match Metrics
+    // Act - Step 2: Fill Metrics
     await tournamentPage.fillMatchMetrics({
       matchTypeId: "1", // 501 DO
       opponentName: "John Smith",

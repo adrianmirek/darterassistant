@@ -144,9 +144,9 @@ test.describe("Add Tournament - UI/UX", () => {
     const progressNav = page.getByRole('navigation', { name: 'Progress' });
     const activeClass = /bg-primary text-primary-foreground/;
 
-    // Verify - Step 1 ("Basic Info") is active initially
-    // We find the listitem that contains the text 'Basic Info'
-    const step1 = progressNav.getByRole('listitem').filter({ hasText: 'Basic Info' }).locator('div.rounded-full'); // Targets the circle specifically;
+    // Verify - Step 1 ("Data") is active initially
+    // We find the listitem that contains the text 'Data'
+    const step1 = progressNav.getByRole('listitem').filter({ hasText: 'Data' }).locator('div.rounded-full'); // Targets the circle specifically;
     await expect(step1).toHaveClass(activeClass);
 
     // Navigate to Step 2
