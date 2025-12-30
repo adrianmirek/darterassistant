@@ -9,7 +9,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { PasswordInput } from "./fields/PasswordInput";
 import { PasswordStrengthIndicator } from "./fields/PasswordStrengthIndicator";
 import { useAuthApi } from "@/lib/hooks/useAuthApi";
-import { resetPasswordSchema, type ResetPasswordFormData } from "@/lib/utils/validation.schemas";
+import { createResetPasswordSchema, type ResetPasswordFormData } from "@/lib/utils/validation.schemas";
+import { useTranslation } from "@/lib/hooks/I18nProvider";
 
 interface ResetPasswordFormProps {
   token: string | null;
@@ -17,10 +18,11 @@ interface ResetPasswordFormProps {
 
 export default function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   const { resetPassword } = useAuthApi();
+  const t = useTranslation();
   const [tokenError, setTokenError] = useState<string | null>(null);
 
   const form = useForm<ResetPasswordFormData>({
-    resolver: zodResolver(resetPasswordSchema),
+    resolver: zodResolver(createResetPasswordSchema(t)),
     defaultValues: {
       password: "",
       confirmPassword: "",

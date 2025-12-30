@@ -43,6 +43,8 @@ export default function Step1_BasicInfo({
               <FormControl>
                 <Input
                   placeholder={t("tournaments.tournamentNamePlaceholder")}
+                  className="notranslate"
+                  translate="no"
                   {...field}
                   data-testid="tournament-name-input"
                 />
@@ -63,8 +65,12 @@ export default function Step1_BasicInfo({
                   <FormControl>
                     <Button
                       variant="outline"
-                      className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
+                      className={cn(
+                        "w-full pl-3 text-left font-normal notranslate",
+                        !field.value && "text-muted-foreground"
+                      )}
                       data-testid="tournament-date-input"
+                      translate="no"
                     >
                       {field.value ? (
                         format(field.value, "PPP", { locale: dateLocale })
@@ -75,7 +81,7 @@ export default function Step1_BasicInfo({
                     </Button>
                   </FormControl>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
+                <PopoverContent className="w-auto p-0 notranslate" align="start" translate="no">
                   <Calendar
                     mode="single"
                     selected={field.value}
@@ -104,7 +110,7 @@ export default function Step1_BasicInfo({
                 ) : (
                   <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoadingTournamentTypes}>
                     <FormControl>
-                      <SelectTrigger className="w-full" data-testid="tournament-type-select">
+                      <SelectTrigger className="w-full notranslate" data-testid="tournament-type-select" translate="no">
                         <SelectValue
                           placeholder={
                             isLoadingTournamentTypes ? t("common.loading") : t("tournaments.selectTournamentType")
@@ -112,7 +118,7 @@ export default function Step1_BasicInfo({
                         />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent className="notranslate" translate="no">
                       {tournamentTypes.map((type) => (
                         <SelectItem key={type.id} value={type.id.toString()}>
                           {type.name}
@@ -136,6 +142,8 @@ export default function Step1_BasicInfo({
                   <Input
                     type="number"
                     placeholder={t("tournaments.finalPlacePlaceholder")}
+                    className="notranslate"
+                    translate="no"
                     {...field}
                     onChange={(e) => {
                       const value = e.target.value;

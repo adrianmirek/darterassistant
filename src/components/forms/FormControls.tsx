@@ -53,13 +53,19 @@ export default function FormControls({
 
         {/* Submit button - only visible on Step3 */}
         {isLastStep ? (
-          <Button type="submit" onClick={onSubmit} disabled={isSubmitting} data-testid="submit-button">
+          <Button
+            type="submit"
+            variant="gradient"
+            onClick={onSubmit}
+            disabled={isSubmitting}
+            data-testid="submit-button"
+          >
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isSubmitting ? t("tournaments.creating") : t("common.submit")}
           </Button>
         ) : (
           /* Next button - visible on Step1 and Step2 */
-          <Button type="button" onClick={onNext} disabled={isSubmitting} data-testid="next-button">
+          <Button type="button" variant="gradient" onClick={onNext} disabled={isSubmitting} data-testid="next-button">
             {t("common.next")}
           </Button>
         )}
