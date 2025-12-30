@@ -52,6 +52,21 @@ global.ResizeObserver = class ResizeObserver {
 // Set up environment variables for testing
 process.env.NODE_ENV = "test";
 
+// Mock localStorage
+const localStorageMock = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  clear: vi.fn(),
+  length: 0,
+  key: vi.fn(),
+};
+
+Object.defineProperty(window, "localStorage", {
+  value: localStorageMock,
+  writable: true,
+});
+
 // Mock hasPointerCapture for Radix UI components in jsdom
 if (typeof HTMLElement !== "undefined" && !HTMLElement.prototype.hasPointerCapture) {
   HTMLElement.prototype.hasPointerCapture = function () {

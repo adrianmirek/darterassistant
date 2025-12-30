@@ -122,7 +122,7 @@ describe("Step2_Metrics", () => {
         </TestWrapper>
       );
 
-      expect(screen.getByText(/Loading match types.../i)).toBeInTheDocument();
+      expect(screen.getByText("Loading...")).toBeInTheDocument();
     });
 
     it("should display match types error when provided", () => {

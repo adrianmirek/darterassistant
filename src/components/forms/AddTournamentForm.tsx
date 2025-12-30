@@ -4,6 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Form } from "@/components/ui/form";
 import { Toaster, toast } from "sonner";
+import { I18nProvider, useTranslation, useLanguage } from "@/lib/hooks/I18nProvider";
+import type { Language } from "@/lib/i18n";
 import StepperNavigation from "./StepperNavigation";
 import Step1_BasicInfo from "./Step1_BasicInfo";
 import Step2_Metrics from "./Step2_Metrics";
@@ -76,8 +78,6 @@ const addTournamentFormSchema = z.object({
 
 export type AddTournamentFormViewModel = z.infer<typeof addTournamentFormSchema>;
 
-const STEPS = ["Basic Info", "Metrics", "Review"];
-
 // Default values for a new match
 const defaultMatchValues: MatchDataViewModel = {
   match_type_id: "",
@@ -96,7 +96,17 @@ const defaultMatchValues: MatchDataViewModel = {
   worst_leg: 33,
 };
 
-export default function AddTournamentForm() {
+interface AddTournamentFormProps {
+  lang: Language;
+}
+
+function AddTournamentFormContent() {
+  const t = useTranslation();
+  const lang = useLanguage();
+
+  // Generate steps from translations
+  const STEPS = [t("tournaments.basicInfo"), t("tournaments.metrics"), t("tournaments.review")];
+
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [canSubmit, setCanSubmit] = useState(false);
@@ -115,14 +125,17 @@ export default function AddTournamentForm() {
         headers: {
           "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+          language: lang,
+        }),
       });
 
       if (feedbackResponse.ok) {
         const feedbackData = await feedbackResponse.json();
 
         if (feedbackData.feedback) {
-          // Show AI feedback toast
-          toast.info("Performance Analysis", {
+          // Show AI feedback toast with translated title
+          toast.info(t("tournaments.performanceAnalysis"), {
             description: feedbackData.feedback,
             duration: 17000, // Display longer to allow reading
           });
@@ -164,9 +177,9 @@ export default function AddTournamentForm() {
         const data: MatchTypeDTO[] = await response.json();
         setMatchTypes(data);
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+        const errorMessage = error instanceof Error ? error.message : t("errors.generic");
         setMatchTypesError(errorMessage);
-        toast.error("Failed to load match types", {
+        toast.error(t("tournaments.errorLoadingMatchTypes"), {
           description: errorMessage,
         });
       } finally {
@@ -193,9 +206,9 @@ export default function AddTournamentForm() {
         const data: TournamentTypeDTO[] = await response.json();
         setTournamentTypes(data);
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+        const errorMessage = error instanceof Error ? error.message : t("errors.generic");
         setTournamentTypesError(errorMessage);
-        toast.error("Failed to load tournament types", {
+        toast.error(t("tournaments.errorLoadingTournamentTypes"), {
           description: errorMessage,
         });
       } finally {
@@ -249,8 +262,8 @@ export default function AddTournamentForm() {
     form.clearErrors("current_match");
 
     // Show success notification
-    toast.success("Match saved!", {
-      description: `Match ${currentMatches.length + 1} has been added. Add another or proceed to review.`,
+    toast.success(t("tournaments.matchSaved"), {
+      description: t("tournaments.matchSavedDescription", { number: currentMatches.length + 1 }),
     });
   };
 
@@ -275,8 +288,8 @@ export default function AddTournamentForm() {
     if (savedMatches.length === 0 && !hasMatchData) {
       // Trigger validation to show required field errors
       await form.trigger("current_match");
-      toast.error("No matches added", {
-        description: "Please fill in the match details and click 'New Match' to add it.",
+      toast.error(t("tournaments.noMatchesAdded"), {
+        description: t("tournaments.noMatchesAddedDescription"),
       });
       return;
     }
@@ -300,8 +313,8 @@ export default function AddTournamentForm() {
     // Check if at least one match exists (after potentially adding current match)
     const allMatches = form.getValues("matches");
     if (allMatches.length === 0) {
-      toast.error("No matches added", {
-        description: "Please add at least one match before proceeding to review.",
+      toast.error(t("tournaments.noMatchesAdded"), {
+        description: t("tournaments.noMatchesBeforeReview"),
       });
       return;
     }
@@ -339,8 +352,8 @@ export default function AddTournamentForm() {
     form.setValue("matches", updatedMatches);
 
     // Show success notification
-    toast.success("Match removed", {
-      description: `Match ${index + 1} has been removed.`,
+    toast.success(t("tournaments.matchRemoved"), {
+      description: t("tournaments.matchRemovedDescription", { number: index + 1 }),
     });
   };
 
@@ -387,8 +400,8 @@ export default function AddTournamentForm() {
       const allMatches = data.matches;
 
       if (allMatches.length === 0) {
-        toast.error("No matches to submit", {
-          description: "Cannot submit tournament without matches.",
+        toast.error(t("tournaments.noMatchesToSubmit"), {
+          description: t("tournaments.noMatchesToSubmitDescription"),
         });
         return;
       }
@@ -438,9 +451,9 @@ export default function AddTournamentForm() {
       const result: CreateTournamentResponseDTO = await response.json();
 
       // Show success message immediately
-      toast.success("Tournament saved successfully!", {
-        description: `Tournament "${data.name}" with ${allMatches.length} ${
-          allMatches.length === 1 ? "match" : "matches"
+      toast.success(t("tournaments.created"), {
+        description: `${t("tournaments.tournamentName")}: "${data.name}" (${allMatches.length} ${
+          allMatches.length === 1 ? t("tournaments.match") : t("tournaments.matches")
         } has been recorded.`,
       });
 
@@ -467,8 +480,8 @@ export default function AddTournamentForm() {
         );
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
-      toast.error("Failed to save tournament", {
+      const errorMessage = error instanceof Error ? error.message : t("errors.generic");
+      toast.error(t("tournaments.error"), {
         description: errorMessage,
       });
     } finally {
@@ -526,5 +539,13 @@ export default function AddTournamentForm() {
 
       <Toaster richColors position="top-right" />
     </>
+  );
+}
+
+export default function AddTournamentForm({ lang }: AddTournamentFormProps) {
+  return (
+    <I18nProvider lang={lang}>
+      <AddTournamentFormContent />
+    </I18nProvider>
   );
 }

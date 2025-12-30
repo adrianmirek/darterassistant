@@ -28,7 +28,7 @@ describe("AddTournamentForm", () => {
 
   describe("Initialization", () => {
     it("should fetch match types on mount", async () => {
-      render(<AddTournamentForm />);
+      render(<AddTournamentForm lang="en" />);
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith("/api/match-types");
@@ -40,36 +40,36 @@ describe("AddTournamentForm", () => {
       const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
       mockFetch.mockRejectedValueOnce(new Error("Failed to load match types"));
 
-      render(<AddTournamentForm />);
+      render(<AddTournamentForm lang="en" />);
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith("/api/match-types");
       });
 
       // Component should still render even with error
-      expect(screen.getByText("Basic Info")).toBeInTheDocument();
+      expect(screen.getByText("Basic Information")).toBeInTheDocument();
 
       consoleError.mockRestore();
     });
 
     it("should render StepperNavigation with correct steps", async () => {
-      render(<AddTournamentForm />);
+      render(<AddTournamentForm lang="en" />);
 
       await waitFor(() => {
-        expect(screen.getByText("Basic Info")).toBeInTheDocument();
+        expect(screen.getByText("Basic Information")).toBeInTheDocument();
       });
 
       // Check all steps are shown in stepper
-      expect(screen.getByText("Basic Info")).toBeInTheDocument();
-      expect(screen.getByText("Metrics")).toBeInTheDocument();
-      expect(screen.getByText("Review")).toBeInTheDocument();
+      expect(screen.getByText("Basic Information")).toBeInTheDocument();
+      expect(screen.getByText("Match Metrics")).toBeInTheDocument();
+      expect(screen.getByText("Review & Submit")).toBeInTheDocument();
     });
 
-    it("should start at step 0 (Basic Info)", async () => {
-      render(<AddTournamentForm />);
+    it("should start at step 0 (Basic Information)", async () => {
+      render(<AddTournamentForm lang="en" />);
 
       await waitFor(() => {
-        expect(screen.getByText("Basic Info")).toBeInTheDocument();
+        expect(screen.getByText("Basic Information")).toBeInTheDocument();
       });
 
       // Should show Tournament Name field (from Step1_BasicInfo)
@@ -79,7 +79,7 @@ describe("AddTournamentForm", () => {
 
   describe("Form Structure", () => {
     it("should render with form element", async () => {
-      const { container } = render(<AddTournamentForm />);
+      const { container } = render(<AddTournamentForm lang="en" />);
 
       await waitFor(() => {
         const form = container.querySelector("form");
@@ -92,10 +92,10 @@ describe("AddTournamentForm", () => {
       // It renders lazily to document.body when toasts are displayed
       // This test documents that the component includes <Toaster /> for notifications
 
-      render(<AddTournamentForm />);
+      render(<AddTournamentForm lang="en" />);
 
       // Component renders successfully with Toaster included
-      expect(screen.getByText("Basic Info")).toBeInTheDocument();
+      expect(screen.getByText("Basic Information")).toBeInTheDocument();
     });
   });
 
@@ -105,14 +105,14 @@ describe("AddTournamentForm", () => {
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       mockFetch.mockImplementation(() => new Promise(() => {}));
 
-      render(<AddTournamentForm />);
+      render(<AddTournamentForm lang="en" />);
 
       // Component renders during loading
-      expect(screen.getByText("Basic Info")).toBeInTheDocument();
+      expect(screen.getByText("Basic Information")).toBeInTheDocument();
     });
 
     it("should load match types successfully for use in Step2", async () => {
-      render(<AddTournamentForm />);
+      render(<AddTournamentForm lang="en" />);
 
       // Verify match types are fetched
       await waitFor(() => {
@@ -129,7 +129,7 @@ describe("AddTournamentForm", () => {
 
   describe("Form Validation Schema", () => {
     it("should have correct default values", async () => {
-      const { container } = render(<AddTournamentForm />);
+      const { container } = render(<AddTournamentForm lang="en" />);
 
       await waitFor(() => {
         const nameInput = container.querySelector('input[name="name"]');
@@ -140,16 +140,16 @@ describe("AddTournamentForm", () => {
 
   describe("Stepper Navigation Logic", () => {
     it("should initialize with currentStep state at 0", async () => {
-      render(<AddTournamentForm />);
+      render(<AddTournamentForm lang="en" />);
 
       await waitFor(() => {
-        // First step (Basic Info) should be visible
+        // First step (Basic Information) should be visible
         expect(screen.getByText("Tournament Name")).toBeInTheDocument();
       });
     });
 
     it("should show FormControls component", async () => {
-      render(<AddTournamentForm />);
+      render(<AddTournamentForm lang="en" />);
 
       await waitFor(() => {
         // Next button should be visible on first step
@@ -158,7 +158,7 @@ describe("AddTournamentForm", () => {
     });
 
     it("should disable Back button on first step", async () => {
-      render(<AddTournamentForm />);
+      render(<AddTournamentForm lang="en" />);
 
       await waitFor(() => {
         // Back button should be disabled on step 0
@@ -202,7 +202,7 @@ describe("AddTournamentForm", () => {
       mockFetch.mockResolvedValueOnce(createMockAPIResponse(mockMatchTypes));
       mockFetch.mockResolvedValueOnce(createMockAPIResponse(mockTournamentTypes));
 
-      render(<AddTournamentForm />);
+      render(<AddTournamentForm lang="en" />);
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith("/api/tournament-types");
@@ -216,14 +216,14 @@ describe("AddTournamentForm", () => {
       mockFetch.mockResolvedValueOnce(createMockAPIResponse(mockMatchTypes));
       mockFetch.mockRejectedValueOnce(new Error("Failed to load tournament types"));
 
-      render(<AddTournamentForm />);
+      render(<AddTournamentForm lang="en" />);
 
       await waitFor(() => {
         expect(mockFetch).toHaveBeenCalledWith("/api/tournament-types");
       });
 
       // Component should still render
-      expect(screen.getByText("Basic Info")).toBeInTheDocument();
+      expect(screen.getByText("Basic Information")).toBeInTheDocument();
 
       consoleError.mockRestore();
     });
@@ -239,7 +239,7 @@ describe("AddTournamentForm", () => {
 
   describe("Step Navigation", () => {
     it("should have three steps defined", () => {
-      // STEPS constant should have 3 items: Basic Info, Metrics, Review
+      // STEPS constant should have 3 items: Basic Information, Metrics, Review
       expect(true).toBe(true);
     });
   });

@@ -3,6 +3,7 @@ import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessa
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/lib/hooks/I18nProvider";
 import type { AddTournamentFormViewModel } from "./AddTournamentForm";
 import type { MatchTypeDTO } from "@/types";
 
@@ -20,6 +21,7 @@ export default function Step2_Metrics({
   onSaveMatch,
 }: Step2_MetricsProps) {
   const form = useFormContext<AddTournamentFormViewModel>();
+  const t = useTranslation();
 
   return (
     <div className="space-y-6">
@@ -31,7 +33,7 @@ export default function Step2_Metrics({
           name="current_match.match_type_id"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel>Match Type</FormLabel>
+              <FormLabel>{t("tournaments.matchType")}</FormLabel>
               {matchTypesError ? (
                 <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{matchTypesError}</div>
               ) : (
@@ -46,7 +48,7 @@ export default function Step2_Metrics({
                   <FormControl>
                     <SelectTrigger className="w-full" data-testid="match-type-select">
                       <SelectValue
-                        placeholder={isLoadingMatchTypes ? "Loading match types..." : "Select a match type"}
+                        placeholder={isLoadingMatchTypes ? t("common.loading") : t("tournaments.selectMatchType")}
                       />
                     </SelectTrigger>
                   </FormControl>
@@ -70,9 +72,14 @@ export default function Step2_Metrics({
           name="current_match.opponent_name"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel>Opponent Name</FormLabel>
+              <FormLabel>{t("tournaments.opponent")}</FormLabel>
               <FormControl>
-                <Input placeholder="Enter opponent name" maxLength={255} {...field} data-testid="opponent-name-input" />
+                <Input
+                  placeholder={t("tournaments.opponentPlaceholder")}
+                  maxLength={255}
+                  {...field}
+                  data-testid="opponent-name-input"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -81,7 +88,7 @@ export default function Step2_Metrics({
 
         {/* Result Field (Player Score : Opponent Score) */}
         <div className="flex flex-col space-y-2">
-          <FormLabel>Result</FormLabel>
+          <FormLabel>{t("tournaments.result")}</FormLabel>
           <div className="flex items-start gap-2">
             <FormField
               control={form.control}
@@ -157,7 +164,7 @@ export default function Step2_Metrics({
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Performance Metrics</h3>
+        <h3 className="text-lg font-semibold">{t("tournaments.performanceMetrics")}</h3>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField
@@ -165,7 +172,7 @@ export default function Step2_Metrics({
             name="current_match.average_score"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Average Score</FormLabel>
+                <FormLabel>{t("tournaments.averageScore")}</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -195,7 +202,7 @@ export default function Step2_Metrics({
             name="current_match.first_nine_avg"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>First Nine Average</FormLabel>
+                <FormLabel>{t("tournaments.firstNineDartAverage")}</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -225,7 +232,7 @@ export default function Step2_Metrics({
             name="current_match.checkout_percentage"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Checkout Percentage</FormLabel>
+                <FormLabel>{t("tournaments.checkoutPercentage")}</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -249,7 +256,7 @@ export default function Step2_Metrics({
             name="current_match.high_finish"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>High Finish</FormLabel>
+                <FormLabel>{t("tournaments.highFinish")}</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -271,7 +278,7 @@ export default function Step2_Metrics({
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Score Counts</h3>
+        <h3 className="text-lg font-semibold">{t("tournaments.scoreCounts")}</h3>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <FormField
@@ -279,7 +286,7 @@ export default function Step2_Metrics({
             name="current_match.score_60_count"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>60+ Scores</FormLabel>
+                <FormLabel>{t("tournaments.sixtyPlusScores")}</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -302,7 +309,7 @@ export default function Step2_Metrics({
             name="current_match.score_100_count"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>100+ Scores</FormLabel>
+                <FormLabel>{t("tournaments.oneHundredPlus")}</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -325,7 +332,7 @@ export default function Step2_Metrics({
             name="current_match.score_140_count"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>140+ Scores</FormLabel>
+                <FormLabel>{t("tournaments.oneHundredFortyPlus")}</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -348,7 +355,7 @@ export default function Step2_Metrics({
             name="current_match.score_180_count"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>180 Scores</FormLabel>
+                <FormLabel>{t("tournaments.oneHundredEightyScores")}</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -369,7 +376,7 @@ export default function Step2_Metrics({
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Leg Performance</h3>
+        <h3 className="text-lg font-semibold">{t("tournaments.legPerformance")}</h3>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField
@@ -377,7 +384,7 @@ export default function Step2_Metrics({
             name="current_match.best_leg"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Best Leg (darts)</FormLabel>
+                <FormLabel>{t("tournaments.bestLeg")}</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -389,7 +396,7 @@ export default function Step2_Metrics({
                     data-testid="best-leg-input"
                   />
                 </FormControl>
-                <FormDescription>Minimum 9 darts</FormDescription>
+                <FormDescription>{t("tournaments.minimumDarts")}</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -400,7 +407,7 @@ export default function Step2_Metrics({
             name="current_match.worst_leg"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Worst Leg (darts)</FormLabel>
+                <FormLabel>{t("tournaments.worstLeg")}</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -412,7 +419,7 @@ export default function Step2_Metrics({
                     data-testid="worst-leg-input"
                   />
                 </FormControl>
-                <FormDescription>Minimum 9 darts</FormDescription>
+                <FormDescription>{t("tournaments.minimumDarts")}</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -423,7 +430,7 @@ export default function Step2_Metrics({
       {/* NEW: New Match Button */}
       <div className="flex justify-end pt-4 border-t">
         <Button type="button" variant="secondary" onClick={onSaveMatch} data-testid="new-match-button">
-          New Match
+          {t("tournaments.newMatch")}
         </Button>
       </div>
     </div>

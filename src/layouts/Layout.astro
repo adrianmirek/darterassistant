@@ -2,6 +2,7 @@
 import "../styles/global.css";
 import AuthNav from "@/components/navigation/AuthNav";
 import LayoutWrapper from "@/components/navigation/LayoutWrapper";
+import { detectLanguageFromHeader, type Language } from "@/lib/i18n";
 
 interface Props {
   title?: string;
@@ -10,16 +11,40 @@ interface Props {
 
 const { title = "Darter Assistant", showAuthNav = true } = Astro.props;
 const user = Astro.locals.user;
+
+// Detect language from browser
+const acceptLanguage = Astro.request.headers.get("accept-language");
+const detectedLang = detectLanguageFromHeader(acceptLanguage);
+
+// Check if user has a stored language preference (client-side)
+// This will be handled by client-side script below
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={detectedLang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg" href="/favicon.png" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    <!-- Language initialization script - set language based on stored preference or browser -->
+    <script is:inline define:vars={{ detectedLang }}>
+      // Get stored language preference or use detected language
+      const storedLang = localStorage.getItem("darter-language");
+      const currentLang = storedLang || detectedLang;
+      
+      // Store the language if not already stored
+      if (!storedLang) {
+        localStorage.setItem("darter-language", currentLang);
+      }
+      
+      // Set the lang attribute
+      document.documentElement.lang = currentLang;
+      
+      // Store in global scope for React components
+      window.__DARTER_LANG__ = currentLang;
+    </script>
     <!-- Theme initialization script - prevents flash of wrong theme -->
     <script is:inline>
       document.documentElement.classList.add(localStorage.getItem("darter-theme") || "dark");
@@ -37,10 +62,10 @@ const user = Astro.locals.user;
     </script>
   </head>
   <body>
-    {showAuthNav && user && <AuthNav userEmail={user.email} client:load />}
+    {showAuthNav && user && <AuthNav userEmail={user.email} lang={detectedLang} client:load />}
     {
       user ? (
-        <LayoutWrapper client:load>
+        <LayoutWrapper lang={detectedLang} client:load>
           <slot />
         </LayoutWrapper>
       ) : (

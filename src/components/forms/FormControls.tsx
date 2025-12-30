@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "@/lib/hooks/I18nProvider";
 
 interface FormControlsProps {
   currentStep: number;
@@ -20,6 +21,7 @@ export default function FormControls({
   onSubmit,
   onAddMatch,
 }: FormControlsProps) {
+  const t = useTranslation();
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === totalSteps - 1;
 
@@ -32,7 +34,7 @@ export default function FormControls({
         disabled={isFirstStep || isSubmitting}
         data-testid="back-button"
       >
-        Back
+        {t("common.back")}
       </Button>
 
       <div className="flex gap-4">
@@ -45,7 +47,7 @@ export default function FormControls({
             disabled={isSubmitting}
             data-testid="add-match-button"
           >
-            Add Match
+            {t("tournaments.addMatch")}
           </Button>
         )}
 
@@ -53,12 +55,12 @@ export default function FormControls({
         {isLastStep ? (
           <Button type="submit" onClick={onSubmit} disabled={isSubmitting} data-testid="submit-button">
             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isSubmitting ? "Submitting..." : "Submit"}
+            {isSubmitting ? t("tournaments.creating") : t("common.submit")}
           </Button>
         ) : (
           /* Next button - visible on Step1 and Step2 */
           <Button type="button" onClick={onNext} disabled={isSubmitting} data-testid="next-button">
-            Next
+            {t("common.next")}
           </Button>
         )}
       </div>

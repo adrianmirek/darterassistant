@@ -145,8 +145,8 @@ export class AddTournamentPage extends BasePage {
     // Wait a bit for the Calendar's onSelect to fire and update React Hook Form
     await this.page.waitForTimeout(500);
 
-    // Close the popover by clicking outside (more reliable than Escape)
-    await this.page.locator('h1:has-text("Add Tournament")').click();
+    // Close the popover using Escape key (more reliable across different viewport sizes)
+    await this.page.keyboard.press("Escape");
 
     // Wait for the popover to close
     await this.page.waitForSelector('[role="dialog"]', { state: "hidden", timeout: 2000 });
