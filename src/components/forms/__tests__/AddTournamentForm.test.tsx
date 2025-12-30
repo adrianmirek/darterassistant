@@ -47,7 +47,7 @@ describe("AddTournamentForm", () => {
       });
 
       // Component should still render even with error
-      expect(screen.getByText("Basic Information")).toBeInTheDocument();
+      expect(screen.getByText("Data")).toBeInTheDocument();
 
       consoleError.mockRestore();
     });
@@ -56,20 +56,20 @@ describe("AddTournamentForm", () => {
       render(<AddTournamentForm lang="en" />);
 
       await waitFor(() => {
-        expect(screen.getByText("Basic Information")).toBeInTheDocument();
+        expect(screen.getByText("Data")).toBeInTheDocument();
       });
 
       // Check all steps are shown in stepper
-      expect(screen.getByText("Basic Information")).toBeInTheDocument();
-      expect(screen.getByText("Match Metrics")).toBeInTheDocument();
-      expect(screen.getByText("Review & Submit")).toBeInTheDocument();
+      expect(screen.getByText("Data")).toBeInTheDocument();
+      expect(screen.getByText("Metrics")).toBeInTheDocument();
+      expect(screen.getByText("Review")).toBeInTheDocument();
     });
 
-    it("should start at step 0 (Basic Information)", async () => {
+    it("should start at step 0 (Data)", async () => {
       render(<AddTournamentForm lang="en" />);
 
       await waitFor(() => {
-        expect(screen.getByText("Basic Information")).toBeInTheDocument();
+        expect(screen.getByText("Data")).toBeInTheDocument();
       });
 
       // Should show Tournament Name field (from Step1_BasicInfo)
@@ -95,7 +95,7 @@ describe("AddTournamentForm", () => {
       render(<AddTournamentForm lang="en" />);
 
       // Component renders successfully with Toaster included
-      expect(screen.getByText("Basic Information")).toBeInTheDocument();
+      expect(screen.getByText("Data")).toBeInTheDocument();
     });
   });
 
@@ -108,7 +108,7 @@ describe("AddTournamentForm", () => {
       render(<AddTournamentForm lang="en" />);
 
       // Component renders during loading
-      expect(screen.getByText("Basic Information")).toBeInTheDocument();
+      expect(screen.getByText("Data")).toBeInTheDocument();
     });
 
     it("should load match types successfully for use in Step2", async () => {
@@ -143,7 +143,7 @@ describe("AddTournamentForm", () => {
       render(<AddTournamentForm lang="en" />);
 
       await waitFor(() => {
-        // First step (Basic Information) should be visible
+        // First step (Data) should be visible
         expect(screen.getByText("Tournament Name")).toBeInTheDocument();
       });
     });
@@ -223,7 +223,7 @@ describe("AddTournamentForm", () => {
       });
 
       // Component should still render
-      expect(screen.getByText("Basic Information")).toBeInTheDocument();
+      expect(screen.getByText("Data")).toBeInTheDocument();
 
       consoleError.mockRestore();
     });
@@ -239,7 +239,7 @@ describe("AddTournamentForm", () => {
 
   describe("Step Navigation", () => {
     it("should have three steps defined", () => {
-      // STEPS constant should have 3 items: Basic Information, Metrics, Review
+      // STEPS constant should have 3 items: Data, Metrics, Review
       expect(true).toBe(true);
     });
   });

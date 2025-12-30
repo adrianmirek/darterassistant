@@ -106,9 +106,9 @@ export const en = {
     addSubtitle: "Record the results of your latest darts tournament",
 
     // Form
-    basicInfo: "Basic Information",
-    metrics: "Match Metrics",
-    review: "Review & Submit",
+    basicInfo: "Data",
+    metrics: "Metrics",
+    review: "Review",
     tournamentName: "Tournament Name",
     tournamentNamePlaceholder: "Enter tournament name",
     tournamentDate: "Tournament Date",

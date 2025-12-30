@@ -108,9 +108,9 @@ export const pl: TranslationKeys = {
     addSubtitle: "Zapisz wyniki swojego ostatniego turnieju darterskiego",
 
     // Form
-    basicInfo: "Informacje Podstawowe",
-    metrics: "Metryki Meczu",
-    review: "Przegląd i Zapis",
+    basicInfo: "Ogólne",
+    metrics: "Dane",
+    review: "Zapis",
     tournamentName: "Nazwa Turnieju",
     tournamentNamePlaceholder: "Wprowadź nazwę turnieju",
     tournamentDate: "Data Turnieju",
