@@ -46,13 +46,13 @@ export default function Step2_Metrics({
                   disabled={isLoadingMatchTypes}
                 >
                   <FormControl>
-                    <SelectTrigger className="w-full" data-testid="match-type-select">
+                    <SelectTrigger className="w-full notranslate" data-testid="match-type-select" translate="no">
                       <SelectValue
                         placeholder={isLoadingMatchTypes ? t("common.loading") : t("tournaments.selectMatchType")}
                       />
                     </SelectTrigger>
                   </FormControl>
-                  <SelectContent>
+                  <SelectContent className="notranslate" translate="no">
                     {matchTypes.map((type) => (
                       <SelectItem key={type.id} value={type.id.toString()}>
                         {type.name}
