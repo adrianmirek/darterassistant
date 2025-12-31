@@ -242,9 +242,11 @@ export class OpenRouterService {
             await this.delay(OpenRouterService.INITIAL_RETRY_DELAY * Math.pow(2, attempt));
             continue;
           }
+          // If max retries reached for network error, break to throw wrapped error
+          break;
         }
 
-        // Re-throw if not retryable or max retries reached
+        // Re-throw if not retryable
         throw error;
       }
     }

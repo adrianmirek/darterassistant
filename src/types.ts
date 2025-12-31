@@ -129,6 +129,7 @@ export type TonePreferencesDTO = Record<string, unknown>;
  */
 export interface GenerateFeedbackCommand {
   tone_preferences?: TonePreferencesDTO;
+  language?: "en" | "pl";
 }
 
 /**
@@ -173,4 +174,110 @@ export interface RegisterResponseDTO {
 export interface LoginResponseDTO {
   user: UserDTO;
   session: SessionDTO;
+}
+
+/**
+ * DTO for paginated tournament list item with aggregated statistics
+ */
+export interface TournamentListItem {
+  tournament_id: string;
+  tournament_name: string;
+  tournament_date: string;
+  final_place: number | null;
+  tournament_type: string;
+  ai_feedback: string | null;
+  statistics: TournamentStatistics;
+  matches: MatchDetail[];
+}
+
+/**
+ * Tournament aggregated statistics
+ */
+export interface TournamentStatistics {
+  tournament_avg: number;
+  total_180s: number;
+  total_140_plus: number;
+  total_100_plus: number;
+  total_60_plus: number;
+  avg_checkout_percentage: number;
+  best_high_finish: number;
+  best_leg: number;
+}
+
+/**
+ * Match detail for paginated tournament list
+ */
+export interface MatchDetail {
+  match_id: string;
+  opponent: string;
+  result: string;
+  player_score: number;
+  opponent_score: number;
+  match_type: string;
+  average_score: number;
+  first_nine_avg: number;
+  checkout_percentage: number;
+  high_finish: number;
+  score_180s: number;
+  score_140_plus: number;
+  score_100_plus: number;
+  score_60_plus: number;
+  best_leg: number;
+  worst_leg: number;
+  created_at: string;
+}
+
+/**
+ * Pagination metadata for API responses
+ */
+export interface PaginationMetadata {
+  current_page: number;
+  page_size: number;
+  total_count: number;
+  total_pages: number;
+  has_next_page: boolean;
+  has_previous_page: boolean;
+}
+
+/**
+ * Generic API success response wrapper
+ */
+export interface ApiSuccessResponse<T> {
+  success: true;
+  data: T;
+}
+
+/**
+ * Generic API error response wrapper
+ */
+export interface ApiErrorResponse {
+  success: false;
+  error: {
+    code: string;
+    message: string;
+    details?: unknown;
+  };
+}
+
+/**
+ * Generic API response type
+ */
+export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;
+
+/**
+ * Response data for paginated tournaments
+ */
+export interface PaginatedTournamentsData {
+  tournaments: TournamentListItem[];
+  pagination: PaginationMetadata;
+}
+
+/**
+ * Query parameters for getting paginated tournaments
+ */
+export interface GetTournamentsPaginatedQuery {
+  start_date: string;
+  end_date: string;
+  page_size?: number;
+  page?: number;
 }

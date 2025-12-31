@@ -5,11 +5,54 @@ import type {
   TournamentResultDTO,
   CreateTournamentCommand,
   CreateTournamentResponseDTO,
+  TournamentListItem,
+  TournamentStatistics,
+  MatchDetail,
 } from "../../types";
 import { OpenRouterService } from "./openrouter.service";
 import type { ChatMessage } from "../../types/openrouter.types";
 
-type ServiceError = { message: string } | null;
+type ServiceError = { message: string; code?: string } | null;
+
+/**
+ * Database row type for get_tournaments_paginated function result
+ */
+interface TournamentPaginatedRow {
+  tournament_id: string;
+  tournament_name: string;
+  tournament_date: string;
+  final_place: number | null;
+  tournament_type_name: string;
+  ai_feedback: string | null;
+  tournament_avg: number;
+  total_180s: number;
+  total_140_plus: number;
+  total_100_plus: number;
+  total_60_plus: number;
+  avg_checkout_percentage: number;
+  best_high_finish: number;
+  best_leg: number;
+  matches: {
+    match_id: string;
+    opponent: string;
+    result: string;
+    player_score: number;
+    opponent_score: number;
+    match_type: string;
+    average_score: number;
+    first_nine_avg: number;
+    checkout_percentage: number;
+    high_finish: number;
+    score_180s: number;
+    score_140_plus: number;
+    score_100_plus: number;
+    score_60_plus: number;
+    best_leg: number;
+    worst_leg: number;
+    created_at: string;
+  }[];
+  total_count: number;
+}
 
 /**
  * Service for tournament-related business logic
@@ -368,6 +411,100 @@ export async function generateAndSaveFeedback(
 
     return { data: { feedback }, error: null };
   } catch (error) {
+    return { data: null, error: error as ServiceError };
+  }
+}
+
+/**
+ * Transform database row to TournamentListItem DTO
+ */
+function transformToTournamentListItem(row: TournamentPaginatedRow): TournamentListItem {
+  const statistics: TournamentStatistics = {
+    tournament_avg: row.tournament_avg || 0,
+    total_180s: row.total_180s || 0,
+    total_140_plus: row.total_140_plus || 0,
+    total_100_plus: row.total_100_plus || 0,
+    total_60_plus: row.total_60_plus || 0,
+    avg_checkout_percentage: row.avg_checkout_percentage || 0,
+    best_high_finish: row.best_high_finish || 0,
+    best_leg: row.best_leg || 0,
+  };
+
+  const matches: MatchDetail[] = (row.matches || []).map((match) => ({
+    match_id: match.match_id,
+    opponent: match.opponent || "Unknown",
+    result: match.result,
+    player_score: match.player_score,
+    opponent_score: match.opponent_score,
+    match_type: match.match_type,
+    average_score: match.average_score || 0,
+    first_nine_avg: match.first_nine_avg || 0,
+    checkout_percentage: match.checkout_percentage || 0,
+    high_finish: match.high_finish || 0,
+    score_180s: match.score_180s || 0,
+    score_140_plus: match.score_140_plus || 0,
+    score_100_plus: match.score_100_plus || 0,
+    score_60_plus: match.score_60_plus || 0,
+    best_leg: match.best_leg || 0,
+    worst_leg: match.worst_leg || 0,
+    created_at: match.created_at,
+  }));
+
+  return {
+    tournament_id: row.tournament_id,
+    tournament_name: row.tournament_name,
+    tournament_date: row.tournament_date,
+    final_place: row.final_place,
+    tournament_type: row.tournament_type_name,
+    ai_feedback: row.ai_feedback,
+    statistics,
+    matches,
+  };
+}
+
+/**
+ * Fetches paginated tournaments with aggregated statistics using database function
+ */
+export async function getTournamentsPaginated(
+  supabase: SupabaseClient,
+  userId: string,
+  startDate: string,
+  endDate: string,
+  pageSize = 20,
+  page = 1
+): Promise<{ data: { tournaments: TournamentListItem[]; totalCount: number } | null; error: ServiceError }> {
+  try {
+    // Call the database function
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: rawData, error } = await (supabase as any).rpc("get_tournaments_paginated", {
+      p_user_id: userId,
+      p_start_date: startDate,
+      p_end_date: endDate,
+      p_page_size: pageSize,
+      p_page_number: page,
+    });
+
+    if (error) {
+      console.error("Error calling get_tournaments_paginated:", error);
+      return { data: null, error };
+    }
+
+    // Cast to the expected type
+    const data = rawData as TournamentPaginatedRow[] | null;
+
+    if (!data || data.length === 0) {
+      return { data: { tournaments: [], totalCount: 0 }, error: null };
+    }
+
+    // Transform database rows to DTOs
+    const tournaments = data.map((row) => transformToTournamentListItem(row));
+
+    // Get total count from first row (all rows have the same total_count)
+    const totalCount = data[0]?.total_count || 0;
+
+    return { data: { tournaments, totalCount }, error: null };
+  } catch (error) {
+    console.error("Unexpected error in getTournamentsPaginated:", error);
     return { data: null, error: error as ServiceError };
   }
 }
