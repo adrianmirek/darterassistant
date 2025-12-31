@@ -45,8 +45,11 @@ export interface ResponseFormat {
  */
 export interface ChatResponse {
   id: string;
-  model: string;
+  model?: string;
+  object?: string;
+  created?: number;
   choices: {
+    index?: number;
     message: {
       role: string;
       content: string;
