@@ -12,23 +12,23 @@ export default function MatchCard({ match }: MatchCardProps) {
   const isWin = match.player_score > match.opponent_score;
 
   return (
-    <div className="p-4 border border-border rounded-lg bg-card hover:bg-accent/5 transition-colors">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
-        <div className="flex items-center gap-3">
+    <div className="p-3 sm:p-4 border border-border rounded-lg bg-card hover:bg-accent/5 transition-colors">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 mb-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <div className="flex flex-col">
-            <span className="text-sm font-medium">{match.opponent}</span>
+            <span className="text-xs sm:text-sm font-medium truncate">{match.opponent}</span>
             <span className="text-xs text-muted-foreground">{match.match_type}</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant={isWin ? "default" : "secondary"} className="text-sm font-bold">
+          <Badge variant={isWin ? "default" : "secondary"} className="text-xs sm:text-sm font-bold">
             {match.result}
           </Badge>
         </div>
       </div>
 
       {/* Statistics Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
         <StatItem label={t("tournaments.avgScore")} value={match.average_score.toFixed(2)} />
         <StatItem label={t("tournaments.firstNineShort")} value={match.first_nine_avg.toFixed(2)} />
         <StatItem label={t("tournaments.coPercent")} value={`${match.checkout_percentage.toFixed(1)}%`} />
@@ -54,9 +54,11 @@ interface StatItemProps {
 
 function StatItem({ label, value, highlight = false }: StatItemProps) {
   return (
-    <div className="flex flex-col">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className={`text-sm font-semibold ${highlight ? "text-primary" : "text-foreground"}`}>{value}</span>
+    <div className="flex flex-col min-w-0">
+      <span className="text-xs text-muted-foreground truncate">{label}</span>
+      <span className={`text-xs sm:text-sm font-semibold ${highlight ? "text-primary" : "text-foreground"} truncate`}>
+        {value}
+      </span>
     </div>
   );
 }

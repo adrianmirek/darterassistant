@@ -60,16 +60,17 @@ export default function PaginationControls({
   };
 
   return (
-    <div className="flex items-center justify-center gap-2 mt-6">
+    <div className="flex items-center justify-center gap-1 sm:gap-2 mt-6">
       <Button
         variant="outline"
         size="sm"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={!hasPreviousPage}
         aria-label={t("tournaments.previousPage")}
+        className="px-2 sm:px-4"
       >
-        <ChevronLeft className="h-4 w-4 mr-1" />
-        {t("tournaments.previousPage")}
+        <ChevronLeft className="h-4 w-4 sm:mr-1" />
+        <span className="hidden sm:inline">{t("tournaments.previousPage")}</span>
       </Button>
 
       <div className="flex items-center gap-1">
@@ -80,12 +81,12 @@ export default function PaginationControls({
               variant={page === currentPage ? "default" : "outline"}
               size="sm"
               onClick={() => onPageChange(page)}
-              className="min-w-[2.5rem]"
+              className="min-w-[2rem] sm:min-w-[2.5rem] px-2 sm:px-3"
             >
               {page}
             </Button>
           ) : (
-            <span key={idx} className="px-2 text-muted-foreground">
+            <span key={idx} className="px-1 sm:px-2 text-muted-foreground text-sm">
               {page}
             </span>
           )
@@ -98,9 +99,10 @@ export default function PaginationControls({
         onClick={() => onPageChange(currentPage + 1)}
         disabled={!hasNextPage}
         aria-label={t("tournaments.nextPage")}
+        className="px-2 sm:px-4"
       >
-        {t("tournaments.nextPage")}
-        <ChevronRight className="h-4 w-4 ml-1" />
+        <span className="hidden sm:inline">{t("tournaments.nextPage")}</span>
+        <ChevronRight className="h-4 w-4 sm:ml-1" />
       </Button>
     </div>
   );
