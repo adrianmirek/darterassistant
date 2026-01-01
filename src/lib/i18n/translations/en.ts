@@ -117,6 +117,7 @@ export const en = {
     errorLoadingTournaments: "Failed to load tournaments",
     emptyState: "No tournaments in selected date range",
     emptyStateDescription: "Try adjusting the date range or add a new tournament",
+    addNewTournament: "Add a new tournament",
 
     // Add Tournament
     addTitle: "Add Tournament",
