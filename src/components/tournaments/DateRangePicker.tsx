@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
+import { enGB, pl } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useTranslation } from "@/lib/hooks/I18nProvider";
+import { useTranslation, useLanguage } from "@/lib/hooks/I18nProvider";
 import { cn } from "@/lib/utils";
 
 interface DateRangePickerProps {
@@ -15,6 +16,8 @@ interface DateRangePickerProps {
 
 export default function DateRangePicker({ startDate, endDate, onDateRangeChange }: DateRangePickerProps) {
   const t = useTranslation();
+  const lang = useLanguage();
+  const dateLocale = lang === "pl" ? pl : enGB;
   const [localStartDate, setLocalStartDate] = useState<Date>(startDate);
   const [localEndDate, setLocalEndDate] = useState<Date>(endDate);
   const [startOpen, setStartOpen] = useState(false);
@@ -62,10 +65,14 @@ export default function DateRangePicker({ startDate, endDate, onDateRangeChange 
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {localStartDate ? format(localStartDate, "PPP") : <span>{t("tournaments.pickDate")}</span>}
+                {localStartDate ? (
+                  format(localStartDate, "PPP", { locale: dateLocale })
+                ) : (
+                  <span>{t("tournaments.pickDate")}</span>
+                )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent className="w-auto p-0 notranslate" align="start" translate="no">
               <Calendar
                 mode="single"
                 selected={localStartDate}
@@ -89,10 +96,14 @@ export default function DateRangePicker({ startDate, endDate, onDateRangeChange 
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {localEndDate ? format(localEndDate, "PPP") : <span>{t("tournaments.pickDate")}</span>}
+                {localEndDate ? (
+                  format(localEndDate, "PPP", { locale: dateLocale })
+                ) : (
+                  <span>{t("tournaments.pickDate")}</span>
+                )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent className="w-auto p-0 notranslate" align="start" translate="no">
               <Calendar
                 mode="single"
                 selected={localEndDate}
