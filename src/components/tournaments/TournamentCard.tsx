@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import MatchCard from "./MatchCard";
-import { useTranslation } from "@/lib/hooks/I18nProvider";
+import { useTranslation, useLanguage } from "@/lib/hooks/I18nProvider";
 import { format } from "date-fns";
+import { enGB, pl } from "date-fns/locale";
 
 interface TournamentCardProps {
   tournament: TournamentListItem;
@@ -13,6 +14,8 @@ interface TournamentCardProps {
 
 export default function TournamentCard({ tournament }: TournamentCardProps) {
   const t = useTranslation();
+  const lang = useLanguage();
+  const dateLocale = lang === "pl" ? pl : enGB;
   const stats = tournament.statistics;
 
   return (
@@ -23,7 +26,9 @@ export default function TournamentCard({ tournament }: TournamentCardProps) {
             <h3 className="text-base sm:text-lg font-bold truncate">{tournament.tournament_name}</h3>
             <div className="flex items-center gap-1.5 sm:gap-2 mt-1 text-xs sm:text-sm text-muted-foreground">
               <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
-              <span className="truncate">{format(new Date(tournament.tournament_date), "PPP")}</span>
+              <span className="truncate">
+                {format(new Date(tournament.tournament_date), "PPP", { locale: dateLocale })}
+              </span>
             </div>
           </div>
           {tournament.final_place && (
