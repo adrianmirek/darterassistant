@@ -75,12 +75,7 @@ function TournamentsPageContent() {
 
   return (
     <div className="container max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
-      <PageHeader titleKey="tournaments.tournamentsListTitle" subtitleKey="tournaments.selectDateRange" />
-
-      {/* Date Range Filter */}
-      <div className="mb-6 sm:mb-8 bg-card border border-border rounded-lg p-4 sm:p-6 shadow-sm">
-        <DateRangePicker startDate={startDate} endDate={endDate} onDateRangeChange={handleDateRangeChange} />
-      </div>
+      <PageHeader titleKey="tournaments.tournamentsListTitle" subtitleKey="tournaments.selectDateRange" />      
 
       {/* Loading State */}
       {loading && (
