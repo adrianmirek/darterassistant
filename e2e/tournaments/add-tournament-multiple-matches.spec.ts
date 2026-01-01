@@ -15,9 +15,11 @@ test.describe("Add Tournament - Multiple Matches", () => {
 
   test("Scenario 2: Create tournament with multiple matches (Happy Path)", async () => {
     // Arrange - Step 1: Data
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
     await tournamentPage.fillBasicInfo({
       name: "Sunday Tournament",
-      date: "2025-12-05",
+      date: yesterday.toISOString().split("T")[0],
       tournamentTypeId: "2", // SKO
     });
     await tournamentPage.clickNext();
