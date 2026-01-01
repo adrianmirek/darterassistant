@@ -1,16 +1,4 @@
 ---
-import Layout from "@/layouts/Layout.astro";
-import TournamentsPage from "@/components/tournaments/TournamentsPage";
-
-// Ensure user is authenticated
-const user = Astro.locals.user;
-if (!user) {
-  return Astro.redirect("/auth/login");
-}
-
-export const prerender = false;
+// Redirect to home page which now displays the tournaments list
+return Astro.redirect("/");
 ---
-
-<Layout title="Tournaments - Darter Assistant">
-  <TournamentsPage client:load />
-</Layout>

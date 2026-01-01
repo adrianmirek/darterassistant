@@ -6,7 +6,7 @@ import type { UserDTO } from "../types";
  * Protected routes that require authentication
  */
 const PROTECTED_ROUTES = [
-  "/", // Main page with AddTournamentForm (protected)
+  "/", // Main page with Tournaments List (protected)
   "/api/tournaments", // Tournament API
   "/api/goals", // Goals API
 ];
