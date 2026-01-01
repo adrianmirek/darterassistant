@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { format, subMonths } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { AlertCircle, Calendar } from "lucide-react";
 import TournamentCard from "./TournamentCard";
 import DateRangePicker from "./DateRangePicker";
@@ -115,6 +116,14 @@ function TournamentsPageContent() {
           <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">
             {t("tournaments.emptyStateDescription")}
           </p>
+          <Button
+            variant="gradient"
+            onClick={() => (window.location.href = "/tournaments/new")}
+            className="mx-auto"
+            data-testid="add-tournament-empty-state-button"
+          >
+            {t("tournaments.addNewTournament")}
+          </Button>
         </div>
       )}
 

@@ -119,6 +119,7 @@ export const pl: TranslationKeys = {
     errorLoadingTournaments: "Nie udało się załadować turniejów",
     emptyState: "Brak turniejów w wybranym zakresie dat",
     emptyStateDescription: "Spróbuj zmienić zakres dat lub dodaj nowy turniej",
+    addNewTournament: "Dodaj nowy turniej",
 
     // Add Tournament
     addTitle: "Dodaj Turniej",
