@@ -46,9 +46,9 @@ function AuthNavContent({ userEmail }: { userEmail: string }) {
           </div>
 
           {/* User Info, Language Switcher, Theme Toggle, and Logout */}
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground min-w-[150px]">
-              <span className="font-medium text-foreground truncate">{userEmail}</span>
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
+              <span className="font-medium text-foreground truncate max-w-[200px]">{userEmail}</span>
             </div>
 
             <div className="flex-shrink-0">
@@ -59,14 +59,9 @@ function AuthNavContent({ userEmail }: { userEmail: string }) {
               <ThemeToggle />
             </div>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLogout}
-              className="flex-shrink-0 md:w-[110px] md:justify-start"
-            >
+            <Button variant="outline" size="sm" onClick={handleLogout} className="flex-shrink-0">
               <LogOut className="h-4 w-4 md:mr-2 flex-shrink-0" />
-              <span className="hidden md:inline md:flex-1 md:text-center">{t("nav.logout")}</span>
+              <span className="hidden md:inline">{t("nav.logout")}</span>
             </Button>
           </div>
         </div>
