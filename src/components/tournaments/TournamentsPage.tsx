@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, Calendar } from "lucide-react";
 import TournamentCard from "./TournamentCard";
-//import DateRangePicker from "./DateRangePicker";
+import DateRangePicker from "./DateRangePicker";
 import PaginationControls from "./PaginationControls";
 import PageHeader from "@/components/PageHeader";
 import { I18nProvider, useTranslation } from "@/lib/hooks/I18nProvider";
@@ -15,8 +15,8 @@ function TournamentsPageContent() {
   const t = useTranslation();
 
   // Initialize with one month range (default)
-  const [endDate] = useState<Date>(new Date());
-  const [startDate] = useState<Date>(subMonths(new Date(), 1));
+  const [endDate, setEndDate] = useState<Date>(new Date());
+  const [startDate, setStartDate] = useState<Date>(subMonths(new Date(), 1));
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(20);
 
@@ -61,11 +61,11 @@ function TournamentsPageContent() {
     fetchTournaments();
   }, [startDate, endDate, currentPage, pageSize]);
 
-  //const handleDateRangeChange = (newStartDate: Date, newEndDate: Date) => {
-  //  setStartDate(newStartDate);
-  //  setEndDate(newEndDate);
-  //  setCurrentPage(1); // Reset to first page when filters change
-  //};
+  const handleDateRangeChange = (newStartDate: Date, newEndDate: Date) => {
+    setStartDate(newStartDate);
+    setEndDate(newEndDate);
+    setCurrentPage(1); // Reset to first page when filters change
+  };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -76,6 +76,11 @@ function TournamentsPageContent() {
   return (
     <div className="container max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
       <PageHeader titleKey="tournaments.tournamentsListTitle" subtitleKey="tournaments.selectDateRange" />
+
+      {/* Date Range Filter */}
+      <div className="mb-6 sm:mb-8 bg-card border border-border rounded-lg p-4 sm:p-6 shadow-sm">
+        <DateRangePicker startDate={startDate} endDate={endDate} onDateRangeChange={handleDateRangeChange} />
+      </div>
 
       {/* Loading State */}
       {loading && (
