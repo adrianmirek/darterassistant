@@ -16,9 +16,9 @@ function PageHeaderContent({ titleKey, subtitleKey }: { titleKey: string; subtit
   const t = useTranslation();
 
   return (
-    <div className="mb-8">
-      <h1 className="text-3xl font-bold tracking-tight mb-2">{t(titleKey)}</h1>
-      <p className="text-muted-foreground">{t(subtitleKey)}</p>
+    <div className="mb-4 sm:mb-6 lg:mb-8">
+      <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-1 sm:mb-2">{t(titleKey)}</h1>
+      <p className="text-sm sm:text-base text-muted-foreground">{t(subtitleKey)}</p>
     </div>
   );
 }
