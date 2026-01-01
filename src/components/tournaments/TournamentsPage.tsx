@@ -120,7 +120,7 @@ function TournamentsPageContent() {
             {t("tournaments.showingResults").replace("{count}", data.pagination.total_count.toString())}
           </div>
 
-          <div className="grid gap-4 sm:gap-6 md:grid-cols-1 lg:grid-cols-2 mb-6 sm:mb-8">
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2 mb-6 sm:mb-8">
             {data.tournaments.map((tournament) => (
               <TournamentCard key={tournament.tournament_id} tournament={tournament} />
             ))}
