@@ -74,24 +74,24 @@ function TournamentsPageContent() {
   };
 
   return (
-    <div className="container max-w-7xl mx-auto px-4 py-8">
+    <div className="container max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
       <PageHeader titleKey="tournaments.tournamentsListTitle" subtitleKey="tournaments.selectDateRange" />
 
       {/* Date Range Filter */}
-      <div className="mb-8 bg-card border border-border rounded-lg p-6 shadow-sm">
+      <div className="mb-6 sm:mb-8 bg-card border border-border rounded-lg p-4 sm:p-6 shadow-sm">
         <DateRangePicker startDate={startDate} endDate={endDate} onDateRangeChange={handleDateRangeChange} />
       </div>
 
       {/* Loading State */}
       {loading && (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="border border-border rounded-lg p-6 space-y-4">
-              <Skeleton className="h-8 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div key={i} className="border border-border rounded-lg p-4 sm:p-6 space-y-3 sm:space-y-4">
+              <Skeleton className="h-6 sm:h-8 w-3/4" />
+              <Skeleton className="h-3 sm:h-4 w-1/2" />
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                 {[1, 2, 3, 4].map((j) => (
-                  <Skeleton key={j} className="h-20" />
+                  <Skeleton key={j} className="h-16 sm:h-20" />
                 ))}
               </div>
             </div>
@@ -103,27 +103,29 @@ function TournamentsPageContent() {
       {error && !loading && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription className="text-sm">{error}</AlertDescription>
         </Alert>
       )}
 
       {/* Empty State */}
       {!loading && !error && data && data.tournaments.length === 0 && (
-        <div className="text-center py-16">
-          <Calendar className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-xl font-semibold mb-2">{t("tournaments.emptyState")}</h3>
-          <p className="text-muted-foreground mb-6">{t("tournaments.emptyStateDescription")}</p>
+        <div className="text-center py-12 sm:py-16">
+          <Calendar className="h-12 w-12 sm:h-16 sm:w-16 mx-auto text-muted-foreground mb-3 sm:mb-4" />
+          <h3 className="text-lg sm:text-xl font-semibold mb-2">{t("tournaments.emptyState")}</h3>
+          <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">
+            {t("tournaments.emptyStateDescription")}
+          </p>
         </div>
       )}
 
       {/* Tournaments List */}
       {!loading && !error && data && data.tournaments.length > 0 && (
         <>
-          <div className="mb-4 text-sm text-muted-foreground">
+          <div className="mb-3 sm:mb-4 text-xs sm:text-sm text-muted-foreground">
             {t("tournaments.showingResults").replace("{count}", data.pagination.total_count.toString())}
           </div>
 
-          <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2 mb-8">
+          <div className="grid gap-4 sm:gap-6 md:grid-cols-1 lg:grid-cols-2 mb-6 sm:mb-8">
             {data.tournaments.map((tournament) => (
               <TournamentCard key={tournament.tournament_id} tournament={tournament} />
             ))}
