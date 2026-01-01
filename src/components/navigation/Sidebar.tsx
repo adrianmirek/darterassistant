@@ -1,4 +1,4 @@
-import { Plus, ChevronRight, ChevronLeft } from "lucide-react";
+import { Plus, ChevronRight, ChevronLeft, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSidebarContext } from "@/lib/hooks/SidebarProvider";
 import { useTranslation } from "@/lib/hooks/I18nProvider";
@@ -41,6 +41,13 @@ export default function Sidebar() {
         >
           {/* Navigation Items */}
           <nav className="flex-1 px-3 py-4">
+            <a
+              href="/tournaments"
+              className="flex items-center gap-3 px-4 py-3 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors duration-200 group"
+            >
+              <Trophy className="h-5 w-5 group-hover:scale-110 transition-transform duration-200" />
+              <span className="font-medium">{t("nav.tournaments")}</span>
+            </a>
             <a
               href="/tournaments/new"
               className="flex items-center gap-3 px-4 py-3 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors duration-200 group"
