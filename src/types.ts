@@ -281,3 +281,52 @@ export interface GetTournamentsPaginatedQuery {
   page_size?: number;
   page?: number;
 }
+
+/**
+ * Nakka Tournament Entity (from database)
+ */
+export interface NakkaTournamentEntity {
+  tournament_id: number;
+  nakka_identifier: string;
+  tournament_date: string;
+  tournament_name: string;
+  href: string;
+  imported_at: string;
+  last_updated: string;
+  match_import_status: 'in_progress' | 'completed' | 'failed' | null;
+  match_import_error: string | null;
+}
+
+/**
+ * DTO for Nakka tournament scraped from HTML
+ */
+export interface NakkaTournamentScrapedDTO {
+  nakka_identifier: string;
+  tournament_name: string;
+  href: string;
+  tournament_date: Date;
+  status: 'completed' | 'preparing' | 'ongoing';
+}
+
+/**
+ * Command for importing Nakka tournaments
+ */
+export interface ImportNakkaTournamentsCommand {
+  keyword: string;
+}
+
+/**
+ * Response from import operation
+ */
+export interface ImportNakkaTournamentsResponseDTO {
+  inserted: number;
+  updated: number;
+  skipped: number;
+  total_processed: number;
+  tournaments: Array<{
+    nakka_identifier: string;
+    tournament_name: string;
+    tournament_date: string;
+    action: 'inserted' | 'updated' | 'skipped';
+  }>;
+}
