@@ -1,6 +1,6 @@
-import type { APIRoute } from 'astro';
-import { z } from 'zod';
-import { syncTournamentsByKeyword } from '@/lib/services/nakka.service';
+import type { APIRoute } from "astro";
+import { z } from "zod";
+import { syncTournamentsByKeyword } from "@/lib/services/nakka.service";
 
 export const prerender = false;
 
@@ -18,9 +18,9 @@ export const POST: APIRoute = async ({ locals, request }) => {
   try {
     // Authentication check
     if (!locals.user) {
-      return new Response(JSON.stringify({ error: 'Authentication required' }), {
+      return new Response(JSON.stringify({ error: "Authentication required" }), {
         status: 401,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
       });
     }
 
@@ -29,9 +29,9 @@ export const POST: APIRoute = async ({ locals, request }) => {
     try {
       body = await request.json();
     } catch {
-      return new Response(JSON.stringify({ error: 'Invalid JSON in request body' }), {
+      return new Response(JSON.stringify({ error: "Invalid JSON in request body" }), {
         status: 400,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
       });
     }
 
@@ -39,12 +39,12 @@ export const POST: APIRoute = async ({ locals, request }) => {
     if (!validation.success) {
       return new Response(
         JSON.stringify({
-          error: 'Validation failed',
+          error: "Validation failed",
           details: validation.error.errors,
         }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { "Content-Type": "application/json" },
         }
       );
     }
@@ -56,20 +56,19 @@ export const POST: APIRoute = async ({ locals, request }) => {
 
     return new Response(JSON.stringify({ success: true, data: result }), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error('Error in POST /api/nakka/sync:', error);
+    console.error("Error in POST /api/nakka/sync:", error);
     return new Response(
       JSON.stringify({
-        error: 'Internal server error',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        error: "Internal server error",
+        message: error instanceof Error ? error.message : "Unknown error",
       }),
       {
         status: 500,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
       }
     );
   }
 };
-

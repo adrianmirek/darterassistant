@@ -293,7 +293,16 @@ export interface NakkaTournamentEntity {
   href: string;
   imported_at: string;
   last_updated: string;
-  match_import_status: 'in_progress' | 'completed' | 'failed' | null;
+  /**
+   * Auto-calculated status based on tournament matches:
+   * - 'completed': All matches have match_result_status = 'completed'
+   * - 'failed': At least one match has match_result_status = 'failed'
+   * - 'in_progress': Matches exist but not all are completed
+   * - null: No matches imported yet
+   *
+   * This field is automatically updated by database trigger when match statuses change.
+   */
+  match_import_status: "in_progress" | "completed" | "failed" | null;
   match_import_error: string | null;
 }
 
@@ -305,7 +314,7 @@ export interface NakkaTournamentScrapedDTO {
   tournament_name: string;
   href: string;
   tournament_date: Date;
-  status: 'completed' | 'preparing' | 'ongoing';
+  status: "completed" | "preparing" | "ongoing";
 }
 
 /**
@@ -323,10 +332,65 @@ export interface ImportNakkaTournamentsResponseDTO {
   updated: number;
   skipped: number;
   total_processed: number;
-  tournaments: Array<{
+  tournaments: {
     nakka_identifier: string;
     tournament_name: string;
     tournament_date: string;
-    action: 'inserted' | 'updated' | 'skipped';
-  }>;
+    action: "inserted" | "updated" | "skipped";
+  }[];
+  match_stats?: Record<string, ImportMatchesResponseDTO>;
+}
+
+/**
+ * DTO for Nakka match scraped from tournament page
+ */
+export interface NakkaMatchScrapedDTO {
+  nakka_match_identifier: string; // e.g., "t_Nd6M_9511_rr_0_ygC9_zJGq"
+  match_type: string; // "rr" or "t_top_16", "t_quarter_final", etc.
+  first_player_name: string;
+  first_player_code: string; // e.g., "ygC9"
+  second_player_name: string;
+  second_player_code: string; // e.g., "zJGq"
+  href: string;
+}
+
+/**
+ * Response from match import operation
+ */
+export interface ImportMatchesResponseDTO {
+  inserted: number;
+  skipped: number;
+  failed: number;
+  total_processed: number;
+  errors?: { identifier: string; error: string }[];
+}
+
+/**
+ * DTO for Nakka match player result scraped from match page
+ */
+export interface NakkaMatchPlayerResultScrapedDTO {
+  nakka_match_player_identifier: string; // e.g., "t_Nd6M_9511_rr_2_3Tm2"
+  average_score: number | null;
+  first_nine_avg: number | null;
+  checkout_percentage: number | null;
+  score_60_count: number;
+  score_100_count: number;
+  score_140_count: number;
+  score_180_count: number;
+  high_finish: number;
+  best_leg: number;
+  worst_leg: number;
+  player_score: number;
+  opponent_score: number;
+}
+
+/**
+ * Response from player results import operation
+ */
+export interface ImportPlayerResultsResponseDTO {
+  inserted: number;
+  skipped: number;
+  failed: number;
+  total_processed: number;
+  errors?: { identifier: string; error: string }[];
 }
