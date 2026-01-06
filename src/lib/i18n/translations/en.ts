@@ -24,6 +24,7 @@ export const en = {
     filter: "Filter",
     reset: "Reset",
     apply: "Apply",
+    viewDetails: "View Details",
   },
 
   // Navigation
@@ -232,6 +233,50 @@ export const en = {
     min: "Must be at least {min}",
     max: "Must not exceed {max}",
     pattern: "Invalid format",
+  },
+
+  // Guest Homepage
+  guest: {
+    title: "Find Your Tournament Matches",
+    subtitle: "Search for your darts matches from Nakka tournaments",
+    tournamentKeyword: "Tournament Keyword",
+    tournamentKeywordPlaceholder: "e.g., agawa (min. 3 characters)",
+    playerNickname: "Your Nickname",
+    playerNicknamePlaceholder: "e.g., Mirek (min. 3 characters)",
+    searchButton: "Search Matches",
+    searching: "Searching...",
+    savePlaceholder: "Save Results",
+    resultsTitle: "Found Matches",
+    noResults: "No matches found",
+    noResultsDescription: "Try adjusting your search criteria",
+    limitedResults: "Showing up to 30 matches from the last 3 weeks",
+    matchesFound: "{count} matches found",
+    matchesFoundCombined: "{db} from database + {web} from web search = {total} total matches",
+    tournament: "Tournament",
+    matchType: "Type",
+    yourMatch: "Your match",
+    loginToSave: "Login to save and track your matches",
+    registerNow: "Create an account",
+    
+    // Validation
+    keywordMinLength: "Tournament keyword must be at least 3 characters",
+    nicknameMinLength: "Nickname must be at least 3 characters",
+    
+    // Match details
+    playerLabel: "You",
+    opponentLabel: "Opponent",
+    matchDetails: "Match Details",
+    
+    // Two-step search
+    searchDatabaseInfo: "First, we'll search our database for your matches (instant results)",
+    searchMoreTournaments: "Want to find more tournaments?",
+    searchMoreDescription: "Search for specific tournaments by keyword to discover more matches",
+    searchTournaments: "Search Tournaments",
+    noMatchesInDatabase: "No matches found in database",
+    trySearchingByKeyword: "Let's search for tournaments by keyword to find your matches",
+    startOver: "Start a new search",
+    startOverDescription: "Search for a different player",
+    newSearch: "New Search",
   },
 
   // Footer

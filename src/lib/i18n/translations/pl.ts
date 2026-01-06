@@ -26,6 +26,7 @@ export const pl: TranslationKeys = {
     filter: "Filtruj",
     reset: "Resetuj",
     apply: "Zastosuj",
+    viewDetails: "Zobacz Szczegóły",
   },
 
   // Navigation
@@ -234,6 +235,50 @@ export const pl: TranslationKeys = {
     min: "Musi wynosić co najmniej {min}",
     max: "Nie może przekroczyć {max}",
     pattern: "Nieprawidłowy format",
+  },
+
+  // Guest Homepage
+  guest: {
+    title: "Znajdź Swoje Mecze Turniejowe",
+    subtitle: "Wyszukaj swoje mecze darterskie z turniejów Nakka",
+    tournamentKeyword: "Słowo Kluczowe Turnieju",
+    tournamentKeywordPlaceholder: "np. agawa (min. 3 znaki)",
+    playerNickname: "Twój Nick",
+    playerNicknamePlaceholder: "np. Mirek (min. 3 znaki)",
+    searchButton: "Szukaj Meczów",
+    searching: "Wyszukiwanie...",
+    savePlaceholder: "Zapisz Wyniki",
+    resultsTitle: "Znalezione Mecze",
+    noResults: "Nie znaleziono meczów",
+    noResultsDescription: "Spróbuj zmienić kryteria wyszukiwania",
+    limitedResults: "Wyświetlanie do 30 meczów z ostatnich 3 tygodni",
+    matchesFound: "Znaleziono {count} meczów",
+    matchesFoundCombined: "{db} z bazy danych + {web} z wyszukiwania = {total} meczów razem",
+    tournament: "Turniej",
+    matchType: "Typ",
+    yourMatch: "Twój mecz",
+    loginToSave: "Zaloguj się, aby zapisać i śledzić swoje mecze",
+    registerNow: "Załóż konto",
+    
+    // Validation
+    keywordMinLength: "Słowo kluczowe turnieju musi mieć co najmniej 3 znaki",
+    nicknameMinLength: "Nick musi mieć co najmniej 3 znaki",
+    
+    // Match details
+    playerLabel: "Ty",
+    opponentLabel: "Przeciwnik",
+    matchDetails: "Szczegóły Meczu",
+    
+    // Two-step search
+    searchDatabaseInfo: "Najpierw przeszukamy naszą bazę danych (natychmiastowe wyniki)",
+    searchMoreTournaments: "Chcesz znaleźć więcej turniejów?",
+    searchMoreDescription: "Wyszukaj konkretne turnieje po słowie kluczowym, aby odkryć więcej meczów",
+    searchTournaments: "Szukaj Turniejów",
+    noMatchesInDatabase: "Nie znaleziono meczów w bazie danych",
+    trySearchingByKeyword: "Wyszukajmy turnieje po słowie kluczowym, aby znaleźć Twoje mecze",
+    startOver: "Rozpocznij nowe wyszukiwanie",
+    startOverDescription: "Wyszukaj innego gracza",
+    newSearch: "Nowe Wyszukiwanie",
   },
 
   // Footer
