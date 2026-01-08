@@ -127,7 +127,7 @@ function TournamentsPageContent() {
       {/* Date Range Filter */}
       <div className="mb-6 sm:mb-8 bg-card border border-border rounded-lg p-4 sm:p-6 shadow-sm">
         <DateRangePicker startDate={startDate} endDate={endDate} onDateRangeChange={handleDateRangeChange} />
-        
+
         {/* Nakka Sync Section (Test Only) */}
         <div className="mt-6 pt-6 border-t border-border">
           <div className="flex items-center gap-2 mb-3">
@@ -137,18 +137,13 @@ function TournamentsPageContent() {
           <div className="flex flex-col sm:flex-row gap-3">
             <Input
               type="text"
-              placeholder="Enter keyword (e.g., Agawa)"
+              placeholder="Enter keyword (e.g., My tournament)"
               value={nakkaKeyword}
               onChange={(e) => setNakkaKeyword(e.target.value)}
               className="flex-1"
               disabled={nakkaSyncing}
             />
-            <Button
-              onClick={handleNakkaSync}
-              disabled={nakkaSyncing}
-              variant="outline"
-              className="sm:w-auto"
-            >
+            <Button onClick={handleNakkaSync} disabled={nakkaSyncing} variant="outline" className="sm:w-auto">
               {nakkaSyncing ? "Syncing..." : "Sync Tournaments"}
             </Button>
           </div>
