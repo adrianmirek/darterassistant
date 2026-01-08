@@ -5,13 +5,19 @@ import GuestNav from "@/components/navigation/GuestNav";
 import { GuestHomepage } from "./GuestHomepage";
 import type { Language } from "@/lib/i18n";
 
+declare global {
+  interface Window {
+    __DARTER_LANG__?: Language;
+  }
+}
+
 export function GuestPage() {
   const [lang, setLang] = useState<Language>("en");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     // Get language from global scope (set by Layout.astro)
-    const storedLang = (window as any).__DARTER_LANG__ || "en";
+    const storedLang = window.__DARTER_LANG__ || "en";
     setLang(storedLang as Language);
     setMounted(true);
   }, []);
@@ -38,4 +44,3 @@ export function GuestPage() {
     </ThemeProvider>
   );
 }
-

@@ -5,7 +5,7 @@
 export const en = {
   // Common
   common: {
-    appName: "Darter Assistant",
+    appName: "Top Darter",
     welcome: "Welcome",
     loading: "Loading...",
     error: "Error",
@@ -257,16 +257,34 @@ export const en = {
     yourMatch: "Your match",
     loginToSave: "Login to save and track your matches",
     registerNow: "Create an account",
-    
+
     // Validation
     keywordMinLength: "Tournament keyword must be at least 3 characters",
     nicknameMinLength: "Nickname must be at least 3 characters",
-    
+
     // Match details
     playerLabel: "You",
     opponentLabel: "Opponent",
     matchDetails: "Match Details",
-    
+    matchResult: "Result",
+    matchAverage: "Average",
+    matchNoResults: "No results available",
+    refreshResults: "Fetch Results",
+    refreshingResults: "Fetching...",
+    refreshTournamentResults: "Fetch Missing Results",
+    fetchMissingResults: "Fetch Missing Results",
+    fetchResults: "Fetch",
+    fetchingResults: "Fetching",
+
+    // Match types
+    matchTypeRr: "Group Stage",
+    matchTypeTop32: "Top 32",
+    matchTypeTop16: "Top 16",
+    matchTypeTop8: "Top 8",
+    matchTypeQuarterFinal: "Quarter Final",
+    matchTypeSemiFinal: "Semi Final",
+    matchTypeFinal: "Final",
+
     // Two-step search
     searchDatabaseInfo: "First, we'll search our database for your matches (instant results)",
     searchMoreTournaments: "Want to find more tournaments?",
@@ -274,9 +292,13 @@ export const en = {
     searchTournaments: "Search Tournaments",
     noMatchesInDatabase: "No matches found in database",
     trySearchingByKeyword: "Let's search for tournaments by keyword to find your matches",
+    noMatchesFound: "No matches found",
+    noMatchesFoundDescription:
+      "We couldn't find any matches for your search. Try a different nickname or tournament keyword.",
     startOver: "Start a new search",
     startOverDescription: "Search for a different player",
     newSearch: "New Search",
+    startNewSearch: "Start New Search",
   },
 
   // Footer

@@ -7,7 +7,7 @@ import type { TranslationKeys } from "./en";
 export const pl: TranslationKeys = {
   // Common
   common: {
-    appName: "Asystent Dartera",
+    appName: "Top Darter",
     welcome: "Witaj",
     loading: "Ładowanie...",
     error: "Błąd",
@@ -242,9 +242,9 @@ export const pl: TranslationKeys = {
     title: "Znajdź Swoje Mecze Turniejowe",
     subtitle: "Wyszukaj swoje mecze darterskie z turniejów Nakka",
     tournamentKeyword: "Słowo Kluczowe Turnieju",
-    tournamentKeywordPlaceholder: "np. agawa (min. 3 znaki)",
+    tournamentKeywordPlaceholder: "np. mój turniej (min. 3 znaki)",
     playerNickname: "Twój Nick",
-    playerNicknamePlaceholder: "np. Mirek (min. 3 znaki)",
+    playerNicknamePlaceholder: "np. Jan Kowalski (min. 3 znaki)",
     searchButton: "Szukaj Meczów",
     searching: "Wyszukiwanie...",
     savePlaceholder: "Zapisz Wyniki",
@@ -259,16 +259,34 @@ export const pl: TranslationKeys = {
     yourMatch: "Twój mecz",
     loginToSave: "Zaloguj się, aby zapisać i śledzić swoje mecze",
     registerNow: "Załóż konto",
-    
+
     // Validation
     keywordMinLength: "Słowo kluczowe turnieju musi mieć co najmniej 3 znaki",
     nicknameMinLength: "Nick musi mieć co najmniej 3 znaki",
-    
+
     // Match details
     playerLabel: "Ty",
     opponentLabel: "Przeciwnik",
     matchDetails: "Szczegóły Meczu",
-    
+    matchResult: "Wynik",
+    matchAverage: "Średnia",
+    matchNoResults: "Brak wyników",
+    refreshResults: "Pobierz Wyniki",
+    refreshingResults: "Pobieranie...",
+    refreshTournamentResults: "Pobierz Brakujące Wyniki",
+    fetchMissingResults: "Pobierz Brakujące Wyniki",
+    fetchResults: "Pobierz",
+    fetchingResults: "Pobieranie",
+
+    // Match types
+    matchTypeRr: "Faza Grupowa",
+    matchTypeTop32: "Top 32",
+    matchTypeTop16: "Top 16",
+    matchTypeTop8: "Top 8",
+    matchTypeQuarterFinal: "Ćwierćfinał",
+    matchTypeSemiFinal: "Półfinał",
+    matchTypeFinal: "Finał",
+
     // Two-step search
     searchDatabaseInfo: "Najpierw przeszukamy naszą bazę danych (natychmiastowe wyniki)",
     searchMoreTournaments: "Chcesz znaleźć więcej turniejów?",
@@ -276,9 +294,13 @@ export const pl: TranslationKeys = {
     searchTournaments: "Szukaj Turniejów",
     noMatchesInDatabase: "Nie znaleziono meczów w bazie danych",
     trySearchingByKeyword: "Wyszukajmy turnieje po słowie kluczowym, aby znaleźć Twoje mecze",
+    noMatchesFound: "Nie znaleziono meczów",
+    noMatchesFoundDescription:
+      "Nie mogliśmy znaleźć żadnych meczów dla Twojego wyszukiwania. Spróbuj innego nicku lub słowa kluczowego turnieju.",
     startOver: "Rozpocznij nowe wyszukiwanie",
     startOverDescription: "Wyszukaj innego gracza",
     newSearch: "Nowe Wyszukiwanie",
+    startNewSearch: "Rozpocznij Nowe Wyszukiwanie",
   },
 
   // Footer

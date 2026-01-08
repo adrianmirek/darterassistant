@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Search, Save, AlertCircle, Database, Globe } from "lucide-react";
+import { Search, AlertCircle, Database, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +10,8 @@ import type {
   RetrieveTournamentsMatchesResponseDTO,
   GetPlayerMatchesResponseDTO,
   NakkaPlayerMatchResult,
+  NakkaTournamentWithMatchesDTO,
+  NakkaTournamentMatchDTO,
 } from "@/types";
 
 type SearchStep = "nickname" | "keyword" | "results";
@@ -26,9 +28,9 @@ export function GuestHomepage() {
   const [isSearchingDatabase, setIsSearchingDatabase] = useState(false);
   const [isSearchingWeb, setIsSearchingWeb] = useState(false);
 
-  // Results
+  // Results - now both use the same normalized format
   const [dbResults, setDbResults] = useState<GetPlayerMatchesResponseDTO | null>(null);
-  const [webResults, setWebResults] = useState<RetrieveTournamentsMatchesResponseDTO | null>(null);
+  const [webResults, setWebResults] = useState<GetPlayerMatchesResponseDTO | null>(null);
 
   // Errors
   const [error, setError] = useState<string | null>(null);
@@ -123,13 +125,24 @@ export function GuestHomepage() {
     }
   }, [keyword, nickname, t]);
 
-  // Transform database results to match TournamentResults component format
-  const transformDbResults = useCallback(
-    (dbData: GetPlayerMatchesResponseDTO): RetrieveTournamentsMatchesResponseDTO => {
-      // Group matches by tournament
-      const tournamentMap = new Map<string, any>();
+  // Transform player matches to tournament-grouped format for display
+  const transformToTournamentFormat = useCallback(
+    (playerMatches: NakkaPlayerMatchResult[]): RetrieveTournamentsMatchesResponseDTO => {
+      // Define match type priority order (lower number = higher priority)
+      const matchTypePriority: Record<string, number> = {
+        t_final: 1,
+        "t_semi-final": 2,
+        t_quarter_final: 3,
+        t_top_8: 3, // Same as quarter final
+        t_top_16: 4,
+        t_top_32: 5,
+        rr: 6, // Group stage
+      };
 
-      dbData.matches.forEach((match: NakkaPlayerMatchResult) => {
+      // Group matches by tournament
+      const tournamentMap = new Map<string, NakkaTournamentWithMatchesDTO>();
+
+      playerMatches.forEach((match: NakkaPlayerMatchResult) => {
         if (!tournamentMap.has(match.nakka_tournament_identifier)) {
           tournamentMap.set(match.nakka_tournament_identifier, {
             nakka_identifier: match.nakka_tournament_identifier,
@@ -140,20 +153,58 @@ export function GuestHomepage() {
           });
         }
 
-        tournamentMap.get(match.nakka_tournament_identifier)!.tournament_matches.push({
-          nakka_match_identifier: match.nakka_match_identifier,
-          match_type: match.match_type,
-          player_name: match.player_name,
-          player_code: match.player_code,
-          opponent_name: match.opponent_name,
-          opponent_code: match.opponent_code,
-          href: match.match_href,
-          isChecked: true, // All matches from DB are for the searched player
+        const tournament = tournamentMap.get(match.nakka_tournament_identifier);
+        if (tournament) {
+          tournament.tournament_matches.push({
+            tournament_match_id: match.tournament_match_id,
+            nakka_match_identifier: match.nakka_match_identifier,
+            match_type: match.match_type,
+            player_name: match.player_name,
+            player_code: match.player_code,
+            opponent_name: match.opponent_name,
+            opponent_code: match.opponent_code,
+            href: match.match_href,
+            isChecked: true, // All matches are for the searched player
+            // Include player statistics
+            average_score: match.average_score,
+            player_score: match.player_score,
+            opponent_score: match.opponent_score,
+            first_nine_avg: match.first_nine_avg,
+            checkout_percentage: match.checkout_percentage,
+            score_60_count: match.score_60_count,
+            score_100_count: match.score_100_count,
+            score_140_count: match.score_140_count,
+            score_180_count: match.score_180_count,
+            high_finish: match.high_finish,
+            best_leg: match.best_leg,
+            worst_leg: match.worst_leg,
+            // Include opponent statistics
+            opponent_average_score: match.opponent_average_score,
+            opponent_first_nine_avg: match.opponent_first_nine_avg,
+            opponent_checkout_percentage: match.opponent_checkout_percentage,
+            opponent_score_60_count: match.opponent_score_60_count,
+            opponent_score_100_count: match.opponent_score_100_count,
+            opponent_score_140_count: match.opponent_score_140_count,
+            opponent_score_180_count: match.opponent_score_180_count,
+            opponent_high_finish: match.opponent_high_finish,
+            opponent_best_leg: match.opponent_best_leg,
+            opponent_worst_leg: match.opponent_worst_leg,
+          });
+        }
+      });
+
+      // Sort matches within each tournament by match type priority
+      const tournaments = Array.from(tournamentMap.values());
+      tournaments.forEach((tournament) => {
+        tournament.tournament_matches.sort((a: NakkaTournamentMatchDTO, b: NakkaTournamentMatchDTO) => {
+          const priorityA = matchTypePriority[a.match_type] ?? 999;
+          const priorityB = matchTypePriority[b.match_type] ?? 999;
+          return priorityA - priorityB;
         });
       });
 
       return {
-        tournaments: Array.from(tournamentMap.values()),
+        tournaments,
       };
     },
     []
@@ -163,52 +214,39 @@ export function GuestHomepage() {
   const combinedResults = useCallback(() => {
     if (!dbResults && !webResults) return null;
 
-    const dbTransformed = dbResults ? transformDbResults(dbResults) : null;
-    
-    // If only db results, return them
-    if (dbTransformed && !webResults) {
-      return dbTransformed;
-    }
-    
-    // If only web results, return them
-    if (webResults && !dbTransformed) {
-      return webResults;
-    }
+    // Combine all matches and deduplicate
+    const allMatches: NakkaPlayerMatchResult[] = [];
+    const matchIds = new Set<string>();
 
-    // Both exist - need to deduplicate
-    // Collect all match identifiers from database results
-    const dbMatchIds = new Set<string>();
-    dbTransformed?.tournaments.forEach(tournament => {
-      tournament.tournament_matches.forEach(match => {
-        dbMatchIds.add(match.nakka_match_identifier);
+    // Add database results first (they take priority)
+    if (dbResults) {
+      dbResults.matches.forEach((match) => {
+        if (!matchIds.has(match.nakka_match_identifier)) {
+          allMatches.push(match);
+          matchIds.add(match.nakka_match_identifier);
+        }
       });
-    });
+    }
 
-    // Filter web results to exclude matches already in database
-    const deduplicatedWebResults = webResults!.tournaments.map(tournament => ({
-      ...tournament,
-      tournament_matches: tournament.tournament_matches.filter(
-        match => !dbMatchIds.has(match.nakka_match_identifier)
-      ),
-    })).filter(tournament => tournament.tournament_matches.length > 0); // Remove empty tournaments
+    // Add web results, skipping duplicates
+    if (webResults) {
+      webResults.matches.forEach((match) => {
+        if (!matchIds.has(match.nakka_match_identifier)) {
+          allMatches.push(match);
+          matchIds.add(match.nakka_match_identifier);
+        }
+      });
+    }
 
-    return {
-      tournaments: [
-        ...(dbTransformed?.tournaments || []),
-        ...deduplicatedWebResults,
-      ],
-    };
-  }, [dbResults, webResults, transformDbResults])();
+    // Transform to tournament-grouped format for display
+    return transformToTournamentFormat(allMatches);
+  }, [dbResults, webResults, transformToTournamentFormat])();
 
   const totalMatches =
-    combinedResults?.tournaments.reduce(
-      (acc, tournament) => acc + tournament.tournament_matches.length,
-      0
-    ) || 0;
+    combinedResults?.tournaments.reduce((acc, tournament) => acc + tournament.tournament_matches.length, 0) || 0;
 
   const dbMatchCount = dbResults?.matches.length || 0;
-  const webMatchCount =
-    webResults?.tournaments.reduce((acc, t) => acc + t.tournament_matches.length, 0) || 0;
+  const webMatchCount = webResults?.matches.length || 0;
 
   const handleStartOver = () => {
     setSearchStep("nickname");
@@ -223,13 +261,13 @@ export function GuestHomepage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/30">
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-6 sm:py-12">
         {/* Hero Section */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-teal-400 to-purple-400 bg-clip-text text-transparent mb-4">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-teal-400 to-purple-400 bg-clip-text text-transparent mb-3 sm:mb-4 px-2 pb-1 leading-tight">
             {t("guest.title")}
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
             {t("guest.subtitle")}
           </p>
         </div>
@@ -240,9 +278,7 @@ export function GuestHomepage() {
             <div className="bg-card border rounded-lg p-6 shadow-lg">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="player-nickname">
-                    {t("guest.playerNickname")}
-                  </Label>
+                  <Label htmlFor="player-nickname">{t("guest.playerNickname")}</Label>
                   <Input
                     id="player-nickname"
                     type="text"
@@ -262,9 +298,7 @@ export function GuestHomepage() {
                     className={nicknameError ? "border-destructive" : ""}
                     disabled={isSearchingDatabase}
                   />
-                  {nicknameError && (
-                    <p className="text-sm text-destructive">{nicknameError}</p>
-                  )}
+                  {nicknameError && <p className="text-sm text-destructive">{nicknameError}</p>}
                 </div>
 
                 <Button
@@ -313,23 +347,23 @@ export function GuestHomepage() {
 
             {/* Results Found - Show option to search more */}
             {dbMatchCount > 0 && (
-              <div className="max-w-6xl mx-auto mb-8">
+              <div className="max-w-6xl mx-auto mb-8 px-4">
                 {/* Action Cards */}
                 <div className="grid md:grid-cols-2 gap-4 mb-8">
                   {/* Search More Tournaments Card */}
-                  <div className="bg-card border rounded-lg p-6">
-                    <div className="flex items-start gap-4">
-                      <div className="p-3 bg-purple-500/10 rounded-lg">
-                        <Globe className="h-6 w-6 text-purple-400" />
+                  <div className="bg-card border rounded-lg p-4 sm:p-6">
+                    <div className="flex items-start gap-3 sm:gap-4">
+                      <div className="p-2 sm:p-3 bg-purple-500/10 rounded-lg flex-shrink-0">
+                        <Globe className="h-5 w-5 sm:h-6 sm:w-6 text-purple-400" />
                       </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold mb-2">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm sm:text-base font-semibold mb-1 sm:mb-2">
                           {t("guest.searchMoreTournaments")}
                         </h3>
-                        <p className="text-sm text-muted-foreground mb-4">
+                        <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
                           {t("guest.searchMoreDescription")}
                         </p>
-                        <div className="space-y-3">
+                        <div className="space-y-2 sm:space-y-3">
                           <Input
                             type="text"
                             placeholder={t("guest.tournamentKeywordPlaceholder")}
@@ -345,16 +379,14 @@ export function GuestHomepage() {
                                 handleKeywordSearch();
                               }
                             }}
-                            className={keywordError ? "border-destructive" : ""}
+                            className={`text-sm sm:text-base ${keywordError ? "border-destructive" : ""}`}
                             disabled={isSearchingWeb}
                           />
-                          {keywordError && (
-                            <p className="text-sm text-destructive">{keywordError}</p>
-                          )}
+                          {keywordError && <p className="text-xs sm:text-sm text-destructive">{keywordError}</p>}
                           <Button
                             onClick={handleKeywordSearch}
                             disabled={isSearchingWeb || keyword.length < 3}
-                            className="w-full"
+                            className="w-full text-sm sm:text-base"
                           >
                             {isSearchingWeb ? (
                               <>
@@ -374,13 +406,13 @@ export function GuestHomepage() {
                   </div>
 
                   {/* Start Over Card */}
-                  <div className="bg-card border rounded-lg p-6 flex flex-col justify-center items-center text-center">
-                    <Database className="h-12 w-12 text-teal-400 mb-4" />
-                    <h3 className="font-semibold mb-2">{t("guest.startOver")}</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
+                  <div className="bg-card border rounded-lg p-4 sm:p-6 flex flex-col justify-center items-center text-center">
+                    <Database className="h-10 w-10 sm:h-12 sm:w-12 text-teal-400 mb-3 sm:mb-4" />
+                    <h3 className="text-sm sm:text-base font-semibold mb-1 sm:mb-2">{t("guest.startOver")}</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
                       {t("guest.startOverDescription")}
                     </p>
-                    <Button onClick={handleStartOver} variant="outline">
+                    <Button onClick={handleStartOver} variant="outline" className="text-sm sm:text-base">
                       {t("guest.newSearch")}
                     </Button>
                   </div>
@@ -390,22 +422,16 @@ export function GuestHomepage() {
 
             {/* No Results Found - Show option to search by keyword */}
             {dbMatchCount === 0 && !webResults && (
-              <div className="max-w-2xl mx-auto mb-8">
-                <div className="bg-card border rounded-lg p-6">
-                  <div className="text-center mb-6">
-                    <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-xl font-semibold mb-2">
-                      {t("guest.noMatchesInDatabase")}
-                    </h3>
-                    <p className="text-muted-foreground">
-                      {t("guest.trySearchingByKeyword")}
-                    </p>
+              <div className="max-w-2xl mx-auto mb-8 px-4">
+                <div className="bg-card border rounded-lg p-4 sm:p-6">
+                  <div className="text-center mb-4 sm:mb-6">
+                    <AlertCircle className="h-10 w-10 sm:h-12 sm:w-12 mx-auto text-muted-foreground mb-3 sm:mb-4" />
+                    <h3 className="text-lg sm:text-xl font-semibold mb-2">{t("guest.noMatchesInDatabase")}</h3>
+                    <p className="text-sm sm:text-base text-muted-foreground">{t("guest.trySearchingByKeyword")}</p>
                   </div>
 
                   <div className="space-y-3">
-                    <Label htmlFor="tournament-keyword">
-                      {t("guest.tournamentKeyword")}
-                    </Label>
+                    <Label htmlFor="tournament-keyword">{t("guest.tournamentKeyword")}</Label>
                     <Input
                       id="tournament-keyword"
                       type="text"
@@ -425,9 +451,7 @@ export function GuestHomepage() {
                       className={keywordError ? "border-destructive" : ""}
                       disabled={isSearchingWeb}
                     />
-                    {keywordError && (
-                      <p className="text-sm text-destructive">{keywordError}</p>
-                    )}
+                    {keywordError && <p className="text-sm text-destructive">{keywordError}</p>}
                     <Button
                       onClick={handleKeywordSearch}
                       disabled={isSearchingWeb || keyword.length < 3}
@@ -446,11 +470,7 @@ export function GuestHomepage() {
                         </>
                       )}
                     </Button>
-                    <Button
-                      onClick={handleStartOver}
-                      variant="ghost"
-                      className="w-full"
-                    >
+                    <Button onClick={handleStartOver} variant="ghost" className="w-full">
                       {t("guest.startOver")}
                     </Button>
                   </div>
@@ -458,44 +478,49 @@ export function GuestHomepage() {
               </div>
             )}
 
-            {/* Display Results */}
-            {combinedResults && totalMatches > 0 && (
-              <div className="max-w-6xl mx-auto">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h2 className="text-2xl font-semibold">
-                      {t("guest.resultsTitle")}
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                      {dbMatchCount > 0 && webMatchCount > 0
-                        ? t("guest.matchesFoundCombined", {
-                            db: dbMatchCount,
-                            web: webMatchCount,
-                            total: totalMatches,
-                          })
-                        : t("guest.matchesFound", { count: totalMatches })}
-                    </p>
-                  </div>
-
-                  {/* Mock-up Save Button */}
-                  <Button variant="outline" size="lg">
-                    <Save className="mr-2 h-4 w-4" />
-                    {t("guest.savePlaceholder")}
+            {/* No Results Found After Both Searches */}
+            {dbMatchCount === 0 && webMatchCount === 0 && webResults && (
+              <div className="max-w-2xl mx-auto mb-8 px-4">
+                <div className="bg-card border rounded-lg p-4 sm:p-6 text-center">
+                  <AlertCircle className="h-12 w-12 sm:h-16 sm:w-16 mx-auto text-muted-foreground mb-3 sm:mb-4" />
+                  <h3 className="text-lg sm:text-xl font-semibold mb-2">{t("guest.noMatchesFound")}</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">
+                    {t("guest.noMatchesFoundDescription")}
+                  </p>
+                  <Button onClick={handleStartOver} size="lg" className="w-full text-sm sm:text-base">
+                    <Database className="mr-2 h-4 w-4" />
+                    {t("guest.startNewSearch")}
                   </Button>
                 </div>
+              </div>
+            )}
 
-                <TournamentResults results={combinedResults} />
+            {/* Display Results */}
+            {combinedResults && totalMatches > 0 && (
+              <div className="max-w-6xl mx-auto px-4">
+                <div className="mb-6">
+                  <h2 className="text-xl sm:text-2xl font-semibold">{t("guest.resultsTitle")}</h2>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    {dbMatchCount > 0 && webMatchCount > 0
+                      ? t("guest.matchesFoundCombined", {
+                          db: dbMatchCount,
+                          web: webMatchCount,
+                          total: totalMatches,
+                        })
+                      : t("guest.matchesFound", { count: totalMatches })}
+                  </p>
+                </div>
+
+                <TournamentResults results={combinedResults} nickname={nickname} />
 
                 {/* Call to Action */}
-                <div className="mt-12 text-center bg-gradient-to-r from-purple-500/10 to-teal-500/10 border border-purple-500/20 rounded-lg p-8">
-                  <h3 className="text-xl font-semibold mb-2">
-                    {t("guest.loginToSave")}
-                  </h3>
-                  <div className="flex gap-4 justify-center mt-4">
-                    <Button asChild variant="default" size="lg">
+                <div className="mt-8 sm:mt-12 text-center bg-gradient-to-r from-purple-500/10 to-teal-500/10 border border-purple-500/20 rounded-lg p-6 sm:p-8">
+                  <h3 className="text-lg sm:text-xl font-semibold mb-2">{t("guest.loginToSave")}</h3>
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mt-4">
+                    <Button asChild variant="default" size="lg" className="w-full sm:w-auto">
                       <a href="/auth/login">{t("nav.login")}</a>
                     </Button>
-                    <Button asChild variant="outline" size="lg">
+                    <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
                       <a href="/auth/register">{t("guest.registerNow")}</a>
                     </Button>
                   </div>

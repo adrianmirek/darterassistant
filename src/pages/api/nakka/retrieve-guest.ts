@@ -1,7 +1,6 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
 import { retrieveTournamentsMatchesByKeywordAndNickNameForGuest } from "@/lib/services/nakka.user.service";
-import type { RetrieveTournamentsMatchesResponseDTO } from "@/types";
 
 export const prerender = false;
 
@@ -17,6 +16,9 @@ const retrieveSchema = z.object({
  * Saves tournaments and matches to database for future reference
  * PUBLIC endpoint for guests with limitation:
  * - Maximum 30 matches returned (where nickname is found)
+ *
+ * Returns normalized response format with flat list of matches including statistics
+ * Response type: GetPlayerMatchesResponseDTO
  */
 export const POST: APIRoute = async ({ locals, request }) => {
   try {
@@ -49,11 +51,7 @@ export const POST: APIRoute = async ({ locals, request }) => {
 
     // Execute retrieval with guest limitations (30 matches max)
     // Also saves tournaments and matches to database
-    const result = await retrieveTournamentsMatchesByKeywordAndNickNameForGuest(
-      locals.supabase,
-      keyword,
-      nick_name
-    );
+    const result = await retrieveTournamentsMatchesByKeywordAndNickNameForGuest(locals.supabase, keyword, nick_name);
 
     return new Response(JSON.stringify({ success: true, data: result }), {
       status: 200,
@@ -73,5 +71,3 @@ export const POST: APIRoute = async ({ locals, request }) => {
     );
   }
 };
-
-

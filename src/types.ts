@@ -399,6 +399,7 @@ export interface ImportPlayerResultsResponseDTO {
  * DTO for tournament match with player nickname check
  */
 export interface NakkaTournamentMatchDTO {
+  tournament_match_id?: number; // Database ID (0 or null if not yet saved)
   nakka_match_identifier: string;
   match_type: string;
   player_name: string;
@@ -407,6 +408,30 @@ export interface NakkaTournamentMatchDTO {
   opponent_code: string;
   href: string;
   isChecked: boolean;
+  // Player statistics (null if not yet scraped/imported)
+  average_score?: number | null;
+  player_score?: number | null;
+  opponent_score?: number | null;
+  first_nine_avg?: number | null;
+  checkout_percentage?: number | null;
+  score_60_count?: number | null;
+  score_100_count?: number | null;
+  score_140_count?: number | null;
+  score_180_count?: number | null;
+  high_finish?: number | null;
+  best_leg?: number | null;
+  worst_leg?: number | null;
+  // Opponent statistics (null if not yet scraped/imported)
+  opponent_average_score?: number | null;
+  opponent_first_nine_avg?: number | null;
+  opponent_checkout_percentage?: number | null;
+  opponent_score_60_count?: number | null;
+  opponent_score_100_count?: number | null;
+  opponent_score_140_count?: number | null;
+  opponent_score_180_count?: number | null;
+  opponent_high_finish?: number | null;
+  opponent_best_leg?: number | null;
+  opponent_worst_leg?: number | null;
 }
 
 /**
@@ -430,7 +455,7 @@ export interface RetrieveTournamentsMatchesResponseDTO {
 /**
  * Player match result from database (nakka.player_match_result type)
  * Contains match data with the searched player always in the "player" position
- * Includes player statistics when available from tournament_match_player_results table
+ * Includes player and opponent statistics when available from tournament_match_player_results table
  */
 export interface NakkaPlayerMatchResult {
   // Tournament info
@@ -465,6 +490,18 @@ export interface NakkaPlayerMatchResult {
   worst_leg: number | null;
   player_score: number | null;
   opponent_score: number | null;
+
+  // Opponent statistics (null if not yet scraped/imported)
+  opponent_average_score: number | null;
+  opponent_first_nine_avg: number | null;
+  opponent_checkout_percentage: number | null;
+  opponent_score_60_count: number | null;
+  opponent_score_100_count: number | null;
+  opponent_score_140_count: number | null;
+  opponent_score_180_count: number | null;
+  opponent_high_finish: number | null;
+  opponent_best_leg: number | null;
+  opponent_worst_leg: number | null;
 
   // Metadata
   imported_at: string;
