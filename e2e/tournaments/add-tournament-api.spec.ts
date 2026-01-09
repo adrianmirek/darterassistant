@@ -1,41 +1,16 @@
 import { test, expect } from "@playwright/test";
-import { testUser } from "../utils/auth-fixtures";
-import { LoginPage } from "../utils/page-objects/LoginPage";
 
 /**
  * E2E API tests for Tournament endpoints
  * Covers API test scenarios from test plan
  * Uses Playwright's request context for API testing
+ * 
+ * Note: These tests run in the chromium-authenticated project,
+ * which automatically provides authenticated storage state.
+ * No manual login is needed - the request fixture inherits auth cookies.
  */
 test.describe("Tournament API Integration", () => {
   const baseURL = process.env.BASE_URL || "http://localhost:3000";
-  let cookies: { name: string; value: string; domain: string; path: string }[] = [];
-
-  // Authenticate once before all tests to get session cookies
-  test.beforeAll(async ({ browser }) => {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-
-    // Login to get authenticated session
-    const loginPage = new LoginPage(page);
-    await loginPage.goto();
-    await loginPage.login(testUser.email, testUser.password);
-
-    // Wait for successful login (redirect to home page)
-    // If login fails, this will timeout and the test will fail with a clear message
-    await expect(page).toHaveURL(`${baseURL}/`, { timeout: 10000 });
-
-    // Get cookies from authenticated session
-    cookies = await context.cookies();
-
-    await context.close();
-  });
-
-  // Helper function to get authenticated headers
-  const getAuthHeaders = () => ({
-    "Content-Type": "application/json",
-    Cookie: cookies.map((c) => `${c.name}=${c.value}`).join("; "),
-  });
 
   test("API Test 1: POST /api/tournaments - Valid payload with single match", async ({ request }) => {
     // Arrange
@@ -66,7 +41,6 @@ test.describe("Tournament API Integration", () => {
     // Act
     const response = await request.post(`${baseURL}/api/tournaments`, {
       data: payload,
-      headers: getAuthHeaders(),
     });
 
     // Assert
@@ -92,7 +66,6 @@ test.describe("Tournament API Integration", () => {
     // Act
     const response = await request.post(`${baseURL}/api/tournaments`, {
       data: payload,
-      headers: getAuthHeaders(),
     });
 
     // Assert
@@ -133,7 +106,6 @@ test.describe("Tournament API Integration", () => {
     // Act
     const response = await request.post(`${baseURL}/api/tournaments`, {
       data: payload,
-      headers: getAuthHeaders(),
     });
 
     // Assert
@@ -173,7 +145,6 @@ test.describe("Tournament API Integration", () => {
     // Act
     const response = await request.post(`${baseURL}/api/tournaments`, {
       data: payload,
-      headers: getAuthHeaders(),
     });
 
     // Assert
@@ -245,7 +216,6 @@ test.describe("Tournament API Integration", () => {
     // Act
     const response = await request.post(`${baseURL}/api/tournaments`, {
       data: payload,
-      headers: getAuthHeaders(),
     });
 
     // Assert
@@ -338,7 +308,6 @@ test.describe("Tournament API Integration", () => {
     // Act
     const response = await request.post(`${baseURL}/api/tournaments`, {
       data: payload,
-      headers: getAuthHeaders(),
     });
 
     // Assert
@@ -376,7 +345,6 @@ test.describe("Tournament API Integration", () => {
     // Act
     const response = await request.post(`${baseURL}/api/tournaments`, {
       data: payload,
-      headers: getAuthHeaders(),
     });
 
     // Assert
@@ -411,7 +379,6 @@ test.describe("Tournament API Integration", () => {
     // Act
     const response = await request.post(`${baseURL}/api/tournaments`, {
       data: payload,
-      headers: getAuthHeaders(),
     });
 
     // Assert
@@ -449,7 +416,6 @@ test.describe("Tournament API Integration", () => {
     // Act
     const response = await request.post(`${baseURL}/api/tournaments`, {
       data: payload,
-      headers: getAuthHeaders(),
     });
 
     // Assert
@@ -485,7 +451,6 @@ test.describe("Tournament API Integration", () => {
     // Act
     const response = await request.post(`${baseURL}/api/tournaments`, {
       data: payload,
-      headers: getAuthHeaders(),
     });
 
     // Assert
@@ -521,7 +486,6 @@ test.describe("Tournament API Integration", () => {
     // Act
     const response = await request.post(`${baseURL}/api/tournaments`, {
       data: payload,
-      headers: getAuthHeaders(),
     });
 
     // Assert - Should accept up to 255 chars
@@ -557,7 +521,6 @@ test.describe("Tournament API Integration", () => {
     // Act
     const response = await request.post(`${baseURL}/api/tournaments`, {
       data: payload,
-      headers: getAuthHeaders(),
     });
 
     // Assert - Should reject
