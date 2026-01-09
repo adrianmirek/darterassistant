@@ -54,10 +54,7 @@ export default defineConfig({
     // Unauthenticated tests (login, register, home guest page, etc.)
     {
       name: "chromium-unauthenticated",
-      testMatch: [
-        "**/e2e/auth/**/*.spec.ts",
-        "**/e2e/home.spec.ts",
-      ],
+      testMatch: ["**/e2e/auth/**/*.spec.ts", "**/e2e/home.spec.ts"],
       use: {
         ...devices["Desktop Chrome"],
         // No storage state - these tests need to be unauthenticated

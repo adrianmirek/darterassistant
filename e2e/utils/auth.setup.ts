@@ -37,4 +37,3 @@ setup("authenticate", async ({ page }) => {
 
   console.log(`Storage state saved to ${authFile}`);
 });
-

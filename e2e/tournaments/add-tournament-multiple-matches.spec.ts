@@ -15,7 +15,7 @@ test.describe("Add Tournament - Multiple Matches", () => {
     await tournamentPage.goto();
   });
 
-  test("Scenario 2: Create tournament with multiple matches (Happy Path)", async ({ page }) => {
+  test("Scenario 2: Create tournament with multiple matches (Happy Path)", async () => {
     // Arrange - Step 1: Data
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
@@ -102,7 +102,7 @@ test.describe("Add Tournament - Multiple Matches", () => {
     //expect(toastText).toContain("3 matches");
   });
 
-  test("Scenario 3: Add match from review page", async ({ page }) => {
+  test("Scenario 3: Add match from review page", async () => {
     // Arrange - Add 2 matches and reach Step 3
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
@@ -173,7 +173,7 @@ test.describe("Add Tournament - Multiple Matches", () => {
     //await tournamentPage.waitForToast("Tournament saved successfully");
   });
 
-  test("Scenario 7: Navigation - Back button from Step 3", async ({ page }) => {
+  test("Scenario 7: Navigation - Back button from Step 3", async () => {
     // Arrange - Add 2 matches and reach Step 3
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
@@ -229,7 +229,7 @@ test.describe("Add Tournament - Multiple Matches", () => {
     expect(match2.avgScore).toContain("72");
   });
 
-  test("Scenario 11: Match type pre-selection", async ({ page }) => {
+  test("Scenario 11: Match type pre-selection", async () => {
     // Arrange
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
@@ -267,7 +267,7 @@ test.describe("Add Tournament - Multiple Matches", () => {
     expect(avgScoreValue).toBe(""); // Reset to default
   });
 
-  test("Scenario 12: Overall statistics display", async ({ page }) => {
+  test("Scenario 12: Overall statistics display", async () => {
     // Arrange
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
@@ -325,7 +325,7 @@ test.describe("Add Tournament - Multiple Matches", () => {
     expect(overallStatsText).toContain("140"); // High finish (max of 120, 140)
   });
 
-  test("Scenario 15: Final placement per match", async ({ page }) => {
+  test("Scenario 15: Final placement per match", async () => {
     // Arrange
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
@@ -381,7 +381,7 @@ test.describe("Add Tournament - Multiple Matches", () => {
     expect(match3.avgScore).toContain("73");
   });
 
-  test("Edge Case 5: Ten matches", async ({ page }) => {
+  test("Edge Case 5: Ten matches", async () => {
     // Arrange
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
