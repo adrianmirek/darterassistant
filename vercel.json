@@ -1,0 +1,14 @@
+{
+  "functions": {
+    "api/**/*.js": {
+      "memory": 3008,
+      "maxDuration": 60
+    },
+    ".vercel/output/functions/**/*.func": {
+      "memory": 3008,
+      "maxDuration": 60
+    }
+  },
+  "buildCommand": "npm run build"
+}
+
