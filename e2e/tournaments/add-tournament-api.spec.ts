@@ -4,7 +4,7 @@ import { test, expect } from "@playwright/test";
  * E2E API tests for Tournament endpoints
  * Covers API test scenarios from test plan
  * Uses Playwright's request context for API testing
- * 
+ *
  * Note: These tests run in the chromium-authenticated project,
  * which automatically provides authenticated storage state.
  * No manual login is needed - the request fixture inherits auth cookies.
