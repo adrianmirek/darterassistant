@@ -4,7 +4,7 @@ import { defineConfig } from "astro/config";
 import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
-import cloudflare from "@astrojs/cloudflare";
+import vercel from "@astrojs/vercel";
 
 // https://astro.build/config
 export default defineConfig({
@@ -14,10 +14,7 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
   },
-  adapter: cloudflare({
-    imageService: "compile",
-    platformProxy: {
-      enabled: true,
-    },
+  adapter: vercel({
+    imageService: true,
   }),
 });
