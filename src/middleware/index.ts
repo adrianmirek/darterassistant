@@ -6,7 +6,7 @@ import type { UserDTO } from "../types";
  * Protected routes that require authentication
  */
 const PROTECTED_ROUTES = [
-  "/", // Main page with Tournaments List (protected)
+  "/tournaments", // Tournaments page
   "/api/tournaments", // Tournament API
   "/api/goals", // Goals API
 ];
@@ -20,9 +20,7 @@ const AUTH_ROUTES = ["/auth/login", "/auth/register", "/auth/forgot-password", "
  * Check if route requires authentication
  */
 function isProtectedRoute(pathname: string): boolean {
-  // Exact match for root, prefix match for others
-  if (pathname === "/") return true;
-  return PROTECTED_ROUTES.slice(1).some((route) => pathname.startsWith(route));
+  return PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
 }
 
 /**

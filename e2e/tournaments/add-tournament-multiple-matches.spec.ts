@@ -9,6 +9,8 @@ test.describe("Add Tournament - Multiple Matches", () => {
   let tournamentPage: AddTournamentPage;
 
   test.beforeEach(async ({ page }) => {
+    // Authentication state is already loaded from storage
+    // Just navigate to the tournament page
     tournamentPage = new AddTournamentPage(page);
     await tournamentPage.goto();
   });
