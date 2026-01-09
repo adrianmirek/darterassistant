@@ -3,14 +3,15 @@ import { format, subMonths } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Calendar } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { AlertCircle, Calendar, Download } from "lucide-react";
 import TournamentCard from "./TournamentCard";
 import DateRangePicker from "./DateRangePicker";
 import PaginationControls from "./PaginationControls";
 import PageHeader from "@/components/PageHeader";
 import { I18nProvider, useTranslation } from "@/lib/hooks/I18nProvider";
 import { type Language, defaultLanguage } from "@/lib/i18n";
-import type { PaginatedTournamentsData, ApiResponse } from "@/types";
+import type { PaginatedTournamentsData, ApiResponse, ImportNakkaTournamentsResponseDTO } from "@/types";
 
 function TournamentsPageContent() {
   const t = useTranslation();
@@ -24,6 +25,12 @@ function TournamentsPageContent() {
   const [data, setData] = useState<PaginatedTournamentsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Nakka sync state (for testing)
+  const [nakkaKeyword, setNakkaKeyword] = useState("Agawa");
+  const [nakkaSyncing, setNakkaSyncing] = useState(false);
+  const [nakkaResult, setNakkaResult] = useState<ImportNakkaTournamentsResponseDTO | null>(null);
+  const [nakkaError, setNakkaError] = useState<string | null>(null);
 
   const fetchTournaments = async () => {
     setLoading(true);
@@ -74,6 +81,45 @@ function TournamentsPageContent() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const handleNakkaSync = async () => {
+    if (!nakkaKeyword.trim()) {
+      setNakkaError("Please enter a keyword");
+      return;
+    }
+
+    setNakkaSyncing(true);
+    setNakkaError(null);
+    setNakkaResult(null);
+
+    try {
+      const response = await fetch("/api/nakka/sync", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ keyword: nakkaKeyword }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      if (result.success) {
+        setNakkaResult(result.data);
+        // Refresh tournaments list after successful sync
+        fetchTournaments();
+      } else {
+        throw new Error(result.error || "Sync failed");
+      }
+    } catch (err) {
+      setNakkaError(err instanceof Error ? err.message : "Failed to sync with Nakka");
+    } finally {
+      setNakkaSyncing(false);
+    }
+  };
+
   return (
     <div className="container max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
       <PageHeader titleKey="tournaments.tournamentsListTitle" subtitleKey="tournaments.selectDateRange" />
@@ -81,6 +127,63 @@ function TournamentsPageContent() {
       {/* Date Range Filter */}
       <div className="mb-6 sm:mb-8 bg-card border border-border rounded-lg p-4 sm:p-6 shadow-sm">
         <DateRangePicker startDate={startDate} endDate={endDate} onDateRangeChange={handleDateRangeChange} />
+
+        {/* Nakka Sync Section (Test Only) */}
+        <div className="mt-6 pt-6 border-t border-border">
+          <div className="flex items-center gap-2 mb-3">
+            <Download className="h-4 w-4 text-muted-foreground" />
+            <h3 className="text-sm font-semibold">Nakka Import (Test)</h3>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Input
+              type="text"
+              placeholder="Enter keyword (e.g., My tournament)"
+              value={nakkaKeyword}
+              onChange={(e) => setNakkaKeyword(e.target.value)}
+              className="flex-1"
+              disabled={nakkaSyncing}
+            />
+            <Button onClick={handleNakkaSync} disabled={nakkaSyncing} variant="outline" className="sm:w-auto">
+              {nakkaSyncing ? "Syncing..." : "Sync Tournaments"}
+            </Button>
+          </div>
+
+          {/* Nakka Sync Results */}
+          {nakkaError && (
+            <Alert variant="destructive" className="mt-3">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="text-sm">{nakkaError}</AlertDescription>
+            </Alert>
+          )}
+
+          {nakkaResult && (
+            <Alert className="mt-3 bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
+              <Download className="h-4 w-4 text-green-600 dark:text-green-400" />
+              <AlertDescription className="text-sm">
+                <strong>Sync completed!</strong>
+                <div className="mt-2 space-y-1 text-xs">
+                  <div>• Total processed: {nakkaResult.total_processed}</div>
+                  <div>• Inserted: {nakkaResult.inserted}</div>
+                  <div>• Skipped: {nakkaResult.skipped}</div>
+                </div>
+                {nakkaResult.tournaments.length > 0 && (
+                  <details className="mt-2">
+                    <summary className="cursor-pointer text-xs font-medium">
+                      View {nakkaResult.tournaments.length} tournament(s)
+                    </summary>
+                    <ul className="mt-2 space-y-1 text-xs pl-4">
+                      {nakkaResult.tournaments.map((t, i) => (
+                        <li key={i}>
+                          {t.tournament_name} ({t.action})
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
       </div>
 
       {/* Loading State */}

@@ -281,3 +281,236 @@ export interface GetTournamentsPaginatedQuery {
   page_size?: number;
   page?: number;
 }
+
+/**
+ * Nakka Tournament Entity (from database)
+ */
+export interface NakkaTournamentEntity {
+  tournament_id: number;
+  nakka_identifier: string;
+  tournament_date: string;
+  tournament_name: string;
+  href: string;
+  imported_at: string;
+  last_updated: string;
+  /**
+   * Auto-calculated status based on tournament matches:
+   * - 'completed': All matches have match_result_status = 'completed'
+   * - 'failed': At least one match has match_result_status = 'failed'
+   * - 'in_progress': Matches exist but not all are completed
+   * - null: No matches imported yet
+   *
+   * This field is automatically updated by database trigger when match statuses change.
+   */
+  match_import_status: "in_progress" | "completed" | "failed" | null;
+  match_import_error: string | null;
+}
+
+/**
+ * DTO for Nakka tournament scraped from HTML
+ */
+export interface NakkaTournamentScrapedDTO {
+  nakka_identifier: string;
+  tournament_name: string;
+  href: string;
+  tournament_date: Date;
+  status: "completed" | "preparing" | "ongoing";
+}
+
+/**
+ * Command for importing Nakka tournaments
+ */
+export interface ImportNakkaTournamentsCommand {
+  keyword: string;
+}
+
+/**
+ * Response from import operation
+ */
+export interface ImportNakkaTournamentsResponseDTO {
+  inserted: number;
+  updated: number;
+  skipped: number;
+  total_processed: number;
+  tournaments: {
+    nakka_identifier: string;
+    tournament_name: string;
+    tournament_date: string;
+    action: "inserted" | "updated" | "skipped";
+  }[];
+  match_stats?: Record<string, ImportMatchesResponseDTO>;
+}
+
+/**
+ * DTO for Nakka match scraped from tournament page
+ */
+export interface NakkaMatchScrapedDTO {
+  nakka_match_identifier: string; // e.g., "t_Nd6M_9511_rr_0_ygC9_zJGq"
+  match_type: string; // "rr" or "t_top_16", "t_quarter_final", etc.
+  first_player_name: string;
+  first_player_code: string; // e.g., "ygC9"
+  second_player_name: string;
+  second_player_code: string; // e.g., "zJGq"
+  href: string;
+}
+
+/**
+ * Response from match import operation
+ */
+export interface ImportMatchesResponseDTO {
+  inserted: number;
+  skipped: number;
+  failed: number;
+  total_processed: number;
+  errors?: { identifier: string; error: string }[];
+}
+
+/**
+ * DTO for Nakka match player result scraped from match page
+ */
+export interface NakkaMatchPlayerResultScrapedDTO {
+  nakka_match_player_identifier: string; // e.g., "t_Nd6M_9511_rr_2_3Tm2"
+  average_score: number | null;
+  first_nine_avg: number | null;
+  checkout_percentage: number | null;
+  score_60_count: number;
+  score_100_count: number;
+  score_140_count: number;
+  score_180_count: number;
+  high_finish: number;
+  best_leg: number;
+  worst_leg: number;
+  player_score: number;
+  opponent_score: number;
+}
+
+/**
+ * Response from player results import operation
+ */
+export interface ImportPlayerResultsResponseDTO {
+  inserted: number;
+  skipped: number;
+  failed: number;
+  total_processed: number;
+  errors?: { identifier: string; error: string }[];
+}
+
+/**
+ * DTO for tournament match with player nickname check
+ */
+export interface NakkaTournamentMatchDTO {
+  tournament_match_id?: number; // Database ID (0 or null if not yet saved)
+  nakka_match_identifier: string;
+  match_type: string;
+  player_name: string;
+  player_code: string;
+  opponent_name: string;
+  opponent_code: string;
+  href: string;
+  isChecked: boolean;
+  // Player statistics (null if not yet scraped/imported)
+  average_score?: number | null;
+  player_score?: number | null;
+  opponent_score?: number | null;
+  first_nine_avg?: number | null;
+  checkout_percentage?: number | null;
+  score_60_count?: number | null;
+  score_100_count?: number | null;
+  score_140_count?: number | null;
+  score_180_count?: number | null;
+  high_finish?: number | null;
+  best_leg?: number | null;
+  worst_leg?: number | null;
+  // Opponent statistics (null if not yet scraped/imported)
+  opponent_average_score?: number | null;
+  opponent_first_nine_avg?: number | null;
+  opponent_checkout_percentage?: number | null;
+  opponent_score_60_count?: number | null;
+  opponent_score_100_count?: number | null;
+  opponent_score_140_count?: number | null;
+  opponent_score_180_count?: number | null;
+  opponent_high_finish?: number | null;
+  opponent_best_leg?: number | null;
+  opponent_worst_leg?: number | null;
+}
+
+/**
+ * DTO for tournament with filtered matches
+ */
+export interface NakkaTournamentWithMatchesDTO {
+  nakka_identifier: string;
+  tournament_date: string;
+  tournament_name: string;
+  href: string;
+  tournament_matches: NakkaTournamentMatchDTO[];
+}
+
+/**
+ * Response DTO for retrieving tournaments and matches by nickname
+ */
+export interface RetrieveTournamentsMatchesResponseDTO {
+  tournaments: NakkaTournamentWithMatchesDTO[];
+}
+
+/**
+ * Player match result from database (nakka.player_match_result type)
+ * Contains match data with the searched player always in the "player" position
+ * Includes player and opponent statistics when available from tournament_match_player_results table
+ */
+export interface NakkaPlayerMatchResult {
+  // Tournament info
+  tournament_id: number;
+  nakka_tournament_identifier: string;
+  tournament_name: string;
+  tournament_date: string;
+  tournament_href: string;
+
+  // Match info
+  tournament_match_id: number;
+  nakka_match_identifier: string;
+  match_type: string;
+  match_href: string;
+
+  // Player-oriented match data (matched player is always "player")
+  player_name: string;
+  player_code: string;
+  opponent_name: string;
+  opponent_code: string;
+
+  // Player statistics (null if not yet scraped/imported)
+  average_score: number | null;
+  first_nine_avg: number | null;
+  checkout_percentage: number | null;
+  score_60_count: number | null;
+  score_100_count: number | null;
+  score_140_count: number | null;
+  score_180_count: number | null;
+  high_finish: number | null;
+  best_leg: number | null;
+  worst_leg: number | null;
+  player_score: number | null;
+  opponent_score: number | null;
+
+  // Opponent statistics (null if not yet scraped/imported)
+  opponent_average_score: number | null;
+  opponent_first_nine_avg: number | null;
+  opponent_checkout_percentage: number | null;
+  opponent_score_60_count: number | null;
+  opponent_score_100_count: number | null;
+  opponent_score_140_count: number | null;
+  opponent_score_180_count: number | null;
+  opponent_high_finish: number | null;
+  opponent_best_leg: number | null;
+  opponent_worst_leg: number | null;
+
+  // Metadata
+  imported_at: string;
+}
+
+/**
+ * Response DTO for retrieving player matches from database
+ */
+export interface GetPlayerMatchesResponseDTO {
+  matches: NakkaPlayerMatchResult[];
+  total_count: number;
+}

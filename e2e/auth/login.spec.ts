@@ -15,7 +15,7 @@ test.describe("Login Page", () => {
 
   test("should display login form", async ({ page }) => {
     // Verify page title (actual title is "Sign In - Darter Assistant")
-    await expect(page).toHaveTitle(/Login - Darter Assistant/i);
+    await expect(page).toHaveTitle(/Login - Top Darter/i);
 
     // Verify form elements are visible
     await expect(loginPage.emailInput).toBeVisible();

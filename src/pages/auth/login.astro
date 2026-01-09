@@ -1,7 +1,7 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import LoginForm from "@/components/forms/LoginForm";
-import GuestNav from "@/components/navigation/GuestNav";
+import GuestNavWrapper from "@/components/navigation/GuestNavWrapper";
 import { detectLanguageFromHeader, t } from "@/lib/i18n";
 
 export const prerender = false;
@@ -18,7 +18,7 @@ const pageTitle = `${t(lang, "auth.loginTitle")} - ${t(lang, "common.appName")}`
 ---
 
 <Layout title={pageTitle} showAuthNav={false}>
-  <GuestNav lang={lang} client:load />
+  <GuestNavWrapper lang={lang} client:only="react" />
 
   <main class="min-h-[calc(100vh-73px)] flex items-center justify-center p-4">
     <LoginForm lang={lang} client:load />

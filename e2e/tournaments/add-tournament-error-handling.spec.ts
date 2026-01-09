@@ -339,7 +339,7 @@ test.describe("Add Tournament - Error Handling", () => {
   }); */
 
   test("Multiple rapid submissions prevented", async ({ page }) => {
-    // Arrange
+    // Arrange - Step 1: Fill basic info
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
 
@@ -350,6 +350,7 @@ test.describe("Add Tournament - Error Handling", () => {
     });
     await tournamentPage.clickNext();
 
+    // Step 2: Fill match metrics
     await tournamentPage.fillMatchMetrics({
       matchTypeId: "1",
       playerScore: 0,
@@ -358,23 +359,42 @@ test.describe("Add Tournament - Error Handling", () => {
       firstNineAvg: 78.0,
       checkoutPercentage: 38.0,
     });
-    await tournamentPage.clickNext();
 
-    // Mock slow API
+    // Set up slow API mock BEFORE navigating to Step 3
+    let submissionCount = 0;
     await page.route("**/api/tournaments", async (route) => {
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-      route.continue();
+      if (route.request().method() === "POST") {
+        submissionCount++;
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+        await route.continue();
+      } else {
+        await route.continue();
+      }
     });
 
-    // Act - Try to click submit multiple times rapidly
-    await tournamentPage.clickSubmit();
-    await tournamentPage.clickSubmit(); // Second click
-    await tournamentPage.clickSubmit(); // Third click
+    // Navigate to Step 3 (Review)
+    await tournamentPage.clickNext();
 
-    // Assert - Only one submission should go through
-    // Verify by checking that button is disabled after first click
-    const isDisabled = await tournamentPage.submitButton.isDisabled();
-    expect(isDisabled).toBe(true);
+    // Verify we're on Step 3 and submit button is visible
+    await expect(tournamentPage.submitButton).toBeVisible();
+    await expect(tournamentPage.submitButton).toBeEnabled();
+
+    // Act - Click submit
+    await tournamentPage.clickSubmit();
+
+    // Assert - Button should become disabled immediately
+    await expect(tournamentPage.submitButton).toBeDisabled({ timeout: 1000 });
+
+    // Try rapid second and third clicks - should be prevented (button is disabled)
+    // These should not trigger additional API calls
+    const clickPromises = [
+      tournamentPage.submitButton.click({ timeout: 500 }).catch(() => "prevented"),
+      tournamentPage.submitButton.click({ timeout: 500 }).catch(() => "prevented"),
+    ];
+    await Promise.all(clickPromises);
+
+    // Verify only one submission went through
+    expect(submissionCount).toBe(1);
 
     // Clean up
     await page.unroute("**/api/tournaments");

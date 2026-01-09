@@ -5,7 +5,7 @@
 export const en = {
   // Common
   common: {
-    appName: "Darter Assistant",
+    appName: "Top Darter",
     welcome: "Welcome",
     loading: "Loading...",
     error: "Error",
@@ -24,6 +24,7 @@ export const en = {
     filter: "Filter",
     reset: "Reset",
     apply: "Apply",
+    viewDetails: "View Details",
   },
 
   // Navigation
@@ -232,6 +233,72 @@ export const en = {
     min: "Must be at least {min}",
     max: "Must not exceed {max}",
     pattern: "Invalid format",
+  },
+
+  // Guest Homepage
+  guest: {
+    title: "Find Your Tournament Matches",
+    subtitle: "Search for your darts matches from Nakka tournaments",
+    tournamentKeyword: "Tournament Keyword",
+    tournamentKeywordPlaceholder: "e.g., my tournament (min. 3 characters)",
+    playerNickname: "Your Nickname",
+    playerNicknamePlaceholder: "e.g., John Doe (min. 3 characters)",
+    searchButton: "Search Matches",
+    searching: "Searching...",
+    savePlaceholder: "Save Results",
+    resultsTitle: "Found Matches",
+    noResults: "No matches found",
+    noResultsDescription: "Try adjusting your search criteria",
+    limitedResults: "Showing up to 30 matches from the last 3 weeks",
+    matchesFound: "{count} matches found",
+    matchesFoundCombined: "{db} from database + {web} from web search = {total} total matches",
+    tournament: "Tournament",
+    matchType: "Type",
+    yourMatch: "Your match",
+    loginToSave: "Login to save and track your matches",
+    registerNow: "Create an account",
+
+    // Validation
+    keywordMinLength: "Tournament keyword must be at least 3 characters",
+    nicknameMinLength: "Nickname must be at least 3 characters",
+
+    // Match details
+    playerLabel: "You",
+    opponentLabel: "Opponent",
+    matchDetails: "Match Details",
+    matchResult: "Result",
+    matchAverage: "Average",
+    matchNoResults: "No results available",
+    refreshResults: "Fetch Results",
+    refreshingResults: "Fetching...",
+    refreshTournamentResults: "Fetch Missing Results",
+    fetchMissingResults: "Fetch Missing Results",
+    fetchResults: "Fetch",
+    fetchingResults: "Fetching",
+
+    // Match types
+    matchTypeRr: "Group Stage",
+    matchTypeTop32: "Top 32",
+    matchTypeTop16: "Top 16",
+    matchTypeTop8: "Top 8",
+    matchTypeQuarterFinal: "Quarter Final",
+    matchTypeSemiFinal: "Semi Final",
+    matchTypeFinal: "Final",
+
+    // Two-step search
+    searchDatabaseInfo: "First, we'll search our database for your matches (instant results)",
+    searchMoreTournaments: "Want to find more tournaments?",
+    searchMoreDescription: "Search for specific tournaments by keyword to discover more matches",
+    searchTournaments: "Search Tournaments",
+    noMatchesInDatabase: "No matches found in database",
+    trySearchingByKeyword: "Let's search for tournaments by keyword to find your matches",
+    noMatchesFound: "No matches found",
+    noMatchesFoundDescription:
+      "We couldn't find any matches for your search. Try a different nickname or tournament keyword.",
+    startOver: "Start a new search",
+    startOverDescription: "Search for a different player",
+    newSearch: "New Search",
+    startNewSearch: "Start New Search",
   },
 
   // Footer
