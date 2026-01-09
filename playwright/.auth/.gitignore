@@ -1,0 +1,3 @@
+# Ignore authentication state files (contains cookies/tokens)
+*.json
+

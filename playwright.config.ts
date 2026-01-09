@@ -46,9 +46,33 @@ export default defineConfig({
 
   // Configure projects for major browsers - Only Chromium as per guidelines
   projects: [
+    // Setup project - runs authentication once before authenticated tests
     {
-      name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      name: "setup",
+      testMatch: /.*\.setup\.ts/,
+    },
+    // Unauthenticated tests (login, register, home guest page, etc.)
+    {
+      name: "chromium-unauthenticated",
+      testMatch: [
+        "**/e2e/auth/**/*.spec.ts",
+        "**/e2e/home.spec.ts",
+      ],
+      use: {
+        ...devices["Desktop Chrome"],
+        // No storage state - these tests need to be unauthenticated
+      },
+    },
+    // Authenticated tests (tournaments, dashboard, etc.)
+    {
+      name: "chromium-authenticated",
+      testMatch: "**/e2e/tournaments/**/*.spec.ts",
+      use: {
+        ...devices["Desktop Chrome"],
+        // Use signed-in state for authenticated tests
+        storageState: "playwright/.auth/user.json",
+      },
+      dependencies: ["setup"],
     },
   ],
 

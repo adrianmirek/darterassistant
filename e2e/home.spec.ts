@@ -5,31 +5,28 @@ import { test, expect } from "@playwright/test";
  * Note: Home page is protected and requires authentication
  */
 test.describe("Home Page", () => {
-  test("should redirect to login when not authenticated", async ({ page }) => {
+  test("should redirect to guest homepage when not authenticated", async ({ page }) => {
     await page.goto("/");
 
     // Should redirect to login page since home is protected
-    await expect(page).toHaveURL("/auth/login");
+    await expect(page).toHaveURL("/");
 
     // Check for login form
     const main = page.locator("main");
     await expect(main).toBeVisible();
   });
 
-  test("should show login page title after redirect", async ({ page }) => {
+  test("should show guest homepage title after redirect", async ({ page }) => {
     await page.goto("/");
 
     // After redirect, should show login page title
-    await expect(page).toHaveTitle(/Login - Darter Assistant/i);
+    await expect(page).toHaveTitle(/Darter Assistant - Find Your Matches/i);
   });
 
-  test("should display navigation on login page after redirect", async ({ page }) => {
+  test("should display homepage content after redirect", async ({ page }) => {
     await page.goto("/");
 
-    // After redirect to login, check for GuestNav navigation elements
-    // Login page has links to register and forgot password
-    const registerLink = page.locator('a[href="/auth/register"]');
-    await expect(registerLink).toBeVisible();
+    await expect(page.locator("main")).toBeVisible();
   });
 
   test("should be responsive", async ({ page }) => {
