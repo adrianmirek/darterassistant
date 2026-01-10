@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@/db/supabase.client";
+import { TOPDARTER_API_BASE_URL } from "../constants/topdarter.constants";
 import type {
   NakkaTournamentScrapedDTO,
   ImportNakkaTournamentsResponseDTO,
@@ -9,8 +10,8 @@ import type {
 } from "@/types";
 
 // Scraper API configuration
-const SCRAPER_API_URL = "https://topdarter-scr.vercel.app";
-const SCRAPER_API_KEY = "59365564-9762-4e99-b5fe-32c9dfb785a9";
+const TOPDARTER_API_URL = TOPDARTER_API_BASE_URL || "https://localhost:3001";
+const TOPDARTER_API_KEY = import.meta.env.TOPDARTER_API_KEY;
 
 /**
  * Scrapes tournaments from Nakka by keyword using external Vercel scraper API
@@ -19,7 +20,7 @@ const SCRAPER_API_KEY = "59365564-9762-4e99-b5fe-32c9dfb785a9";
  */
 export async function scrapeTournamentsByKeyword(keyword: string): Promise<NakkaTournamentScrapedDTO[]> {
   console.log(`Calling external scraper API for keyword: "${keyword}"`);
-  console.log(`Scraper API URL: ${SCRAPER_API_URL}/api/scrape-tournaments`);
+  console.log(`Scraper API URL: ${TOPDARTER_API_URL}/api/scrape-tournaments`);
 
   try {
     const headers: Record<string, string> = {
@@ -27,11 +28,11 @@ export async function scrapeTournamentsByKeyword(keyword: string): Promise<Nakka
     };
 
     // Add API key if configured
-    if (SCRAPER_API_KEY) {
-      headers["topdarter-api-key"] = SCRAPER_API_KEY;
+    if (TOPDARTER_API_KEY) {
+      headers["topdarter-api-key"] = TOPDARTER_API_KEY;
     }
 
-    const response = await fetch(`${SCRAPER_API_URL}/api/scrape-tournaments`, {
+    const response = await fetch(`${TOPDARTER_API_URL}/api/scrape-tournaments`, {
       method: "POST",
       headers,
       body: JSON.stringify({ keyword }),
@@ -429,11 +430,11 @@ export async function scrapeTournamentMatches(tournamentHref: string): Promise<N
       "Content-Type": "application/json",
     };
 
-    if (SCRAPER_API_KEY) {
-      headers["topdarter-api-key"] = SCRAPER_API_KEY;
+    if (TOPDARTER_API_KEY) {
+      headers["topdarter-api-key"] = TOPDARTER_API_KEY;
     }
 
-    const response = await fetch(`${SCRAPER_API_URL}/api/scrape-matches`, {
+    const response = await fetch(`${TOPDARTER_API_URL}/api/scrape-matches`, {
       method: "POST",
       headers,
       body: JSON.stringify({ tournamentHref }),
@@ -544,11 +545,11 @@ export async function scrapeMatchPlayerResults(
       "Content-Type": "application/json",
     };
 
-    if (SCRAPER_API_KEY) {
-      headers["topdarter-api-key"] = SCRAPER_API_KEY;
+    if (TOPDARTER_API_KEY) {
+      headers["topdarter-api-key"] = TOPDARTER_API_KEY;
     }
 
-    const response = await fetch(`${SCRAPER_API_URL}/api/scrape-player-results`, {
+    const response = await fetch(`${TOPDARTER_API_URL}/api/scrape-player-results`, {
       method: "POST",
       headers,
       body: JSON.stringify({ matchHref, nakkaMatchIdentifier }),
