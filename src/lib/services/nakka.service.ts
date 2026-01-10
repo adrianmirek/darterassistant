@@ -9,7 +9,6 @@ import type {
   ImportPlayerResultsResponseDTO,
 } from "@/types";
 
-
 // Scraper API configuration
 const TOPDARTER_API_URL = TOPDARTER_API_BASE_URL || "https://localhost:3001";
 const TOPDARTER_API_KEY = import.meta.env.TOPDARTER_API_KEY;
