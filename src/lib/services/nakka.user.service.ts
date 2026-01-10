@@ -97,7 +97,7 @@ export async function retrieveTournamentsMatchesByKeywordAndNickNameForGuest(
 ): Promise<GetPlayerMatchesResponseDTO> {
   console.log(`[Guest] Retrieving tournaments for keyword: "${tournament_keyword}", nickname: "${nick_name}"`);
 
-  // Step 1: Scrape all tournaments matching the keyword
+  // Step 1: Scrape all tournaments matching the keyword (using stealth plugin to bypass Cloudflare)
   const scrapedTournaments = await scrapeTournamentsByKeyword(tournament_keyword);
   console.log(`[Guest] Found ${scrapedTournaments.length} tournaments`);
 
@@ -495,7 +495,7 @@ export async function getPlayerMatchesByNickname(
 
     // Call the database function
     // Note: Type assertion needed as database types may not include custom functions yet
-    const { data, error } = await supabase.schema("public").rpc(
+    const { data, error } = await supabase.schema("nakka").rpc(
       "get_player_matches_by_nickname" as never,
       {
         search_nickname: nick_name,
