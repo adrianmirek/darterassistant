@@ -1,0 +1,164 @@
+name: Pull Request Topdarter CI
+
+on:
+  pull_request:
+    branches:
+      - main-topdarter
+
+# Cancel in-progress runs for the same PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Get changed files
+        id: changed-files
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            git fetch origin ${{ github.base_ref }}
+            FILES=$(git diff --name-only --diff-filter=ACMRT origin/${{ github.base_ref }}...${{ github.sha }} | grep -E '\.(ts|tsx|js|jsx|astro)$' | xargs || echo "")
+            echo "files=$FILES" >> $GITHUB_OUTPUT
+            echo "Changed files: $FILES"
+          fi
+
+      - name: Run linter on changed files
+        if: steps.changed-files.outputs.files != ''
+        run: |
+          FILES="${{ steps.changed-files.outputs.files }}"
+          if [ -n "$FILES" ]; then
+            npx eslint $FILES
+          else
+            echo "No lintable files changed"
+          fi
+
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests with coverage
+        run: npm run test:coverage
+
+      - name: Upload unit test coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-coverage
+          path: coverage/
+          retention-days: 7
+
+  status-comment:
+    name: Status Comment
+    runs-on: ubuntu-latest
+    needs: [lint, unit-test]
+    if: always()
+    permissions:
+      pull-requests: write
+    
+    steps:
+      - name: Check job statuses
+        id: check
+        run: |
+          LINT_STATUS="${{ needs.lint.result }}"
+          UNIT_STATUS="${{ needs.unit-test.result }}"          
+          
+          echo "lint_status=${LINT_STATUS}" >> $GITHUB_OUTPUT
+          echo "unit_status=${UNIT_STATUS}" >> $GITHUB_OUTPUT          
+          
+          if [[ "${LINT_STATUS}" == "success" && "${UNIT_STATUS}" == "success" ]]; then
+            echo "all_passed=true" >> $GITHUB_OUTPUT
+          else
+            echo "all_passed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create status emoji
+        id: emoji
+        run: |
+          if [[ "${{ steps.check.outputs.lint_status }}" == "success" ]]; then
+            echo "lint=✅" >> $GITHUB_OUTPUT
+          else
+            echo "lint=❌" >> $GITHUB_OUTPUT
+          fi
+          
+          if [[ "${{ steps.check.outputs.unit_status }}" == "success" ]]; then
+            echo "unit=✅" >> $GITHUB_OUTPUT
+          else
+            echo "unit=❌" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Comment PR - Success
+        if: steps.check.outputs.all_passed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = `## 🎉 All Checks Passed!
+            
+            | Check | Status |
+            |-------|--------|
+            | Linting | ${{ steps.emoji.outputs.lint }} |
+            | Unit Tests | ${{ steps.emoji.outputs.unit }} |            
+            
+            **All tests passed successfully!** ✨
+            
+            *Workflow run: [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})*`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Comment PR - Failure
+        if: steps.check.outputs.all_passed == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = `## ⚠️ Some Checks Failed
+            
+            | Check | Status |
+            |-------|--------|
+            | Linting | ${{ steps.emoji.outputs.lint }} |
+            | Unit Tests | ${{ steps.emoji.outputs.unit }} |            
+            
+            **Please review the failed checks and fix the issues.**
+            
+            *Workflow run: [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})*`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
