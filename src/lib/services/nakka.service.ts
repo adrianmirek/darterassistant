@@ -460,7 +460,7 @@ export async function scrapeTournamentMatches(tournamentHref: string): Promise<N
 }
 
 /**
- * Imports matches to database (skip existing based on unique constraint)
+ * Imports matches to database using batch insert (skip existing based on unique constraint)
  * @param supabase - Supabase client instance
  * @param tournamentId - Tournament ID from database
  * @param matches - Array of scraped match DTOs
@@ -479,52 +479,62 @@ export async function importMatches(
     errors: [],
   };
 
-  console.log(`Importing ${matches.length} matches for tournament ${tournamentId}...`);
+  console.log(`Batch importing ${matches.length} matches for tournament ${tournamentId}...`);
 
-  for (const match of matches) {
-    try {
-      const { error } = await supabase
-        .schema("nakka")
-        .from("tournament_matches" as unknown as "tournament_matches")
-        .insert({
-          tournament_id: tournamentId,
-          nakka_match_identifier: match.nakka_match_identifier,
-          match_type: match.match_type,
-          first_player_name: match.first_player_name,
-          first_player_code: match.first_player_code,
-          second_player_name: match.second_player_name,
-          second_player_code: match.second_player_code,
-          href: match.href,
-        });
+  // Prepare match records for batch upsert
+  const matchRecords = matches.map((match) => ({
+    tournament_id: tournamentId,
+    nakka_match_identifier: match.nakka_match_identifier,
+    match_type: match.match_type,
+    first_player_name: match.first_player_name,
+    first_player_code: match.first_player_code,
+    second_player_name: match.second_player_name,
+    second_player_code: match.second_player_code,
+    href: match.href,
+  }));
 
-      if (error) {
-        if (error.code === "23505") {
-          // Unique constraint violation - skip
-          result.skipped++;
-          console.log(`Skipped duplicate match: ${match.nakka_match_identifier}`);
-        } else {
-          result.failed++;
-          result.errors?.push({
-            identifier: match.nakka_match_identifier,
-            error: error.message,
-          });
-          console.error(`Failed to insert match ${match.nakka_match_identifier}:`, error.message);
-        }
-      } else {
-        result.inserted++;
-        console.log(`Inserted match: ${match.nakka_match_identifier}`);
-      }
-    } catch (error) {
-      result.failed++;
-      result.errors?.push({
-        identifier: match.nakka_match_identifier,
-        error: error instanceof Error ? error.message : "Unknown error",
-      });
-      console.error(`Exception inserting match ${match.nakka_match_identifier}:`, error);
-    }
+  // Perform batch upsert using ignoreDuplicates
+  // This uses PostgreSQL's INSERT ... ON CONFLICT DO NOTHING
+  // Inserts new matches, skips existing ones - all in ONE operation
+  const { data: upsertedMatches, error: upsertError } = await supabase
+    .schema("nakka")
+    .from("tournament_matches" as unknown as "tournament_matches")
+    .upsert(matchRecords, {
+      onConflict: "tournament_id,nakka_match_identifier",
+      ignoreDuplicates: true, // Skip duplicates instead of updating
+    })
+    .select("tournament_match_id");
+
+  if (upsertError) {
+    // Upsert failed
+    result.failed = matches.length;
+    result.errors?.push({
+      identifier: "batch_upsert",
+      error: upsertError.message,
+    });
+    console.error(`Batch upsert failed:`, upsertError.message);
+  } else {
+    // Success - count what was actually inserted
+    result.inserted = upsertedMatches?.length || 0;
+    
+    // Count total to determine how many were skipped
+    const { count: totalCount } = await supabase
+      .schema("nakka")
+      .from("tournament_matches" as unknown as "tournament_matches")
+      .select("tournament_match_id", { count: "exact", head: true })
+      .eq("tournament_id", tournamentId);
+    
+    const existingCount = totalCount || 0;
+    result.skipped = existingCount - result.inserted;
+    
+    console.log(
+      `Batch upsert completed: ${result.inserted} inserted, ${result.skipped} skipped (${existingCount} total in DB)`
+    );
   }
 
-  console.log(`Match import complete: ${result.inserted} inserted, ${result.skipped} skipped, ${result.failed} failed`);
+  console.log(
+    `Match import complete: ${result.inserted} inserted, ${result.skipped} skipped, ${result.failed} failed`
+  );
   return result;
 }
 
