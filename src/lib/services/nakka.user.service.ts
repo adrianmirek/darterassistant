@@ -116,12 +116,15 @@ export async function retrieveTournamentsMatchesByKeywordAndNickNameForGuest(
     try {
       console.log(`[Guest] Processing tournament: ${tournament.tournament_name} (${tournament.nakka_identifier})`);
 
-      // Check if tournament exists in database first
-      const tournamentExists = await checkTournamentExists(supabase, tournament.nakka_identifier);
+      // Check if tournament exists in database and get its status
+      const tournamentInfo = await getTournamentStatus(supabase, tournament.nakka_identifier);
 
-      if (tournamentExists) {
-        // Tournament exists in DB - get matches (skip scraping even if no matches found)
-        console.log(`[Guest] Tournament ${tournament.nakka_identifier} exists in DB, retrieving matches...`);
+      if (tournamentInfo && (tournamentInfo.status === "matches_saved" || tournamentInfo.status === "completed")) {
+        // Tournament exists and all matches are already saved (matches_saved or completed)
+        // Skip scraping and match saving process - just retrieve from DB
+        console.log(
+          `[Guest] Tournament ${tournament.nakka_identifier} exists with status '${tournamentInfo.status}', skipping match import`
+        );
 
         const dbMatches = await getTournamentMatchesFromDB(
           supabase,
@@ -137,42 +140,97 @@ export async function retrieveTournamentsMatchesByKeywordAndNickNameForGuest(
           allMatches.push(...dbMatches);
         } else {
           console.log(
-            `[Guest] Tournament ${tournament.nakka_identifier} exists in DB but no matches found for "${nick_name}", skipping scraping`
+            `[Guest] Tournament ${tournament.nakka_identifier} exists in DB but no matches found for "${nick_name}"`
           );
         }
       } else {
-        // Tournament not in DB - need to scrape
-        console.log(`[Guest] Tournament ${tournament.nakka_identifier} not in DB, scraping...`);
+        // Tournament either doesn't exist OR exists with status NULL/failed/in_progress
+        // In all these cases, we need to scrape and save/upsert matches
+        if (!tournamentInfo) {
+          console.log(`[Guest] Tournament ${tournament.nakka_identifier} not in DB, scraping...`);
+        } else {
+          console.log(
+            `[Guest] Tournament ${tournament.nakka_identifier} exists with status '${tournamentInfo.status}', need to save matches`
+          );
+        }
 
         // Scrape all matches for this tournament
         const scrapedMatches = await scrapeTournamentMatches(tournament.href);
         console.log(`[Guest] Found ${scrapedMatches.length} matches for tournament ${tournament.nakka_identifier}`);
 
-        // Save tournament and matches to database
-        const savedTournamentId = await saveTournamentWithMatches(supabase, tournament, scrapedMatches);
-        if (savedTournamentId) {
-          console.log(
-            `[Guest] Saved tournament ${tournament.nakka_identifier} to database with ID ${savedTournamentId}`
-          );
+        // Step 1: Ensure tournament exists in database
+        let savedTournamentId: number;
+
+        if (tournamentInfo) {
+          // Tournament exists, use its ID
+          savedTournamentId = tournamentInfo.tournamentId;
+          console.log(`[Guest] Using existing tournament ${tournament.nakka_identifier} with ID ${savedTournamentId}`);
         } else {
-          console.log(`[Guest] Failed to save tournament ${tournament.nakka_identifier} to database`);
+          // Tournament doesn't exist, save it first
+          const savedTournament = await saveTournament(supabase, tournament);
+          if (!savedTournament) {
+            console.error(`[Guest] Failed to save tournament ${tournament.nakka_identifier} to database`);
+            continue; // Skip to next tournament
+          }
+          savedTournamentId = savedTournament.tournamentId;
+          console.log(`[Guest] Saved new tournament ${tournament.nakka_identifier} with ID ${savedTournamentId}`);
         }
 
-        // Process matches and collect only those that match the nickname
-        for (const match of scrapedMatches) {
-          // Stop if we've reached the limit
-          if (allMatches.length >= MAX_MATCHES) {
-            break;
-          }
+        // Step 2: Upsert matches to database
+        console.log(`[Guest] Upserting matches for tournament ${tournament.nakka_identifier}...`);
+        const upsertResult = await upsertTournamentMatches(
+          supabase,
+          savedTournamentId,
+          tournament.nakka_identifier,
+          scrapedMatches
+        );
 
-          const processedMatch = processMatchForNickname(match, normalizedNickname);
+        // Step 3: Update tournament status based on upsert result
+        let newStatus: string | null = null;
+        if (upsertResult.allMatchesSaved) {
+          newStatus = "matches_saved";
+          console.log(
+            `[Guest] All ${scrapedMatches.length} matches saved for tournament ${tournament.nakka_identifier}, updating status to matches_saved`
+          );
+        } else if (upsertResult.insertedCount > 0 || upsertResult.skippedCount > 0) {
+          newStatus = "in_progress";
+          console.log(
+            `[Guest] Partial save for tournament ${tournament.nakka_identifier} (inserted: ${upsertResult.insertedCount}, skipped: ${upsertResult.skippedCount}), updating status to in_progress`
+          );
+        } else {
+          console.log(`[Guest] No matches saved for tournament ${tournament.nakka_identifier}, keeping status as null`);
+        }
 
-          // Only add matches where the nickname was found
-          if (processedMatch.isChecked) {
-            // Transform to NakkaPlayerMatchResult format
-            const playerMatch = transformToPlayerMatchResult(tournament, match, processedMatch, savedTournamentId);
-            allMatches.push(playerMatch);
-          }
+        // Update tournament status if changed
+        if (newStatus) {
+          await supabase
+            .schema("nakka")
+            .from("tournaments")
+            .update({ match_import_status: newStatus })
+            .eq("tournament_id", savedTournamentId);
+        }
+
+        console.log(
+          `[Guest] Tournament ${tournament.nakka_identifier} processing complete (ID: ${savedTournamentId}, status: ${newStatus})`
+        );
+
+        // Step 4: Fetch the newly saved matches from database with their IDs
+        const dbMatches = await getTournamentMatchesFromDB(
+          supabase,
+          tournament.nakka_identifier,
+          normalizedNickname,
+          MAX_MATCHES - allMatches.length
+        );
+
+        if (dbMatches.length > 0) {
+          console.log(
+            `[Guest] Found ${dbMatches.length} matches for "${nick_name}" in DB for newly saved tournament ${tournament.nakka_identifier}`
+          );
+          allMatches.push(...dbMatches);
+        } else {
+          console.log(
+            `[Guest] No matches found for "${nick_name}" in newly saved tournament ${tournament.nakka_identifier}`
+          );
         }
       }
 
@@ -196,28 +254,34 @@ export async function retrieveTournamentsMatchesByKeywordAndNickNameForGuest(
 }
 
 /**
- * Checks if a tournament exists in the database
+ * Gets tournament status from the database
  * @param supabase - Supabase client instance
  * @param nakka_identifier - Tournament identifier (e.g., "Nd6M_9511")
- * @returns True if tournament exists, false otherwise
+ * @returns Object with tournament_id and status if exists, null if not found
  */
-async function checkTournamentExists(supabase: SupabaseClient, nakka_identifier: string): Promise<boolean> {
+async function getTournamentStatus(
+  supabase: SupabaseClient,
+  nakka_identifier: string
+): Promise<{ tournamentId: number; status: string | null } | null> {
   try {
     const { data, error } = await supabase
       .schema("nakka")
       .from("tournaments")
-      .select("tournament_id")
+      .select("tournament_id, match_import_status")
       .eq("nakka_identifier", nakka_identifier)
       .single();
 
     if (error || !data) {
-      return false;
+      return null;
     }
 
-    return true;
+    return {
+      tournamentId: data.tournament_id,
+      status: data.match_import_status,
+    };
   } catch (error) {
-    console.error(`[DB] Error checking tournament existence for ${nakka_identifier}:`, error);
-    return false;
+    console.error(`[DB] Error getting tournament status for ${nakka_identifier}:`, error);
+    return null;
   }
 }
 
@@ -260,72 +324,6 @@ async function getTournamentMatchesFromDB(
     console.error(`[DB] Exception retrieving matches for tournament ${nakka_identifier}:`, error);
     return [];
   }
-}
-
-/**
- * Transforms scraped match data to NakkaPlayerMatchResult format
- * Note: Statistics will be null since we haven't scraped the match details yet
- * @param tournament - Tournament scraped data
- * @param scrapedMatch - Original scraped match data
- * @param processedMatch - Processed match with player in correct position
- * @param tournamentId - Database tournament ID (if saved)
- * @returns Player match result in normalized format
- */
-function transformToPlayerMatchResult(
-  tournament: NakkaTournamentScrapedDTO,
-  scrapedMatch: NakkaMatchScrapedDTO,
-  processedMatch: NakkaTournamentMatchDTO,
-  tournamentId: number | null
-): NakkaPlayerMatchResult {
-  return {
-    // Tournament info
-    tournament_id: tournamentId || 0, // Use 0 if not saved to DB
-    nakka_tournament_identifier: tournament.nakka_identifier,
-    tournament_name: tournament.tournament_name,
-    tournament_date: tournament.tournament_date.toISOString(),
-    tournament_href: tournament.href,
-
-    // Match info
-    tournament_match_id: 0, // Not available from scraping
-    nakka_match_identifier: scrapedMatch.nakka_match_identifier,
-    match_type: scrapedMatch.match_type,
-    match_href: scrapedMatch.href,
-
-    // Player-oriented match data
-    player_name: processedMatch.player_name,
-    player_code: processedMatch.player_code,
-    opponent_name: processedMatch.opponent_name,
-    opponent_code: processedMatch.opponent_code,
-
-    // Player statistics (null since not scraped yet)
-    average_score: null,
-    first_nine_avg: null,
-    checkout_percentage: null,
-    score_60_count: null,
-    score_100_count: null,
-    score_140_count: null,
-    score_180_count: null,
-    high_finish: null,
-    best_leg: null,
-    worst_leg: null,
-    player_score: null,
-    opponent_score: null,
-
-    // Opponent statistics (null since not scraped yet)
-    opponent_average_score: null,
-    opponent_first_nine_avg: null,
-    opponent_checkout_percentage: null,
-    opponent_score_60_count: null,
-    opponent_score_100_count: null,
-    opponent_score_140_count: null,
-    opponent_score_180_count: null,
-    opponent_high_finish: null,
-    opponent_best_leg: null,
-    opponent_worst_leg: null,
-
-    // Metadata
-    imported_at: new Date().toISOString(),
-  };
 }
 
 /**
@@ -375,93 +373,143 @@ function processMatchForNickname(match: NakkaMatchScrapedDTO, normalizedNickname
 }
 
 /**
- * Saves a tournament and its matches to the database
- * Tournament status is set to NULL (not started)
+ * Upserts tournament matches to the database using batch insert
+ * Inserts new matches and skips existing ones (no updates)
+ * Updates tournament status based on match count comparison
+ *
+ * @param supabase - Supabase client instance
+ * @param tournamentId - Database ID of the tournament
+ * @param tournamentIdentifier - Nakka tournament identifier for logging
+ * @param matches - Array of scraped match data
+ * @returns Object with inserted count, skipped count, and whether all matches are saved
+ */
+async function upsertTournamentMatches(
+  supabase: SupabaseClient,
+  tournamentId: number,
+  tournamentIdentifier: string,
+  matches: NakkaMatchScrapedDTO[]
+): Promise<{ insertedCount: number; skippedCount: number; allMatchesSaved: boolean }> {
+  try {
+    const scrapedCount = matches.length;
+    console.log(`[Upsert] Starting batch upsert of ${scrapedCount} matches for tournament ${tournamentIdentifier}...`);
+
+    // Prepare match records for batch upsert
+    const matchRecords = matches.map((match) => ({
+      tournament_id: tournamentId,
+      nakka_match_identifier: match.nakka_match_identifier,
+      match_type: match.match_type,
+      first_player_name: match.first_player_name,
+      first_player_code: match.first_player_code,
+      second_player_name: match.second_player_name,
+      second_player_code: match.second_player_code,
+      href: match.href,
+    }));
+
+    // Perform batch upsert using ignoreDuplicates
+    // This uses PostgreSQL's INSERT ... ON CONFLICT DO NOTHING
+    // Inserts new matches, skips existing ones - all in ONE operation
+    const { data: upsertedMatches, error: upsertError } = await supabase
+      .schema("nakka")
+      .from("tournament_matches" as unknown as "tournament_matches")
+      .upsert(matchRecords, {
+        onConflict: "tournament_id,nakka_match_identifier",
+        ignoreDuplicates: true, // Skip duplicates instead of updating
+      })
+      .select("tournament_match_id");
+
+    if (upsertError) {
+      // Upsert failed
+      console.error(`[Upsert] Batch upsert failed with error:`, upsertError);
+      return { insertedCount: 0, skippedCount: 0, allMatchesSaved: false };
+    }
+
+    // Upsert succeeded - count what was actually inserted
+    const insertedCount = upsertedMatches?.length || 0;
+    console.log(`[Upsert] Batch upsert completed: ${insertedCount} new matches inserted`);
+
+    // Count total matches now in database for this tournament
+    const { count: totalCount, error: countError } = await supabase
+      .schema("nakka")
+      .from("tournament_matches" as unknown as "tournament_matches")
+      .select("tournament_match_id", { count: "exact", head: true })
+      .eq("tournament_id", tournamentId);
+
+    if (countError) {
+      console.error(`[Upsert] Error counting total matches:`, countError);
+      return { insertedCount, skippedCount: 0, allMatchesSaved: false };
+    }
+
+    const existingCount = totalCount || 0;
+    const skippedCount = existingCount - insertedCount;
+
+    console.log(
+      `[Upsert] Total in DB: ${existingCount}, Inserted: ${insertedCount}, Skipped: ${skippedCount}, Scraped: ${scrapedCount}`
+    );
+
+    // Check if all scraped matches are now in database
+    const allMatchesSaved = existingCount === scrapedCount;
+
+    return { insertedCount, skippedCount, allMatchesSaved };
+  } catch (error) {
+    console.error(`[Upsert] Exception during upsert for tournament ${tournamentIdentifier}:`, error);
+    return { insertedCount: 0, skippedCount: 0, allMatchesSaved: false };
+  }
+}
+
+/**
+ * Saves a tournament to the database or retrieves existing tournament
  * @param supabase - Supabase client instance
  * @param tournament - Tournament data from scraping
- * @param matches - Match data from scraping
- * @returns The tournament_id from the database, or null if failed
+ * @returns Object with tournament_id and match_import_status, or null if failed
  */
-async function saveTournamentWithMatches(
+async function saveTournament(
   supabase: SupabaseClient,
-  tournament: NakkaTournamentScrapedDTO,
-  matches: NakkaMatchScrapedDTO[]
-): Promise<number | null> {
+  tournament: NakkaTournamentScrapedDTO
+): Promise<{ tournamentId: number; status: string | null } | null> {
   try {
-    // Step 1: Check if tournament already exists
+    // Check if tournament already exists
     const { data: existingTournament } = await supabase
       .schema("nakka")
       .from("tournaments")
-      .select("tournament_id")
+      .select("tournament_id, match_import_status")
       .eq("nakka_identifier", tournament.nakka_identifier)
       .single();
 
-    let tournamentId: number;
-
     if (existingTournament) {
-      // Tournament already exists, use its ID
-      tournamentId = existingTournament.tournament_id;
-      console.log(`Tournament ${tournament.nakka_identifier} already exists with ID ${tournamentId}`);
-    } else {
-      // Step 2: Insert tournament with status NULL
-      const { data: insertedTournament, error: tournamentError } = await supabase
-        .schema("nakka")
-        .from("tournaments")
-        .insert({
-          nakka_identifier: tournament.nakka_identifier,
-          tournament_name: tournament.tournament_name,
-          tournament_date: tournament.tournament_date.toISOString(),
-          href: tournament.href,
-          match_import_status: null, // Set status as NULL
-        })
-        .select("tournament_id")
-        .single();
-
-      if (tournamentError || !insertedTournament) {
-        console.error(`Failed to insert tournament ${tournament.nakka_identifier}:`, tournamentError);
-        return null;
-      }
-
-      tournamentId = insertedTournament.tournament_id;
-      console.log(`Inserted tournament ${tournament.nakka_identifier} with ID ${tournamentId}`);
+      // Tournament already exists
+      console.log(
+        `Tournament ${tournament.nakka_identifier} already exists with ID ${existingTournament.tournament_id}, status: ${existingTournament.match_import_status}`
+      );
+      return {
+        tournamentId: existingTournament.tournament_id,
+        status: existingTournament.match_import_status,
+      };
     }
 
-    // Step 3: Insert matches for this tournament
-    let insertedCount = 0;
-    let skippedCount = 0;
+    // Insert new tournament with status NULL
+    const { data: insertedTournament, error: tournamentError } = await supabase
+      .schema("nakka")
+      .from("tournaments")
+      .insert({
+        nakka_identifier: tournament.nakka_identifier,
+        tournament_name: tournament.tournament_name,
+        tournament_date: tournament.tournament_date.toISOString(),
+        href: tournament.href,
+        match_import_status: null, // Set status as NULL initially
+      })
+      .select("tournament_id")
+      .single();
 
-    for (const match of matches) {
-      const { error: matchError } = await supabase
-        .schema("nakka")
-        .from("tournament_matches" as unknown as "tournament_matches")
-        .insert({
-          tournament_id: tournamentId,
-          nakka_match_identifier: match.nakka_match_identifier,
-          match_type: match.match_type,
-          first_player_name: match.first_player_name,
-          first_player_code: match.first_player_code,
-          second_player_name: match.second_player_name,
-          second_player_code: match.second_player_code,
-          href: match.href,
-        });
-
-      if (matchError) {
-        if (matchError.code === "23505") {
-          // Unique constraint violation - match already exists
-          skippedCount++;
-        } else {
-          console.error(`Failed to insert match ${match.nakka_match_identifier}:`, matchError);
-        }
-      } else {
-        insertedCount++;
-      }
+    if (tournamentError || !insertedTournament) {
+      console.error(`Failed to insert tournament ${tournament.nakka_identifier}:`, tournamentError);
+      return null;
     }
 
-    console.log(
-      `Saved ${insertedCount} matches for tournament ${tournament.nakka_identifier} (skipped ${skippedCount} duplicates)`
-    );
-
-    return tournamentId;
+    console.log(`Inserted tournament ${tournament.nakka_identifier} with ID ${insertedTournament.tournament_id}`);
+    return {
+      tournamentId: insertedTournament.tournament_id,
+      status: null,
+    };
   } catch (error) {
     console.error(`Error saving tournament ${tournament.nakka_identifier}:`, error);
     return null;
