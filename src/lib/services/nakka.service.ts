@@ -516,25 +516,23 @@ export async function importMatches(
   } else {
     // Success - count what was actually inserted
     result.inserted = upsertedMatches?.length || 0;
-    
+
     // Count total to determine how many were skipped
     const { count: totalCount } = await supabase
       .schema("nakka")
       .from("tournament_matches" as unknown as "tournament_matches")
       .select("tournament_match_id", { count: "exact", head: true })
       .eq("tournament_id", tournamentId);
-    
+
     const existingCount = totalCount || 0;
     result.skipped = existingCount - result.inserted;
-    
+
     console.log(
       `Batch upsert completed: ${result.inserted} inserted, ${result.skipped} skipped (${existingCount} total in DB)`
     );
   }
 
-  console.log(
-    `Match import complete: ${result.inserted} inserted, ${result.skipped} skipped, ${result.failed} failed`
-  );
+  console.log(`Match import complete: ${result.inserted} inserted, ${result.skipped} skipped, ${result.failed} failed`);
   return result;
 }
 
