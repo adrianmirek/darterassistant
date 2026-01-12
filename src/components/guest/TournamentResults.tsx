@@ -19,6 +19,11 @@ export function TournamentResults({ results, nickname }: TournamentResultsProps)
   >({});
   const [fetchingMatchIds, setFetchingMatchIds] = useState<Set<string>>(new Set());
 
+  // Update local state when results prop changes (e.g., after searching tournaments)
+  useEffect(() => {
+    setTournamentsData(results.tournaments);
+  }, [results]);
+
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     return date.toLocaleDateString(undefined, {
