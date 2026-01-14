@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { I18nProvider } from "@/lib/hooks/I18nProvider";
 import { ThemeProvider } from "@/lib/hooks/ThemeProvider";
 import GuestNav from "@/components/navigation/GuestNav";
-import { GuestHomepage } from "./GuestHomepage";
+import { GuestHomepageUnderConstruction } from "./GuestHomepageUnderConstruction";
 import type { Language } from "@/lib/i18n";
 
 declare global {
@@ -37,7 +37,7 @@ export function GuestPage() {
         <div className="min-h-screen flex flex-col">
           <GuestNav />
           <main className="flex-1">
-            <GuestHomepage />
+            <GuestHomepageUnderConstruction />
           </main>
         </div>
       </I18nProvider>
