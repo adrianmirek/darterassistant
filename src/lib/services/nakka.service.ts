@@ -11,7 +11,9 @@ import type {
 
 // Scraper API configuration
 const TOPDARTER_API_URL = TOPDARTER_API_BASE_URL || "https://localhost:3001";
-const TOPDARTER_API_KEY = import.meta.env.TOPDARTER_API_KEY;
+// Support both Astro (import.meta.env) and Node.js (process.env) environments
+const TOPDARTER_API_KEY =
+  typeof import.meta?.env !== "undefined" ? import.meta.env.TOPDARTER_API_KEY : process.env.TOPDARTER_API_KEY;
 
 /**
  * Scrapes tournaments from Nakka by keyword using external Vercel scraper API
