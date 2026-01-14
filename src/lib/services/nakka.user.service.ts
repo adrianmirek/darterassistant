@@ -572,14 +572,111 @@ export async function getPlayerMatchesByNickname(
 }
 
 /**
- * Fetches and imports player results for a specific match
- * This function scrapes the match page, imports player statistics to the database,
- * and returns the updated match data with all statistics included.
+ * Scrapes and imports player results for a specific match
+ * This function scrapes the match page and imports player statistics to the database.
  *
  * The match status will be updated to:
  * - "in_progress" while fetching
  * - "completed" if successful
  * - "failed" if an error occurs
+ *
+ * @param supabase - Supabase client instance
+ * @param tournament_match_id - Database ID of the tournament match
+ * @param nakka_match_identifier - Nakka match identifier (e.g., "t_Nd6M_9511_rr_2_3Tm2")
+ * @param match_href - Full URL to the match page on nakka.pl
+ * @returns Promise that resolves when scraping and import is complete
+ * @throws Error if scraping or import fails
+ */
+export async function scrapeAndImportMatchPlayerResults(
+  supabase: SupabaseClient,
+  tournament_match_id: number,
+  nakka_match_identifier: string,
+  match_href: string
+): Promise<void> {
+  try {
+    console.log(`[Scrape & Import] Starting scrape for match: ${nakka_match_identifier}`);
+
+    // Step 1: Update match status to in_progress
+    const { error: statusUpdateError } = await supabase
+      .schema("nakka")
+      .from("tournament_matches" as unknown as "tournament_matches")
+      .update({ match_result_status: "in_progress" })
+      .eq("tournament_match_id", tournament_match_id);
+
+    if (statusUpdateError) {
+      console.error(`[Scrape & Import] Failed to update status to in_progress:`, statusUpdateError);
+      throw new Error(`Failed to update match status: ${statusUpdateError.message}`);
+    }
+
+    console.log(`[Scrape & Import] Match status updated to in_progress`);
+
+    // Step 2: Scrape player results from match page
+    console.log(`[Scrape & Import] Scraping player results from: ${match_href}`);
+    const playerResults = await scrapeMatchPlayerResults(match_href, nakka_match_identifier);
+    console.log(`[Scrape & Import] Successfully scraped ${playerResults.length} player results`);
+
+    // Step 3: Import player results to database
+    console.log(`[Scrape & Import] Importing player results to database...`);
+    const importResult = await importMatchPlayerResults(supabase, tournament_match_id, playerResults);
+
+    // Step 4: Update match status based on import result
+    if (importResult.failed > 0 || importResult.inserted === 0) {
+      // Import failed
+      const errorMessage = importResult.errors?.length
+        ? JSON.stringify(importResult.errors)
+        : "Failed to import player results";
+
+      await supabase
+        .schema("nakka")
+        .from("tournament_matches" as unknown as "tournament_matches")
+        .update({
+          match_result_status: "failed",
+          match_result_error: errorMessage,
+        })
+        .eq("tournament_match_id", tournament_match_id);
+
+      console.error(`[Scrape & Import] Import failed for match ${nakka_match_identifier}:`, errorMessage);
+      throw new Error(`Failed to import player results: ${errorMessage}`);
+    }
+
+    // Import successful
+    await supabase
+      .schema("nakka")
+      .from("tournament_matches" as unknown as "tournament_matches")
+      .update({
+        match_result_status: "completed",
+        match_result_error: null,
+      })
+      .eq("tournament_match_id", tournament_match_id);
+
+    console.log(
+      `[Scrape & Import] Match ${nakka_match_identifier} completed successfully. Inserted: ${importResult.inserted}, Skipped: ${importResult.skipped}`
+    );
+  } catch (error) {
+    console.error(`[Scrape & Import] Error scraping/importing results for match ${nakka_match_identifier}:`, error);
+
+    // Try to update status to failed
+    try {
+      await supabase
+        .schema("nakka")
+        .from("tournament_matches" as unknown as "tournament_matches")
+        .update({
+          match_result_status: "failed",
+          match_result_error: error instanceof Error ? error.message : "Unknown error",
+        })
+        .eq("tournament_match_id", tournament_match_id);
+    } catch (updateError) {
+      console.error(`[Scrape & Import] Failed to update status to failed:`, updateError);
+    }
+
+    throw error;
+  }
+}
+
+/**
+ * Fetches and imports player results for a specific match
+ * This function scrapes the match page, imports player statistics to the database,
+ * and returns the updated match data with all statistics included.
  *
  * @param supabase - Supabase client instance
  * @param tournament_match_id - Database ID of the tournament match
@@ -599,62 +696,8 @@ export async function fetchMatchResults(
   try {
     console.log(`[Fetch Results] Starting fetch for match: ${nakka_match_identifier}`);
 
-    // Step 1: Update match status to in_progress
-    const { error: statusUpdateError } = await supabase
-      .schema("nakka")
-      .from("tournament_matches" as unknown as "tournament_matches")
-      .update({ match_result_status: "in_progress" })
-      .eq("tournament_match_id", tournament_match_id);
-
-    if (statusUpdateError) {
-      console.error(`[Fetch Results] Failed to update status to in_progress:`, statusUpdateError);
-      throw new Error(`Failed to update match status: ${statusUpdateError.message}`);
-    }
-
-    console.log(`[Fetch Results] Match status updated to in_progress`);
-
-    // Step 2: Scrape player results from match page
-    console.log(`[Fetch Results] Scraping player results from: ${match_href}`);
-    const playerResults = await scrapeMatchPlayerResults(match_href, nakka_match_identifier);
-    console.log(`[Fetch Results] Successfully scraped ${playerResults.length} player results`);
-
-    // Step 3: Import player results to database
-    console.log(`[Fetch Results] Importing player results to database...`);
-    const importResult = await importMatchPlayerResults(supabase, tournament_match_id, playerResults);
-
-    // Step 4: Update match status based on import result
-    if (importResult.failed > 0 || importResult.inserted === 0) {
-      // Import failed
-      const errorMessage = importResult.errors?.length
-        ? JSON.stringify(importResult.errors)
-        : "Failed to import player results";
-
-      await supabase
-        .schema("nakka")
-        .from("tournament_matches" as unknown as "tournament_matches")
-        .update({
-          match_result_status: "failed",
-          match_result_error: errorMessage,
-        })
-        .eq("tournament_match_id", tournament_match_id);
-
-      console.error(`[Fetch Results] Import failed for match ${nakka_match_identifier}:`, errorMessage);
-      throw new Error(`Failed to import player results: ${errorMessage}`);
-    }
-
-    // Import successful
-    await supabase
-      .schema("nakka")
-      .from("tournament_matches" as unknown as "tournament_matches")
-      .update({
-        match_result_status: "completed",
-        match_result_error: null,
-      })
-      .eq("tournament_match_id", tournament_match_id);
-
-    console.log(
-      `[Fetch Results] Match ${nakka_match_identifier} completed successfully. Inserted: ${importResult.inserted}, Skipped: ${importResult.skipped}`
-    );
+    // Step 1-4: Scrape and import player results
+    await scrapeAndImportMatchPlayerResults(supabase, tournament_match_id, nakka_match_identifier, match_href);
 
     // Step 5: Retrieve and return updated match data with statistics
     console.log(`[Fetch Results] Retrieving updated match data for nickname: "${nick_name}"`);
@@ -669,21 +712,6 @@ export async function fetchMatchResults(
     return updatedMatch;
   } catch (error) {
     console.error(`[Fetch Results] Error fetching results for match ${nakka_match_identifier}:`, error);
-
-    // Try to update status to failed
-    try {
-      await supabase
-        .schema("nakka")
-        .from("tournament_matches" as unknown as "tournament_matches")
-        .update({
-          match_result_status: "failed",
-          match_result_error: error instanceof Error ? error.message : "Unknown error",
-        })
-        .eq("tournament_match_id", tournament_match_id);
-    } catch (updateError) {
-      console.error(`[Fetch Results] Failed to update status to failed:`, updateError);
-    }
-
     throw error;
   }
 }
