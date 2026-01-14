@@ -238,7 +238,7 @@ export const en = {
   // Guest Homepage
   guest: {
     title: "Find Your Tournament Matches",
-    subtitle: "Search for your darts matches from Nakka tournaments",
+    subtitle: "Search for your darts matches from Top Darter tournaments",
     tournamentKeyword: "Tournament Keyword",
     tournamentKeywordPlaceholder: "e.g., my tournament (min. 3 characters)",
     playerNickname: "Your Nickname",
@@ -299,6 +299,11 @@ export const en = {
     startOverDescription: "Search for a different player",
     newSearch: "New Search",
     startNewSearch: "Start New Search",
+
+    // Under Construction
+    underConstructionTitle: "Website Under Construction",
+    underConstructionMessage: "We're working hard to bring you an amazing experience. Check back soon!",
+    underConstructionThanks: "Thank you for your patience",
   },
 
   // Footer

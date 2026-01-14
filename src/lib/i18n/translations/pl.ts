@@ -240,7 +240,7 @@ export const pl: TranslationKeys = {
   // Guest Homepage
   guest: {
     title: "Znajdź Swoje Mecze Turniejowe",
-    subtitle: "Wyszukaj swoje mecze darterskie z turniejów Nakka",
+    subtitle: "Wyszukaj swoje mecze darterskie z turniejów Top Darter",
     tournamentKeyword: "Słowo Kluczowe Turnieju",
     tournamentKeywordPlaceholder: "np. mój turniej (min. 3 znaki)",
     playerNickname: "Twój Nick",
@@ -301,6 +301,11 @@ export const pl: TranslationKeys = {
     startOverDescription: "Wyszukaj innego gracza",
     newSearch: "Nowe Wyszukiwanie",
     startNewSearch: "Rozpocznij Nowe Wyszukiwanie",
+
+    // Under Construction
+    underConstructionTitle: "Strona w Budowie",
+    underConstructionMessage: "Ciężko pracujemy, aby zapewnić Ci niesamowite doświadczenie. Wróć wkrótce!",
+    underConstructionThanks: "Dziękujemy za cierpliwość",
   },
 
   // Footer
