@@ -4,6 +4,9 @@ import path from "path";
 
 dotenv.config({ path: path.resolve(process.cwd(), ".env.test") });
 
+// Set environment variable to disable PWA service worker during tests
+process.env.PLAYWRIGHT_TEST = "true";
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -21,6 +24,9 @@ export default defineConfig({
 
   // Opt out of parallel tests on CI
   workers: process.env.CI ? 1 : 1,
+
+  // Global setup - unregisters service workers before tests
+  globalSetup: "./e2e/global-setup.ts",
 
   // Global teardown - cleans up database after all tests
   globalTeardown: "./e2e/global-teardown.ts",
@@ -68,6 +74,10 @@ export default defineConfig({
         ...devices["Desktop Chrome"],
         // Use signed-in state for authenticated tests
         storageState: "playwright/.auth/user.json",
+        // Add custom context options to inject test flag
+        contextOptions: {
+          // This will be available in beforeEach hooks
+        },
       },
       dependencies: ["setup"],
     },
