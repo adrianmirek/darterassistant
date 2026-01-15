@@ -32,3 +32,9 @@ playwright-report/
 test-results/
 screenshots/
 playwright/.cache/
+
+# PWA generated files
+dev-dist/
+dist/manifest.webmanifest
+dist/sw.js
+dist/workbox-*.js

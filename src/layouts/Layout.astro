@@ -24,10 +24,20 @@ const detectedLang = detectLanguageFromHeader(acceptLanguage);
 <html lang={detectedLang}>
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg" href="/favicon.png" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Your personal darts training and tournament assistant" />
+    <meta name="theme-color" content="#14b8a6" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Darter" />
+    <link rel="apple-touch-icon" href="/pwa-192x192.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <!-- Language initialization script - set language based on stored preference or browser -->
     <script is:inline define:vars={{ detectedLang }}>
       // Get stored language preference or use detected language
@@ -58,6 +68,16 @@ const detectedLang = detectLanguageFromHeader(acceptLanguage);
       } else {
         document.documentElement.style.setProperty("--sidebar-initial-width", "0px");
         document.documentElement.style.setProperty("--sidebar-initial-opacity", "0");
+      }
+    </script>
+    <!-- Service Worker Registration -->
+    <script is:inline>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('SW registered!', reg))
+            .catch(err => console.error('SW registration failed:', err));
+        });
       }
     </script>
   </head>
