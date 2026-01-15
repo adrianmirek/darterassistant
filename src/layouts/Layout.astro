@@ -70,14 +70,20 @@ const detectedLang = detectLanguageFromHeader(acceptLanguage);
         document.documentElement.style.setProperty("--sidebar-initial-opacity", "0");
       }
     </script>
-    <!-- Service Worker Registration -->
+    <!-- Service Worker Registration - Disabled in test environment -->
     <script is:inline>
-      if ('serviceWorker' in navigator) {
+      // Don't register service worker in test environment to allow Playwright route mocking
+      const isTestEnv = window.location.search.includes('playwright=true') || 
+                        sessionStorage.getItem('playwright-test') === 'true';
+      
+      if ('serviceWorker' in navigator && !isTestEnv) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js')
             .then(reg => console.log('SW registered!', reg))
             .catch(err => console.error('SW registration failed:', err));
         });
+      } else if (isTestEnv) {
+        console.log('Service Worker registration skipped (test environment)');
       }
     </script>
   </head>

@@ -7,6 +7,10 @@ import tailwindcss from "@tailwindcss/vite";
 import cloudflare from "@astrojs/cloudflare";
 import AstroPWA from "@vite-pwa/astro";
 
+// Disable PWA in test environment to allow Playwright route mocking
+// eslint-disable-next-line no-undef
+const isTestEnv = process.env.NODE_ENV === "test" || process.env.PLAYWRIGHT_TEST === "true";
+
 // https://astro.build/config
 export default defineConfig({
   output: "server",
@@ -99,7 +103,7 @@ export default defineConfig({
         ],
       },
       devOptions: {
-        enabled: true,
+        enabled: !isTestEnv, // Disable in test environment for Playwright route mocking
         navigateFallbackAllowlist: [/^\//],
       },
       experimental: {
