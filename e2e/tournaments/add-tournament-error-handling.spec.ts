@@ -10,7 +10,25 @@ test.describe("Add Tournament - Error Handling", () => {
 
   test.beforeEach(async ({ page }) => {
     tournamentPage = new AddTournamentPage(page);
-    await tournamentPage.goto();
+
+    // Navigate to the app first to establish context and set test flag
+    await page.goto("/tournaments/new?test=true");
+
+    // Mark session as test environment to prevent service worker registration
+    await page.evaluate(() => {
+      sessionStorage.setItem("playwright-test", "true");
+    });
+
+    // Unregister any service workers that might interfere with route mocking
+    await page.evaluate(() => {
+      return navigator.serviceWorker.getRegistrations().then((registrations) => {
+        return Promise.all(registrations.map((r) => r.unregister()));
+      });
+    });
+
+    // Wait for the form to be fully loaded and interactive
+    await page.waitForSelector('[data-testid="tournament-name-input"]', { state: "visible", timeout: 10000 });
+    await page.waitForSelector('[data-testid="tournament-type-select"]', { state: "visible", timeout: 10000 });
   });
 
   test("Scenario 14: Error handling - API failure", async ({ page }) => {
@@ -127,6 +145,9 @@ test.describe("Add Tournament - Error Handling", () => {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
 
+    // Wait a bit for any animations/transitions to complete
+    await page.waitForTimeout(500);
+
     await tournamentPage.fillBasicInfo({
       name: "Server Error Test",
       date: yesterday.toISOString().split("T")[0],
@@ -204,13 +225,14 @@ test.describe("Add Tournament - Error Handling", () => {
   });
 
   test("Tournament types API fails to load", async ({ page }) => {
-    // Arrange - Block tournament types API
+    // Arrange - Block tournament types API BEFORE the beforeEach navigation
+    // We need to set this up early, so we do it here and reload
     await page.route("**/api/tournament-types", (route) => {
       route.abort("failed");
     });
 
-    // Act - Navigate to page
-    await tournamentPage.goto();
+    // Act - Reload page to trigger the API call with the route mock in place
+    await page.reload();
 
     // Assert - Dropdown is replaced by an error message
     const tournamentTypeSelect = tournamentPage.tournamentTypeSelect;
@@ -259,6 +281,10 @@ test.describe("Add Tournament - Error Handling", () => {
     // Arrange
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
+
+    // Wait a bit for any animations/transitions to complete
+    await page.waitForTimeout(500);
+
     await tournamentPage.fillBasicInfo({
       name: "Submit Disabled Test",
       date: yesterday.toISOString().split("T")[0],
