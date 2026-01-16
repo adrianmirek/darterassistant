@@ -7,10 +7,6 @@ import tailwindcss from "@tailwindcss/vite";
 import cloudflare from "@astrojs/cloudflare";
 import AstroPWA from "@vite-pwa/astro";
 
-// Disable PWA in test environment to allow Playwright route mocking
-// eslint-disable-next-line no-undef
-const isTestEnv = process.env.NODE_ENV === "test" || process.env.PLAYWRIGHT_TEST === "true";
-
 // https://astro.build/config
 export default defineConfig({
   output: "server",
@@ -18,12 +14,14 @@ export default defineConfig({
     react(),
     sitemap(),
     AstroPWA({
-      mode: "development",
+      mode: "production",
       base: "/",
       scope: "/",
       includeAssets: ["favicon.png", "topiszajba.png"],
       registerType: "autoUpdate",
       strategies: "generateSW",
+      injectRegister: "auto",
+      disable: false,
       manifest: {
         name: "Darter Assistant",
         short_name: "Darter",
@@ -103,8 +101,9 @@ export default defineConfig({
         ],
       },
       devOptions: {
-        enabled: !isTestEnv, // Disable in test environment for Playwright route mocking
+        enabled: true,
         navigateFallbackAllowlist: [/^\//],
+        type: "module",
       },
       experimental: {
         directoryAndTrailingSlashHandler: true,
