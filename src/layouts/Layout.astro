@@ -70,6 +70,113 @@ const detectedLang = detectLanguageFromHeader(acceptLanguage);
         document.documentElement.style.setProperty("--sidebar-initial-opacity", "0");
       }
     </script>
+    <!-- PWA Install Prompt Handler -->
+    <script is:inline>
+      let deferredPrompt;
+      
+      window.addEventListener('beforeinstallprompt', (e) => {
+        // Prevent the default mini-infobar from appearing
+        e.preventDefault();
+        // Store the event so it can be triggered later
+        deferredPrompt = e;
+        // Show custom install UI
+        showInstallButton();
+      });
+
+      function showInstallButton() {
+        // Create install button if it doesn't exist
+        let installBtn = document.getElementById('pwa-install-btn');
+        if (!installBtn) {
+          installBtn = document.createElement('button');
+          installBtn.id = 'pwa-install-btn';
+          installBtn.innerHTML = '📱 Install App';
+          installBtn.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #14b8a6 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.4);
+            z-index: 9999;
+            transition: transform 0.2s, box-shadow 0.2s;
+            animation: slideIn 0.3s ease-out;
+          `;
+          
+          // Add animation
+          const style = document.createElement('style');
+          style.textContent = `
+            @keyframes slideIn {
+              from {
+                transform: translateY(100px);
+                opacity: 0;
+              }
+              to {
+                transform: translateY(0);
+                opacity: 1;
+              }
+            }
+            #pwa-install-btn:hover {
+              transform: translateY(-2px);
+              box-shadow: 0 6px 20px rgba(20, 184, 166, 0.6);
+            }
+            #pwa-install-btn:active {
+              transform: translateY(0);
+            }
+          `;
+          document.head.appendChild(style);
+          
+          installBtn.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            
+            // Show the install prompt
+            deferredPrompt.prompt();
+            
+            // Wait for the user's response
+            const { outcome } = await deferredPrompt.userChoice;
+            
+            if (outcome === 'accepted') {
+              console.log('PWA installed successfully');
+            } else {
+              console.log('PWA installation dismissed');
+            }
+            
+            // Clear the deferred prompt
+            deferredPrompt = null;
+            
+            // Hide the install button
+            installBtn.remove();
+          });
+          
+          document.body.appendChild(installBtn);
+        }
+      }
+
+      // Hide install button after PWA is installed
+      window.addEventListener('appinstalled', () => {
+        const installBtn = document.getElementById('pwa-install-btn');
+        if (installBtn) {
+          installBtn.remove();
+        }
+        console.log('PWA was installed');
+      });
+
+      // Check if already installed (standalone mode)
+      window.addEventListener('DOMContentLoaded', () => {
+        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
+          // Already installed, don't show button
+          const installBtn = document.getElementById('pwa-install-btn');
+          if (installBtn) {
+            installBtn.remove();
+          }
+        }
+      });
+    </script>
   </head>
   <body>
     {showAuthNav && user && <AuthNav userEmail={user.email} lang={detectedLang} client:load />}
