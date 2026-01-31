@@ -60,7 +60,14 @@ const reactConfig = tseslint.config({
 export default tseslint.config(
   includeIgnoreFile(gitignorePath),
   {
-    ignores: ["src/db/database.types.ts", "src/layouts/Layout.astro"],
+    ignores: [
+      "src/db/database.types.ts",
+      "src/layouts/Layout.astro",
+      "**/*.sql",
+      "supabase/**/*.sql",
+      "supabase/migrations/**",
+      "supabase/scripts/**",
+    ],
   },
   baseConfig,
   jsxA11yConfig,

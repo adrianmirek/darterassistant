@@ -29,6 +29,9 @@ const detectedLang = detectLanguageFromHeader(acceptLanguage);
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     
+    <!-- Allow pages to add additional head elements -->
+    <slot name="head" />
+    
     <!-- PWA Meta Tags -->
     <meta name="description" content="Your personal darts training and tournament assistant" />
     <meta name="theme-color" content="#14b8a6" />
@@ -37,7 +40,6 @@ const detectedLang = detectLanguageFromHeader(acceptLanguage);
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Darter" />
     <link rel="apple-touch-icon" href="/pwa-192x192.png" />
-    <link rel="manifest" href="/manifest.webmanifest" />
     <!-- Language initialization script - set language based on stored preference or browser -->
     <script is:inline define:vars={{ detectedLang }}>
       // Get stored language preference or use detected language
@@ -58,6 +60,17 @@ const detectedLang = detectLanguageFromHeader(acceptLanguage);
     <!-- Theme initialization script - prevents flash of wrong theme -->
     <script is:inline>
       document.documentElement.classList.add(localStorage.getItem("darter-theme") || "dark");
+    </script>
+    <!-- Unregister old service worker if present -->
+    <script is:inline>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for (let registration of registrations) {
+            registration.unregister();
+            console.log('Old service worker unregistered');
+          }
+        });
+      }
     </script>
     <!-- Sidebar state initialization - prevents flash on navigation -->
     <script is:inline>

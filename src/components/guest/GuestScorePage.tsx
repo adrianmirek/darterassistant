@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { I18nProvider } from "@/lib/hooks/I18nProvider";
 import { ThemeProvider } from "@/lib/hooks/ThemeProvider";
-import GuestNav from "@/components/navigation/GuestNav";
-import { GuestSetupPage } from "./GuestSetupPage";
+import { GuestScoreBoard } from "./GuestScoreBoard";
 import type { Language } from "@/lib/i18n";
 
 declare global {
@@ -11,7 +10,7 @@ declare global {
   }
 }
 
-export function GuestPage() {
+export function GuestScorePage() {
   const [lang, setLang] = useState<Language>("en");
   const [mounted, setMounted] = useState(false);
 
@@ -35,9 +34,8 @@ export function GuestPage() {
     <ThemeProvider>
       <I18nProvider lang={lang}>
         <div className="min-h-screen flex flex-col">
-          <GuestNav />
           <main className="flex-1">
-            <GuestSetupPage />
+            <GuestScoreBoard />
           </main>
         </div>
       </I18nProvider>

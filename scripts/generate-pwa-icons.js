@@ -120,7 +120,6 @@ async function generateIcons() {
     } else {
       // eslint-disable-next-line no-undef
       console.error("❌ Error generating icons:", error.message);
-      // eslint-disable-next-line no-undef
     }
     // eslint-disable-next-line no-undef
     process.exit(1);
