@@ -3,6 +3,10 @@ import type { Database } from "./db/database.types";
 // Alias for tables in the public schema
 type Tables = Database["public"]["Tables"];
 
+// ============================================================================
+// TOURNAMENT SYSTEM TYPES (public schema)
+// ============================================================================
+
 /**
  * DTO for match types (read-only lookup)
  */
@@ -281,6 +285,10 @@ export interface GetTournamentsPaginatedQuery {
   page_size?: number;
   page?: number;
 }
+
+// ============================================================================
+// NAKKA IMPORT SYSTEM TYPES
+// ============================================================================
 
 /**
  * Nakka Tournament Entity (from database)
