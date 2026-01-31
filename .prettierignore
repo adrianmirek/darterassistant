@@ -1,0 +1,17 @@
+
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+.astro
+
+# SQL files (no built-in parser)
+*.sql
+supabase/migrations/**/*.sql
+
+# Other files that don't need formatting
+*.md
+*.log
+.env
+.env.*
