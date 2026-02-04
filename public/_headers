@@ -1,0 +1,25 @@
+# Service Worker - Don't cache aggressively to ensure updates work
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate
+  Service-Worker-Allowed: /
+
+# Workbox Service Worker (if generated with different name)
+/workbox-*.js
+  Cache-Control: public, max-age=0, must-revalidate
+  Service-Worker-Allowed: /
+
+# Web App Manifest
+/manifest.webmanifest
+  Cache-Control: public, max-age=3600, must-revalidate
+  Content-Type: application/manifest+json
+
+# PWA Icons - Cache for longer
+/pwa-*.png
+  Cache-Control: public, max-age=31536000, immutable
+
+# All other assets - standard caching
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin

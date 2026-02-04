@@ -267,7 +267,9 @@ function PlayerOverview({ stats, nickname }: PlayerOverviewProps) {
         <div className="flex items-center gap-3">
           <Target className="h-6 w-6 text-purple-400 flex-shrink-0" />
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold">{nickname}</h2>
+            <h2 className="text-xl sm:text-2xl font-bold" translate="no">
+              {nickname}
+            </h2>
             <p className="text-xs sm:text-sm text-muted-foreground">
               {t("guest.performanceOverview")} - {t("guest.lastMatches", { count: stats.totalMatches })}
             </p>
