@@ -1,0 +1,67 @@
+-- Manual fix: Create acquire_lock function
+-- Run this in your Supabase SQL editor or via: npx supabase db execute --db-url "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -f fix_acquire_lock.sql
+
+-- Drop old version if exists
+DROP FUNCTION IF EXISTS topdarter.acquire_lock(uuid, varchar, jsonb, boolean, int);
+DROP FUNCTION IF EXISTS public.acquire_lock(uuid, varchar, jsonb, boolean, int);
+
+-- Create function in public schema
+CREATE OR REPLACE FUNCTION public.acquire_lock(
+  p_match_id uuid,
+  p_session_id varchar(255),
+  p_device_info jsonb DEFAULT '{}'::jsonb,
+  p_auto_extend boolean DEFAULT true,
+  p_expires_in_seconds int DEFAULT 300
+)
+RETURNS TABLE (
+  match_id uuid,
+  locked_by_session_id varchar(255),
+  device_info jsonb,
+  locked_at timestamptz,
+  expires_at timestamptz,
+  auto_extend boolean,
+  last_activity_at timestamptz,
+  created_at timestamptz,
+  updated_at timestamptz
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = topdarter, public
+AS $$
+DECLARE
+  v_expires_at timestamptz;
+BEGIN
+  v_expires_at := now() + (p_expires_in_seconds || ' seconds')::interval;
+  
+  IF EXISTS (
+    SELECT 1 FROM topdarter.match_locks
+    WHERE topdarter.match_locks.match_id = p_match_id
+      AND locked_by_session_id != p_session_id
+      AND expires_at > now()
+  ) THEN
+    RAISE EXCEPTION 'Match is locked by another session'
+      USING errcode = 'LOCKC', hint = 'LOCK_CONFLICT';
+  END IF;
+  
+  DELETE FROM topdarter.match_locks
+  WHERE locked_by_session_id = p_session_id;
+  
+  RETURN QUERY
+  INSERT INTO topdarter.match_locks (
+    match_id, locked_by_session_id, device_info, locked_at, expires_at,
+    auto_extend, last_activity_at, created_at, updated_at
+  )
+  VALUES (
+    p_match_id, p_session_id, p_device_info, now(), v_expires_at,
+    p_auto_extend, now(), now(), now()
+  )
+  RETURNING *;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.acquire_lock TO anon, authenticated;
+
+-- Verify function was created
+SELECT routine_name, routine_schema 
+FROM information_schema.routines 
+WHERE routine_name = 'acquire_lock';

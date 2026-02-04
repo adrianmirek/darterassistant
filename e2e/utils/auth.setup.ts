@@ -12,6 +12,15 @@ setup("authenticate", async ({ page }) => {
   const loginPage = new LoginPage(page);
   await loginPage.goto();
 
+  // Mark session as test environment and unregister service workers
+  // This is critical for Playwright route mocking to work properly
+  await page.evaluate(() => {
+    sessionStorage.setItem("playwright-test", "true");
+    return navigator.serviceWorker.getRegistrations().then((registrations) => {
+      return Promise.all(registrations.map((r) => r.unregister()));
+    });
+  });
+
   // Get test credentials from environment variables (.env.test)
   const testEmail = process.env.E2E_USERNAME || process.env.TEST_USER_EMAIL || "test@example.com";
   const testPassword = process.env.E2E_PASSWORD || process.env.TEST_USER_PASSWORD || "Test123!";
