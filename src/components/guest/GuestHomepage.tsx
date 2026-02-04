@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo, startTransition } from "react";
 import { Search, AlertCircle, Database, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,14 +68,18 @@ export function GuestHomepage() {
       }
 
       if (data.success) {
-        setDbResults(data.data);
-        setSearchStep("results");
+        // Use startTransition to batch updates and prevent DOM conflicts
+        startTransition(() => {
+          setIsSearchingDatabase(false);
+          setDbResults(data.data);
+          setSearchStep("results");
+        });
+        return;
       } else {
         throw new Error(data.error || t("errors.generic"));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : t("errors.network"));
-    } finally {
       setIsSearchingDatabase(false);
     }
   }, [nickname, t]);
@@ -114,13 +118,17 @@ export function GuestHomepage() {
       }
 
       if (data.success) {
-        setWebResults(data.data);
+        // Use startTransition to batch updates
+        startTransition(() => {
+          setIsSearchingWeb(false);
+          setWebResults(data.data);
+        });
+        return;
       } else {
         throw new Error(data.error || t("errors.generic"));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : t("errors.network"));
-    } finally {
       setIsSearchingWeb(false);
     }
   }, [keyword, nickname, t]);
@@ -211,7 +219,7 @@ export function GuestHomepage() {
   );
 
   // Deduplicate and combine results (database + web)
-  const combinedResults = useCallback(() => {
+  const combinedResults = useMemo(() => {
     if (!dbResults && !webResults) return null;
 
     // Combine all matches and deduplicate
@@ -240,7 +248,7 @@ export function GuestHomepage() {
 
     // Transform to tournament-grouped format for display
     return transformToTournamentFormat(allMatches);
-  }, [dbResults, webResults, transformToTournamentFormat])();
+  }, [dbResults, webResults, transformToTournamentFormat]);
 
   const totalMatches =
     combinedResults?.tournaments.reduce((acc, tournament) => acc + tournament.tournament_matches.length, 0) || 0;
@@ -259,12 +267,15 @@ export function GuestHomepage() {
     setKeywordError(null);
   };
 
+  // Prevent rendering results while still in loading state
+  const shouldShowResults = searchStep === "results" && !isSearchingDatabase;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/30">
       <div className="container mx-auto px-4 py-6 sm:py-12">
         {/* Hero Section */}
         <div className="text-center mb-8 sm:mb-12">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-teal-400 to-purple-400 bg-clip-text text-transparent mb-3 sm:mb-4 px-2 pb-1 leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-800 via-violet-600 to-blue-600 dark:from-teal-400 dark:via-violet-400 dark:to-purple-400 bg-clip-text text-transparent mb-3 sm:mb-4 px-2 pb-1 leading-tight">
             {t("guest.title")}
           </h1>
           <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
@@ -273,8 +284,8 @@ export function GuestHomepage() {
         </div>
 
         {/* Step 1: Nickname Search */}
-        {searchStep === "nickname" && (
-          <div className="max-w-2xl mx-auto mb-12">
+        {searchStep === "nickname" && !isSearchingDatabase && (
+          <div key="nickname-step" className="max-w-2xl mx-auto mb-12">
             <div className="bg-card border rounded-lg p-6 shadow-lg">
               <div className="space-y-4">
                 <div className="space-y-2">
@@ -332,9 +343,21 @@ export function GuestHomepage() {
           </div>
         )}
 
+        {/* Loading State */}
+        {isSearchingDatabase && (
+          <div key="loading-step" className="max-w-2xl mx-auto mb-12">
+            <div className="bg-card border rounded-lg p-12 shadow-lg">
+              <div className="flex flex-col items-center justify-center space-y-4">
+                <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                <p className="text-lg text-muted-foreground">{t("guest.searching")}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Step 2: Results with option to search more */}
-        {searchStep === "results" && (
-          <>
+        {shouldShowResults && (
+          <div key="results-step">
             {/* Error Display */}
             {error && (
               <div className="max-w-2xl mx-auto mb-6">
@@ -457,6 +480,7 @@ export function GuestHomepage() {
                       disabled={isSearchingWeb || keyword.length < 3}
                       className="w-full"
                       size="lg"
+                      variant="black"
                     >
                       {isSearchingWeb ? (
                         <>
@@ -496,7 +520,7 @@ export function GuestHomepage() {
             )}
 
             {/* Display Results */}
-            {combinedResults && totalMatches > 0 && (
+            {combinedResults && totalMatches > 0 && combinedResults.tournaments.length > 0 && (
               <div className="max-w-6xl mx-auto px-4">
                 <div className="mb-6">
                   <h2 className="text-xl sm:text-2xl font-semibold">{t("guest.resultsTitle")}</h2>
@@ -511,7 +535,13 @@ export function GuestHomepage() {
                   </p>
                 </div>
 
-                <TournamentResults results={combinedResults} nickname={nickname} />
+                {combinedResults && (
+                  <TournamentResults
+                    key={`results-${dbMatchCount}-${webMatchCount}`}
+                    results={combinedResults}
+                    nickname={nickname}
+                  />
+                )}
 
                 {/* Call to Action */}
                 <div className="mt-8 sm:mt-12 text-center bg-gradient-to-r from-purple-500/10 to-teal-500/10 border border-purple-500/20 rounded-lg p-6 sm:p-8">
@@ -527,7 +557,7 @@ export function GuestHomepage() {
                 </div>
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
     </div>

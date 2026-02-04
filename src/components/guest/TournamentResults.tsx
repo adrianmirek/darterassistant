@@ -13,7 +13,9 @@ interface TournamentResultsProps {
 
 export function TournamentResults({ results, nickname }: TournamentResultsProps) {
   const t = useTranslation();
-  const [tournamentsData, setTournamentsData] = useState(results.tournaments);
+
+  // All hooks must be called before any conditional returns
+  const [tournamentsData, setTournamentsData] = useState(results?.tournaments || []);
   const [fetchingTournaments, setFetchingTournaments] = useState<
     Record<string, { isFetching: boolean; current: number; total: number; currentMatchId: string | null }>
   >({});
@@ -21,31 +23,12 @@ export function TournamentResults({ results, nickname }: TournamentResultsProps)
 
   // Update local state when results prop changes (e.g., after searching tournaments)
   useEffect(() => {
-    setTournamentsData(results.tournaments);
+    if (results?.tournaments && Array.isArray(results.tournaments)) {
+      setTournamentsData(results.tournaments);
+    }
   }, [results]);
 
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString(undefined, {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  // Check if tournament has any matches without results
-  const hasMatchesWithoutResults = (matches: NakkaTournamentMatchDTO[]): boolean => {
-    return matches.some(
-      (match) =>
-        match.player_score === null ||
-        match.player_score === undefined ||
-        match.opponent_score === null ||
-        match.opponent_score === undefined ||
-        match.average_score === null ||
-        match.average_score === undefined
-    );
-  };
-
+  // All hooks including useCallback must be before the early return
   const handleRefreshTournament = useCallback(
     async (tournamentIdentifier: string) => {
       const tournament = tournamentsData.find((t) => t.nakka_identifier === tournamentIdentifier);
@@ -172,82 +155,113 @@ export function TournamentResults({ results, nickname }: TournamentResultsProps)
     [tournamentsData, nickname]
   );
 
+  // Safety check - ensure results and tournaments exist
+  if (!results || !results.tournaments || results.tournaments.length === 0) {
+    return null;
+  }
+
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  // Check if tournament has any matches without results
+  const hasMatchesWithoutResults = (matches: NakkaTournamentMatchDTO[]): boolean => {
+    return matches.some(
+      (match) =>
+        match.player_score === null ||
+        match.player_score === undefined ||
+        match.opponent_score === null ||
+        match.opponent_score === undefined ||
+        match.average_score === null ||
+        match.average_score === undefined
+    );
+  };
+
   return (
     <div className="space-y-6">
-      {tournamentsData.map((tournament) => {
-        const fetchStatus = fetchingTournaments[tournament.nakka_identifier];
-        const isFetching = fetchStatus?.isFetching || false;
+      {tournamentsData &&
+        Array.isArray(tournamentsData) &&
+        tournamentsData.map((tournament) => {
+          const fetchStatus = fetchingTournaments[tournament.nakka_identifier];
+          const isFetching = fetchStatus?.isFetching || false;
 
-        return (
-          <Card key={tournament.nakka_identifier} className="overflow-hidden">
-            {/* Tournament Header */}
-            <div className="bg-gradient-to-r from-purple-500/10 to-teal-500/10 border-b px-4 sm:px-6 py-4">
-              <div className="space-y-3">
-                <div className="flex items-start gap-2">
-                  <Trophy className="h-5 w-5 text-purple-400 flex-shrink-0 mt-0.5" />
-                  <h3 className="text-base sm:text-lg font-semibold leading-tight">{tournament.tournament_name}</h3>
-                </div>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground flex-wrap">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      <span>{formatDate(tournament.tournament_date)}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                      <span>
-                        {tournament.tournament_matches.length}{" "}
-                        {tournament.tournament_matches.length === 1 ? t("tournaments.match") : t("tournaments.matches")}
-                      </span>
-                    </div>
+          return (
+            <Card key={tournament.nakka_identifier} className="overflow-hidden">
+              {/* Tournament Header */}
+              <div className="bg-gradient-to-r from-purple-500/10 to-teal-500/10 border-b px-4 sm:px-6 py-4">
+                <div className="space-y-3">
+                  <div className="flex items-start gap-2">
+                    <Trophy className="h-5 w-5 text-purple-400 flex-shrink-0 mt-0.5" />
+                    <h3 className="text-base sm:text-lg font-semibold leading-tight">{tournament.tournament_name}</h3>
                   </div>
-                  {hasMatchesWithoutResults(tournament.tournament_matches) && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRefreshTournament(tournament.nakka_identifier)}
-                      disabled={isFetching}
-                      className="text-xs sm:text-sm self-start sm:self-auto"
-                    >
-                      {isFetching ? (
-                        <>
-                          <div className="mr-1 sm:mr-2 h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                          <span className="hidden sm:inline">
-                            {t("guest.fetchingResults")} ({fetchStatus.current}/{fetchStatus.total})
-                          </span>
-                          <span className="sm:hidden">
-                            {fetchStatus.current}/{fetchStatus.total}
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          <RefreshCw className="h-3 w-3 mr-1" />
-                          <span className="hidden sm:inline">{t("guest.fetchMissingResults")}</span>
-                          <span className="sm:hidden">{t("guest.fetchResults")}</span>
-                        </>
-                      )}
-                    </Button>
-                  )}
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground flex-wrap">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        <span>{formatDate(tournament.tournament_date)}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        <span>
+                          {tournament.tournament_matches.length}{" "}
+                          {tournament.tournament_matches.length === 1
+                            ? t("tournaments.match")
+                            : t("tournaments.matches")}
+                        </span>
+                      </div>
+                    </div>
+                    {hasMatchesWithoutResults(tournament.tournament_matches) && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleRefreshTournament(tournament.nakka_identifier)}
+                        disabled={isFetching}
+                        className="text-xs sm:text-sm self-start sm:self-auto"
+                      >
+                        {isFetching ? (
+                          <>
+                            <div className="mr-1 sm:mr-2 h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                            <span className="hidden sm:inline">
+                              {t("guest.fetchingResults")} ({fetchStatus.current}/{fetchStatus.total})
+                            </span>
+                            <span className="sm:hidden">
+                              {fetchStatus.current}/{fetchStatus.total}
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <RefreshCw className="h-3 w-3 mr-1" />
+                            <span className="hidden sm:inline">{t("guest.fetchMissingResults")}</span>
+                            <span className="sm:hidden">{t("guest.fetchResults")}</span>
+                          </>
+                        )}
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Matches List */}
-            <div className="p-3 sm:p-6">
-              <div className="space-y-3">
-                {tournament.tournament_matches.map((match) => (
-                  <MatchCard
-                    key={match.nakka_match_identifier}
-                    match={match}
-                    nickname={nickname}
-                    isFetchingFromParent={fetchingMatchIds.has(match.nakka_match_identifier)}
-                  />
-                ))}
+              {/* Matches List */}
+              <div className="p-3 sm:p-6">
+                <div className="space-y-3">
+                  {tournament.tournament_matches.map((match) => (
+                    <MatchCard
+                      key={match.nakka_match_identifier}
+                      match={match}
+                      nickname={nickname}
+                      isFetchingFromParent={fetchingMatchIds.has(match.nakka_match_identifier)}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          </Card>
-        );
-      })}
+            </Card>
+          );
+        })}
     </div>
   );
 }
