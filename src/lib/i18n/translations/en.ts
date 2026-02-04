@@ -304,6 +304,22 @@ export const en = {
     underConstructionTitle: "Website Under Construction",
     underConstructionMessage: "We're working hard to bring you an amazing experience. Check back soon!",
     underConstructionThanks: "Thank you for your patience",
+
+    // Player Overview
+    performanceOverview: "Performance Overview",
+    lastMatches: "Last {count} Matches",
+    wins: "Wins",
+    losses: "Losses",
+    winRate: "Win Rate",
+    winLossDistribution: "Win/Loss Distribution",
+    strongSides: "Strong Sides",
+    areasToImprove: "Areas to Improve",
+    playMoreMatches: "Play more matches to see strengths",
+    greatPerformance: "Great performance across all areas!",
+    score180s: "180s",
+    score140s: "140+",
+    score100s: "100+",
+    checkoutPercent: "CO %",
   },
 
   // Footer

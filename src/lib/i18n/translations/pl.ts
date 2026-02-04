@@ -306,6 +306,22 @@ export const pl: TranslationKeys = {
     underConstructionTitle: "Strona w Budowie",
     underConstructionMessage: "Ciężko pracujemy, aby zapewnić Ci niesamowite doświadczenie. Wróć wkrótce!",
     underConstructionThanks: "Dziękujemy za cierpliwość",
+
+    // Player Overview
+    performanceOverview: "Przegląd Wydajności",
+    lastMatches: "Ostatnie {count} Mecze",
+    wins: "Wygrane",
+    losses: "Przegrane",
+    winRate: "Procent Wygranych",
+    winLossDistribution: "Rozkład Wygrane/Przegrane",
+    strongSides: "Mocne Strony",
+    areasToImprove: "Obszary do Poprawy",
+    playMoreMatches: "Zagraj więcej meczów, aby zobaczyć mocne strony",
+    greatPerformance: "Świetna wydajność we wszystkich obszarach!",
+    score180s: "180",
+    score140s: "140+",
+    score100s: "100+",
+    checkoutPercent: "CO %",
   },
 
   // Footer
