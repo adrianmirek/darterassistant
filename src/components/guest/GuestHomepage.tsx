@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, startTransition } from "react";
-import { Search, AlertCircle, Database, Globe } from "lucide-react";
+import { Search, AlertCircle, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -368,77 +368,18 @@ export function GuestHomepage() {
               </div>
             )}
 
-            {/* Results Found - Show option to search more */}
+            {/* Start Over Card */}
             {dbMatchCount > 0 && (
               <div className="max-w-6xl mx-auto mb-8 px-4">
-                {/* Action Cards */}
-                <div className="grid md:grid-cols-2 gap-4 mb-8">
-                  {/* Search More Tournaments Card */}
-                  <div className="bg-card border rounded-lg p-4 sm:p-6">
-                    <div className="flex items-start gap-3 sm:gap-4">
-                      <div className="p-2 sm:p-3 bg-purple-500/10 rounded-lg flex-shrink-0">
-                        <Globe className="h-5 w-5 sm:h-6 sm:w-6 text-purple-400" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-sm sm:text-base font-semibold mb-1 sm:mb-2">
-                          {t("guest.searchMoreTournaments")}
-                        </h3>
-                        <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
-                          {t("guest.searchMoreDescription")}
-                        </p>
-                        <div className="space-y-2 sm:space-y-3">
-                          <Input
-                            type="text"
-                            placeholder={t("guest.tournamentKeywordPlaceholder")}
-                            value={keyword}
-                            onChange={(e) => {
-                              setKeyword(e.target.value);
-                              if (e.target.value.length >= 3) {
-                                setKeywordError(null);
-                              }
-                            }}
-                            onKeyPress={(e) => {
-                              if (e.key === "Enter" && keyword.length >= 3) {
-                                handleKeywordSearch();
-                              }
-                            }}
-                            className={`text-sm sm:text-base ${keywordError ? "border-destructive" : ""}`}
-                            disabled={isSearchingWeb}
-                          />
-                          {keywordError && <p className="text-xs sm:text-sm text-destructive">{keywordError}</p>}
-                          <Button
-                            onClick={handleKeywordSearch}
-                            disabled={isSearchingWeb || keyword.length < 3}
-                            className="w-full text-sm sm:text-base"
-                          >
-                            {isSearchingWeb ? (
-                              <>
-                                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
-                                {t("guest.searching")}
-                              </>
-                            ) : (
-                              <>
-                                <Search className="mr-2 h-4 w-4" />
-                                {t("guest.searchTournaments")}
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Start Over Card */}
-                  <div className="bg-card border rounded-lg p-4 sm:p-6 flex flex-col justify-center items-center text-center">
-                    <Database className="h-10 w-10 sm:h-12 sm:w-12 text-teal-400 mb-3 sm:mb-4" />
-                    <h3 className="text-sm sm:text-base font-semibold mb-1 sm:mb-2">{t("guest.startOver")}</h3>
-                    <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
-                      {t("guest.startOverDescription")}
-                    </p>
-                    <Button onClick={handleStartOver} variant="outline" className="text-sm sm:text-base">
-                      {t("guest.newSearch")}
-                    </Button>
-                  </div>
+                <div className="bg-card border rounded-lg p-4 sm:p-6 flex flex-col justify-center items-center text-center max-w-md mx-auto">
+                  <Database className="h-10 w-10 sm:h-12 sm:w-12 text-teal-400 mb-3 sm:mb-4" />
+                  <h3 className="text-sm sm:text-base font-semibold mb-1 sm:mb-2">{t("guest.startOver")}</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
+                    {t("guest.startOverDescription")}
+                  </p>
+                  <Button onClick={handleStartOver} variant="outline" className="text-sm sm:text-base">
+                    {t("guest.newSearch")}
+                  </Button>
                 </div>
               </div>
             )}
