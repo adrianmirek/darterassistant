@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useStandaloneMatch } from "@/lib/hooks/useStandaloneMatch";
@@ -186,7 +187,17 @@ export function GuestSetupPage() {
               className="w-full"
               size="lg"
             >
-              {showLoading ? "Creating Match..." : "Start Match"}
+              {showLoading ? (
+                <>
+                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
+                  Creating Match...
+                </>
+              ) : (
+                <>
+                  <Play className="mr-2 h-4 w-4" />
+                  Start Match
+                </>
+              )}
             </Button>
           </div>
         </div>

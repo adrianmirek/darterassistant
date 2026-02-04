@@ -175,11 +175,11 @@ export function GuestScoreHomePage({ onSetupStateChange }: GuestScoreHomePagePro
 
             <div className="space-y-4">
               <div>
-                <label htmlFor="setup-player1-name" className="text-sm font-medium mb-2 block">
+                <label htmlFor="player1-name" className="text-sm font-medium mb-2 block">
                   Player 1 Name
                 </label>
                 <Input
-                  id="setup-player1-name"
+                  id="player1-name"
                   type="text"
                   value={setupForm.playerName}
                   onChange={(e) => setSetupForm((prev) => ({ ...prev, playerName: e.target.value }))}
@@ -190,11 +190,11 @@ export function GuestScoreHomePage({ onSetupStateChange }: GuestScoreHomePagePro
               </div>
 
               <div>
-                <label htmlFor="setup-player2-name" className="text-sm font-medium mb-2 block">
+                <label htmlFor="player2-name" className="text-sm font-medium mb-2 block">
                   Player 2 Name
                 </label>
                 <Input
-                  id="setup-player2-name"
+                  id="player2-name"
                   type="text"
                   value={setupForm.opponentName}
                   onChange={(e) => setSetupForm((prev) => ({ ...prev, opponentName: e.target.value }))}
@@ -206,12 +206,12 @@ export function GuestScoreHomePage({ onSetupStateChange }: GuestScoreHomePagePro
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="setup-start-score" className="text-sm font-medium mb-2 block">
+                  <label htmlFor="start-score" className="text-sm font-medium mb-2 block">
                     Start Score
                   </label>
                   <div className="space-y-2">
                     <Input
-                      id="setup-start-score"
+                      id="start-score"
                       type="number"
                       value={setupForm.startScore}
                       onChange={(e) => {
@@ -252,11 +252,11 @@ export function GuestScoreHomePage({ onSetupStateChange }: GuestScoreHomePagePro
                 </div>
 
                 <div>
-                  <label htmlFor="setup-limit-rounds" className="text-sm font-medium mb-2 block">
+                  <label htmlFor="limit-rounds" className="text-sm font-medium mb-2 block">
                     Limit Rounds
                   </label>
                   <Input
-                    id="setup-limit-rounds"
+                    id="limit-rounds"
                     type="number"
                     value={setupForm.limitRounds || ""}
                     onChange={(e) =>
@@ -283,6 +283,7 @@ export function GuestScoreHomePage({ onSetupStateChange }: GuestScoreHomePagePro
                 }
                 className="w-full"
                 size="lg"
+                variant="black"
               >
                 {isLoading ? "Starting..." : "Start Match"}
               </Button>
@@ -352,7 +353,7 @@ export function GuestScoreHomePage({ onSetupStateChange }: GuestScoreHomePagePro
                   {showCheckoutInput && (
                     <div className="mt-4 inline-block">
                       <div className="bg-card border rounded-lg p-4 shadow-lg">
-                        <p className="block text-sm font-medium mb-3">How many darts to finish the last round?</p>
+                        <div className="block text-sm font-medium mb-3">How many darts to finish the last round?</div>
                         <div className="flex gap-3 justify-center">
                           {[1, 2, 3].map((dartsInLastRound) => (
                             <Button
