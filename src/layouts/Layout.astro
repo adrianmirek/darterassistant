@@ -61,17 +61,6 @@ const detectedLang = detectLanguageFromHeader(acceptLanguage);
     <script is:inline>
       document.documentElement.classList.add(localStorage.getItem("darter-theme") || "dark");
     </script>
-    <!-- Unregister old service worker if present -->
-    <script is:inline>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for (let registration of registrations) {
-            registration.unregister();
-            console.log('Old service worker unregistered');
-          }
-        });
-      }
-    </script>
     <!-- Sidebar state initialization - prevents flash on navigation -->
     <script is:inline>
       const sidebarExpanded = localStorage.getItem("darter-sidebar-expanded") === "true";
