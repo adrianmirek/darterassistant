@@ -99,8 +99,8 @@ const detectedLang = detectLanguageFromHeader(acceptLanguage);
           installBtn.innerHTML = "📱 Install App";
           installBtn.style.cssText = `
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            top: 20px;
+            left: 20px;
             padding: 12px 24px;
             background: linear-gradient(135deg, #14b8a6 0%, #8b5cf6 100%);
             color: white;
@@ -120,20 +120,20 @@ const detectedLang = detectLanguageFromHeader(acceptLanguage);
           style.textContent = `
             @keyframes slideIn {
               from {
-                transform: translateY(100px);
+                transform: translateX(-100px);
                 opacity: 0;
               }
               to {
-                transform: translateY(0);
+                transform: translateX(0);
                 opacity: 1;
               }
             }
             #pwa-install-btn:hover {
-              transform: translateY(-2px);
+              transform: scale(1.05);
               box-shadow: 0 6px 20px rgba(20, 184, 166, 0.6);
             }
             #pwa-install-btn:active {
-              transform: translateY(0);
+              transform: scale(0.98);
             }
           `;
           document.head.appendChild(style);
