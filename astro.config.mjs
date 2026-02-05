@@ -14,14 +14,12 @@ export default defineConfig({
     react(),
     sitemap(),
     AstroPWA({
-      mode: "production",
       base: "/",
       scope: "/",
       includeAssets: ["favicon.png", "topiszajba.png"],
       registerType: "autoUpdate",
       strategies: "generateSW",
-      injectRegister: "auto",
-      disable: false,
+      injectRegister: null,
       manifest: {
         name: "Darter Assistant",
         short_name: "Darter",
