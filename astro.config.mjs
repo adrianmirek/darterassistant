@@ -19,7 +19,7 @@ export default defineConfig({
       includeAssets: ["favicon.png", "topiszajba.png"],
       registerType: "autoUpdate",
       strategies: "generateSW",
-      injectRegister: "auto",
+      injectRegister: null,
       manifest: {
         name: "Darter Assistant",
         short_name: "Darter",

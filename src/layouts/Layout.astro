@@ -40,6 +40,11 @@ const detectedLang = detectLanguageFromHeader(acceptLanguage);
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Darter" />
     <link rel="apple-touch-icon" href="/pwa-192x192.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    
+    <!-- PWA Service Worker Registration -->
+    <script src="/registerSW.js"></script>
+    
     <!-- Language initialization script - set language based on stored preference or browser -->
     <script is:inline define:vars={{ detectedLang }}>
       // Get stored language preference or use detected language
