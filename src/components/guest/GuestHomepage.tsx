@@ -1,11 +1,12 @@
 import { useState, useCallback, useMemo, startTransition } from "react";
-import { Search, AlertCircle, Database } from "lucide-react";
+import { AlertCircle, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useTranslation } from "@/lib/hooks/I18nProvider";
 import { TournamentResults } from "./TournamentResults";
+import { ContactNoKeywordForm } from "./ContactNoKeywordForm";
 import type {
   RetrieveTournamentsMatchesResponseDTO,
   GetPlayerMatchesResponseDTO,
@@ -26,7 +27,6 @@ export function GuestHomepage() {
 
   // Loading states
   const [isSearchingDatabase, setIsSearchingDatabase] = useState(false);
-  const [isSearchingWeb, setIsSearchingWeb] = useState(false);
 
   // Results - now both use the same normalized format
   const [dbResults, setDbResults] = useState<GetPlayerMatchesResponseDTO | null>(null);
@@ -35,7 +35,7 @@ export function GuestHomepage() {
   // Errors
   const [error, setError] = useState<string | null>(null);
   const [nicknameError, setNicknameError] = useState<string | null>(null);
-  const [keywordError, setKeywordError] = useState<string | null>(null);
+  const [setKeywordError] = useState<string | null>(null);
 
   // Step 1: Search by nickname in database
   const handleNicknameSearch = useCallback(async () => {
@@ -83,55 +83,6 @@ export function GuestHomepage() {
       setIsSearchingDatabase(false);
     }
   }, [nickname, t]);
-
-  // Step 2: Search by keyword + nickname (web scraping)
-  const handleKeywordSearch = useCallback(async () => {
-    if (keyword.trim().length < 3) {
-      setKeywordError(t("guest.keywordMinLength"));
-      return;
-    }
-    if (nickname.trim().length < 3) {
-      setNicknameError(t("guest.nicknameMinLength"));
-      return;
-    }
-
-    setIsSearchingWeb(true);
-    setError(null);
-    setWebResults(null);
-
-    try {
-      const response = await fetch("/api/nakka/retrieve-guest", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          keyword: keyword.trim(),
-          nick_name: nickname.trim(),
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || t("errors.generic"));
-      }
-
-      if (data.success) {
-        // Use startTransition to batch updates
-        startTransition(() => {
-          setIsSearchingWeb(false);
-          setWebResults(data.data);
-        });
-        return;
-      } else {
-        throw new Error(data.error || t("errors.generic"));
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t("errors.network"));
-      setIsSearchingWeb(false);
-    }
-  }, [keyword, nickname, t]);
 
   // Transform player matches to tournament-grouped format for display
   const transformToTournamentFormat = useCallback(
@@ -384,80 +335,28 @@ export function GuestHomepage() {
               </div>
             )}
 
-            {/* No Results Found - Show option to search by keyword */}
+            {/* No Results Found in Database - Show Contact Form */}
             {dbMatchCount === 0 && !webResults && (
-              <div className="max-w-2xl mx-auto mb-8 px-4">
-                <div className="bg-card border rounded-lg p-4 sm:p-6">
-                  <div className="text-center mb-4 sm:mb-6">
-                    <AlertCircle className="h-10 w-10 sm:h-12 sm:w-12 mx-auto text-muted-foreground mb-3 sm:mb-4" />
-                    <h3 className="text-lg sm:text-xl font-semibold mb-2">{t("guest.noMatchesInDatabase")}</h3>
-                    <p className="text-sm sm:text-base text-muted-foreground">{t("guest.trySearchingByKeyword")}</p>
-                  </div>
-
-                  <div className="space-y-3">
-                    <Label htmlFor="tournament-keyword">{t("guest.tournamentKeyword")}</Label>
-                    <Input
-                      id="tournament-keyword"
-                      type="text"
-                      placeholder={t("guest.tournamentKeywordPlaceholder")}
-                      value={keyword}
-                      onChange={(e) => {
-                        setKeyword(e.target.value);
-                        if (e.target.value.length >= 3) {
-                          setKeywordError(null);
-                        }
-                      }}
-                      onKeyPress={(e) => {
-                        if (e.key === "Enter" && keyword.length >= 3) {
-                          handleKeywordSearch();
-                        }
-                      }}
-                      className={keywordError ? "border-destructive" : ""}
-                      disabled={isSearchingWeb}
-                    />
-                    {keywordError && <p className="text-sm text-destructive">{keywordError}</p>}
-                    <Button
-                      onClick={handleKeywordSearch}
-                      disabled={isSearchingWeb || keyword.length < 3}
-                      className="w-full"
-                      size="lg"
-                      variant="black"
-                    >
-                      {isSearchingWeb ? (
-                        <>
-                          <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
-                          {t("guest.searching")}
-                        </>
-                      ) : (
-                        <>
-                          <Search className="mr-2 h-4 w-4" />
-                          {t("guest.searchTournaments")}
-                        </>
-                      )}
-                    </Button>
-                    <Button onClick={handleStartOver} variant="ghost" className="w-full">
-                      {t("guest.startOver")}
-                    </Button>
-                  </div>
-                </div>
-              </div>
+              <ContactNoKeywordForm
+                nickname={nickname}
+                initialKeyword=""
+                onSuccess={() => {
+                  console.log("Contact form submitted successfully");
+                }}
+                onNewSearch={handleStartOver}
+              />
             )}
 
-            {/* No Results Found After Both Searches */}
+            {/* No Results Found After Web Search - Show Contact Form */}
             {dbMatchCount === 0 && webMatchCount === 0 && webResults && (
-              <div className="max-w-2xl mx-auto mb-8 px-4">
-                <div className="bg-card border rounded-lg p-4 sm:p-6 text-center">
-                  <AlertCircle className="h-12 w-12 sm:h-16 sm:w-16 mx-auto text-muted-foreground mb-3 sm:mb-4" />
-                  <h3 className="text-lg sm:text-xl font-semibold mb-2">{t("guest.noMatchesFound")}</h3>
-                  <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">
-                    {t("guest.noMatchesFoundDescription")}
-                  </p>
-                  <Button onClick={handleStartOver} size="lg" className="w-full text-sm sm:text-base">
-                    <Database className="mr-2 h-4 w-4" />
-                    {t("guest.startNewSearch")}
-                  </Button>
-                </div>
-              </div>
+              <ContactNoKeywordForm
+                nickname={nickname}
+                initialKeyword={keyword}
+                onSuccess={() => {
+                  console.log("Contact form submitted successfully");
+                }}
+                onNewSearch={handleStartOver}
+              />
             )}
 
             {/* Display Results */}
