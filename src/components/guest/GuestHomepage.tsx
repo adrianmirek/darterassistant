@@ -115,10 +115,12 @@ export function GuestHomepage() {
           setDbResults(data.data);
 
           // Extract unique players from results
+          // Clean player names to avoid duplicates (e.g., "Leon Faryniuk" and "Leon Faryniuk 🗸")
           const playersMap = new Map<string, number>();
           data.data.matches.forEach((match: NakkaPlayerMatchResult) => {
-            const count = playersMap.get(match.player_name) || 0;
-            playersMap.set(match.player_name, count + 1);
+            const cleanedName = cleanPlayerName(match.player_name);
+            const count = playersMap.get(cleanedName) || 0;
+            playersMap.set(cleanedName, count + 1);
           });
 
           const players = Array.from(playersMap.entries())
@@ -194,10 +196,12 @@ export function GuestHomepage() {
               setWebResults(null);
 
               // Update unique players from results
+              // Clean player names to avoid duplicates (e.g., "Leon Faryniuk" and "Leon Faryniuk 🗸")
               const playersMap = new Map<string, number>();
               data.data.matches.forEach((match: NakkaPlayerMatchResult) => {
-                const count = playersMap.get(match.player_name) || 0;
-                playersMap.set(match.player_name, count + 1);
+                const cleanedName = cleanPlayerName(match.player_name);
+                const count = playersMap.get(cleanedName) || 0;
+                playersMap.set(cleanedName, count + 1);
               });
 
               const players = Array.from(playersMap.entries())
@@ -277,10 +281,12 @@ export function GuestHomepage() {
           setWebResults(null); // Clear web results as we're doing a fresh search
 
           // Extract unique players from results
+          // Clean player names to avoid duplicates (e.g., "Leon Faryniuk" and "Leon Faryniuk 🗸")
           const playersMap = new Map<string, number>();
           data.data.matches.forEach((match: NakkaPlayerMatchResult) => {
-            const count = playersMap.get(match.player_name) || 0;
-            playersMap.set(match.player_name, count + 1);
+            const cleanedName = cleanPlayerName(match.player_name);
+            const count = playersMap.get(cleanedName) || 0;
+            playersMap.set(cleanedName, count + 1);
           });
 
           const players = Array.from(playersMap.entries())
@@ -432,7 +438,11 @@ export function GuestHomepage() {
     }
 
     // Filter by selected players
-    const filteredMatches = allMatches.filter((match) => selectedPlayers.includes(match.player_name));
+    // Compare cleaned names to handle cases where DB has "Leon Faryniuk 🗸" but selected is "Leon Faryniuk"
+    const filteredMatches = allMatches.filter((match) => {
+      const cleanedMatchName = cleanPlayerName(match.player_name);
+      return selectedPlayers.includes(cleanedMatchName);
+    });
 
     // Transform to tournament-grouped format for display
     return transformToTournamentFormat(filteredMatches);
