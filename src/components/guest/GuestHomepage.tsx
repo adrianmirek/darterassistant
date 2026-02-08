@@ -16,6 +16,7 @@ import {
 import { useTranslation } from "@/lib/hooks/I18nProvider";
 import { TournamentResults } from "./TournamentResults";
 import { ContactNoKeywordForm } from "./ContactNoKeywordForm";
+import { cleanPlayerName } from "@/lib/utils/text-normalization";
 import type {
   RetrieveTournamentsMatchesResponseDTO,
   GetPlayerMatchesResponseDTO,
@@ -608,7 +609,7 @@ export function GuestHomepage() {
                                   ${selectedPlayers.length === 1 && isSelected ? "opacity-50 cursor-not-allowed" : ""}
                                 `}
                               >
-                                <span>{player.player_name}</span>
+                                <span translate="no">{cleanPlayerName(player.player_name)}</span>
                                 <span className="text-xs opacity-70">({player.match_count})</span>
                                 {isSelected ? <X className="h-3 w-3" /> : <span className="text-xs">+</span>}
                               </button>
