@@ -35,7 +35,6 @@ export function GuestHomepage() {
   // Errors
   const [error, setError] = useState<string | null>(null);
   const [nicknameError, setNicknameError] = useState<string | null>(null);
-  const [setKeywordError] = useState<string | null>(null);
 
   // Step 1: Search by nickname in database
   const handleNicknameSearch = useCallback(async () => {
@@ -215,7 +214,6 @@ export function GuestHomepage() {
     setWebResults(null);
     setError(null);
     setNicknameError(null);
-    setKeywordError(null);
   };
 
   // Prevent rendering results while still in loading state
