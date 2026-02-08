@@ -541,7 +541,7 @@ export async function getPlayerMatchesByNickname(
   try {
     // Normalize to array if single string provided
     const nicknameArray = Array.isArray(nicknames) ? nicknames : [nicknames];
-    
+
     console.log(`[DB] Retrieving matches for nickname(s): ${nicknameArray.join(", ")}, limit: ${limit}`);
 
     // Call the database function

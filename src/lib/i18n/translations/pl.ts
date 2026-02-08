@@ -314,11 +314,11 @@ export const pl: TranslationKeys = {
     wins: "Wygrane",
     losses: "Przegrane",
     winRate: "Procent Wygranych",
-    winLossDistribution: "Rozkład Wygrane/Przegrane",
+    winLossDistribution: "Wygrane/Przegrane",
     strongSides: "Mocne Strony",
     areasToImprove: "Obszary do Poprawy",
     playMoreMatches: "Zagraj więcej meczów, aby zobaczyć mocne strony",
-    greatPerformance: "Świetna wydajność we wszystkich obszarach!",
+    greatPerformance: "Świetna forma we wszystkich obszarach!",
     score180s: "180",
     score140s: "140+",
     score100s: "100+",
@@ -342,6 +342,6 @@ export const pl: TranslationKeys = {
 
   // Footer
   footer: {
-    madeBy: "Dostarczone przez topiszajba",
+    madeBy: "Dostarczone przez topdarter",
   },
 } as const;

@@ -324,7 +324,8 @@ export const en = {
 
     // Contact Form (No Keyword)
     contactFormTitle: "Request Tournament Data",
-    contactFormDescription: "Our team will prepare the data as soon as possible. Thank you for your patience. Please check back tomorrow to see if your tournament is ready for analysis.",
+    contactFormDescription:
+      "Our team will prepare the data as soon as possible. Thank you for your patience. Please check back tomorrow to see if your tournament is ready for analysis.",
     contactFormNickname: "Player Nickname",
     contactFormKeyword: "Tournament Keyword",
     contactFormEmail: "Email (Optional)",
@@ -335,11 +336,24 @@ export const en = {
     contactFormSuccessDescription: "We'll prepare your tournament data as soon as possible.",
     contactFormError: "Failed to submit request",
     contactFormErrorDescription: "Please try again or contact support.",
+
+    // Player Filtering
+    filterPlayers: "Filter Players",
+    filterPlayersDescription: "Multiple players found. Remove unwanted players from the list and refresh results.",
+    refreshSearch: "Refresh Results",
+    refreshing: "Refreshing...",
+    noPlayersSelected: "Please select at least one player",
+    addNickname: "Add",
+    addNicknameTitle: "Add New Nickname",
+    addNicknameDescription: "Enter the player's nickname you want to add to the filter list.",
+    nicknameAlreadyExists: "This nickname is already in the list",
+    confirm: "Confirm",
+    cancel: "Cancel",
   },
 
   // Footer
   footer: {
-    madeBy: "Made by topiszajba",
+    madeBy: "Made by topdarter",
   },
 } as const;
 

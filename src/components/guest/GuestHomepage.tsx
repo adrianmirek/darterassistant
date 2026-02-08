@@ -1,9 +1,18 @@
-import { useState, useCallback, useMemo, startTransition } from "react";
-import { AlertCircle, Database } from "lucide-react";
+import { useState, useCallback, useMemo, startTransition, useEffect, useRef } from "react";
+import { AlertCircle, Database, X, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
 import { useTranslation } from "@/lib/hooks/I18nProvider";
 import { TournamentResults } from "./TournamentResults";
 import { ContactNoKeywordForm } from "./ContactNoKeywordForm";
@@ -17,6 +26,11 @@ import type {
 
 type SearchStep = "nickname" | "keyword" | "results";
 
+interface UniquePlayer {
+  player_name: string;
+  match_count: number;
+}
+
 export function GuestHomepage() {
   const t = useTranslation();
 
@@ -24,6 +38,19 @@ export function GuestHomepage() {
   const [searchStep, setSearchStep] = useState<SearchStep>("nickname");
   const [nickname, setNickname] = useState(""); // Input field for nicknames (comma-separated)
   const [keyword, setKeyword] = useState("");
+
+  // Player filtering state
+  const [uniquePlayers, setUniquePlayers] = useState<UniquePlayer[]>([]);
+  const [selectedPlayers, setSelectedPlayers] = useState<string[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Track if we should skip auto-refresh (to prevent infinite loop)
+  const skipAutoRefresh = useRef(false);
+
+  // Add nickname dialog state
+  const [isAddNicknameOpen, setIsAddNicknameOpen] = useState(false);
+  const [newNickname, setNewNickname] = useState("");
+  const [newNicknameError, setNewNicknameError] = useState<string | null>(null);
 
   // Loading states
   const [isSearchingDatabase, setIsSearchingDatabase] = useState(false);
@@ -80,9 +107,26 @@ export function GuestHomepage() {
 
       if (data.success) {
         // Use startTransition to batch updates and prevent DOM conflicts
+        skipAutoRefresh.current = true; // Set flag before updating selectedPlayers
+
         startTransition(() => {
           setIsSearchingDatabase(false);
           setDbResults(data.data);
+
+          // Extract unique players from results
+          const playersMap = new Map<string, number>();
+          data.data.matches.forEach((match: NakkaPlayerMatchResult) => {
+            const count = playersMap.get(match.player_name) || 0;
+            playersMap.set(match.player_name, count + 1);
+          });
+
+          const players = Array.from(playersMap.entries())
+            .map(([player_name, match_count]) => ({ player_name, match_count }))
+            .sort((a, b) => b.match_count - a.match_count);
+
+          setUniquePlayers(players);
+          setSelectedPlayers(players.map((p) => p.player_name));
+
           setSearchStep("results");
         });
         return;
@@ -94,6 +138,184 @@ export function GuestHomepage() {
       setIsSearchingDatabase(false);
     }
   }, [nickname, t]);
+
+  // Toggle player selection and auto-refresh
+  const togglePlayerSelection = useCallback((playerName: string) => {
+    setSelectedPlayers((prev) => {
+      if (prev.includes(playerName)) {
+        return prev.filter((p) => p !== playerName);
+      } else {
+        return [...prev, playerName];
+      }
+    });
+  }, []);
+
+  // Auto-refresh when selected players change (after toggle or add)
+  useEffect(() => {
+    // Skip if flag is set
+    if (skipAutoRefresh.current) {
+      skipAutoRefresh.current = false;
+      return;
+    }
+
+    // Only auto-refresh if we're in results step and have players selected
+    if (searchStep === "results" && selectedPlayers.length > 0 && dbResults) {
+      // Trigger refresh
+      const refreshData = async () => {
+        setIsRefreshing(true);
+        setError(null);
+
+        try {
+          const response = await fetch("/api/nakka/get-player-matches", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              nicknames: selectedPlayers.length === 1 ? selectedPlayers[0] : selectedPlayers,
+              limit: 30,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || t("errors.generic"));
+          }
+
+          if (data.success) {
+            // Set flag before updating state
+            skipAutoRefresh.current = true;
+
+            startTransition(() => {
+              setIsRefreshing(false);
+              setDbResults(data.data);
+              setWebResults(null);
+
+              // Update unique players from results
+              const playersMap = new Map<string, number>();
+              data.data.matches.forEach((match: NakkaPlayerMatchResult) => {
+                const count = playersMap.get(match.player_name) || 0;
+                playersMap.set(match.player_name, count + 1);
+              });
+
+              const players = Array.from(playersMap.entries())
+                .map(([player_name, match_count]) => ({ player_name, match_count }))
+                .sort((a, b) => b.match_count - a.match_count);
+
+              setUniquePlayers(players);
+              // Don't update selectedPlayers here to avoid loop
+            });
+          } else {
+            throw new Error(data.error || t("errors.generic"));
+          }
+        } catch (err) {
+          setError(err instanceof Error ? err.message : t("errors.network"));
+          setIsRefreshing(false);
+        }
+      };
+
+      refreshData();
+    }
+  }, [selectedPlayers, searchStep, dbResults, t]);
+
+  // Add new nickname to the filter list and fetch data
+  const handleAddNickname = useCallback(async () => {
+    const trimmedNickname = newNickname.trim();
+
+    if (trimmedNickname.length < 3) {
+      setNewNicknameError(t("guest.nicknameMinLength"));
+      return;
+    }
+
+    // Check if nickname already exists in unique players or selected players
+    const existsInUnique = uniquePlayers.some((p) => p.player_name.toLowerCase() === trimmedNickname.toLowerCase());
+    const existsInSelected = selectedPlayers.some((p) => p.toLowerCase() === trimmedNickname.toLowerCase());
+
+    if (existsInUnique || existsInSelected) {
+      setNewNicknameError(t("guest.nicknameAlreadyExists"));
+      return;
+    }
+
+    // Close dialog immediately
+    setIsAddNicknameOpen(false);
+    setNewNickname("");
+    setNewNicknameError(null);
+
+    // Start refreshing state
+    setIsRefreshing(true);
+    setError(null);
+
+    try {
+      // Combine selected players with new nickname
+      const allNicknames = [...selectedPlayers, trimmedNickname];
+
+      const response = await fetch("/api/nakka/get-player-matches", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nicknames: allNicknames.length === 1 ? allNicknames[0] : allNicknames,
+          limit: 30,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || t("errors.generic"));
+      }
+
+      if (data.success) {
+        skipAutoRefresh.current = true; // Set flag before updating selectedPlayers
+
+        startTransition(() => {
+          setIsRefreshing(false);
+          setDbResults(data.data);
+          setWebResults(null); // Clear web results as we're doing a fresh search
+
+          // Extract unique players from results
+          const playersMap = new Map<string, number>();
+          data.data.matches.forEach((match: NakkaPlayerMatchResult) => {
+            const count = playersMap.get(match.player_name) || 0;
+            playersMap.set(match.player_name, count + 1);
+          });
+
+          const players = Array.from(playersMap.entries())
+            .map(([player_name, match_count]) => ({ player_name, match_count }))
+            .sort((a, b) => b.match_count - a.match_count);
+
+          setUniquePlayers(players);
+          // Keep all players selected (including the new one)
+          setSelectedPlayers(players.map((p) => p.player_name));
+        });
+      } else {
+        throw new Error(data.error || t("errors.generic"));
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("errors.network"));
+      setIsRefreshing(false);
+
+      // On error, still add the nickname to the list so user can try refresh manually
+      setUniquePlayers((prev) => [...prev, { player_name: trimmedNickname, match_count: 0 }]);
+      setSelectedPlayers((prev) => [...prev, trimmedNickname]);
+    }
+  }, [newNickname, uniquePlayers, selectedPlayers, t]);
+
+  // Open add nickname dialog
+  const handleOpenAddNickname = useCallback(() => {
+    setNewNickname("");
+    setNewNicknameError(null);
+    setIsAddNicknameOpen(true);
+  }, []);
+
+  // Close add nickname dialog
+  const handleCloseAddNickname = useCallback(() => {
+    setIsAddNicknameOpen(false);
+    setNewNickname("");
+    setNewNicknameError(null);
+  }, []);
 
   // Transform player matches to tournament-grouped format for display
   const transformToTournamentFormat = useCallback(
@@ -180,7 +402,7 @@ export function GuestHomepage() {
     []
   );
 
-  // Deduplicate and combine results (database + web)
+  // Deduplicate and combine results (database + web) with player filtering
   const combinedResults = useMemo(() => {
     if (!dbResults && !webResults) return null;
 
@@ -208,9 +430,12 @@ export function GuestHomepage() {
       });
     }
 
+    // Filter by selected players
+    const filteredMatches = allMatches.filter((match) => selectedPlayers.includes(match.player_name));
+
     // Transform to tournament-grouped format for display
-    return transformToTournamentFormat(allMatches);
-  }, [dbResults, webResults, transformToTournamentFormat]);
+    return transformToTournamentFormat(filteredMatches);
+  }, [dbResults, webResults, selectedPlayers, transformToTournamentFormat]);
 
   const totalMatches =
     combinedResults?.tournaments.reduce((acc, tournament) => acc + tournament.tournament_matches.length, 0) || 0;
@@ -226,6 +451,8 @@ export function GuestHomepage() {
     setWebResults(null);
     setError(null);
     setNicknameError(null);
+    setUniquePlayers([]);
+    setSelectedPlayers([]);
   };
 
   // Prevent rendering results while still in loading state
@@ -330,87 +557,187 @@ export function GuestHomepage() {
               </div>
             )}
 
-            {/* Start Over Card */}
-            {dbMatchCount > 0 && (
-              <div className="max-w-6xl mx-auto mb-8 px-4">
-                <div className="bg-card border rounded-lg p-4 sm:p-6 flex flex-col justify-center items-center text-center max-w-md mx-auto">
-                  <Database className="h-10 w-10 sm:h-12 sm:w-12 text-teal-400 mb-3 sm:mb-4" />
-                  <h3 className="text-sm sm:text-base font-semibold mb-1 sm:mb-2">{t("guest.startOver")}</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
-                    {t("guest.startOverDescription")}
-                  </p>
-                  <Button onClick={handleStartOver} variant="outline" className="text-sm sm:text-base">
-                    {t("guest.newSearch")}
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* No Results Found in Database - Show Contact Form */}
-            {dbMatchCount === 0 && !webResults && (
-              <ContactNoKeywordForm
-                nickname={nickname}
-                initialKeyword=""
-                onSuccess={() => {
-                  console.log("Contact form submitted successfully");
-                }}
-                onNewSearch={handleStartOver}
-              />
-            )}
-
-            {/* No Results Found After Web Search - Show Contact Form */}
-            {dbMatchCount === 0 && webMatchCount === 0 && webResults && (
-              <ContactNoKeywordForm
-                nickname={nickname}
-                initialKeyword={keyword}
-                onSuccess={() => {
-                  console.log("Contact form submitted successfully");
-                }}
-                onNewSearch={handleStartOver}
-              />
-            )}
-
-            {/* Display Results */}
-            {combinedResults && totalMatches > 0 && combinedResults.tournaments.length > 0 && (
-              <div className="max-w-6xl mx-auto px-4">
-                <div className="mb-6">
-                  <h2 className="text-xl sm:text-2xl font-semibold">{t("guest.resultsTitle")}</h2>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    {dbMatchCount > 0 && webMatchCount > 0
-                      ? t("guest.matchesFoundCombined", {
-                          db: dbMatchCount,
-                          web: webMatchCount,
-                          total: totalMatches,
-                        })
-                      : t("guest.matchesFound", { count: totalMatches })}
-                  </p>
-                </div>
-
-                {combinedResults && (
-                  <TournamentResults
-                    key={`results-${dbMatchCount}-${webMatchCount}`}
-                    results={combinedResults}
-                    nickname={nickname}
-                  />
-                )}
-
-                {/* Call to Action */}
-                <div className="mt-8 sm:mt-12 text-center bg-gradient-to-r from-purple-500/10 to-teal-500/10 border border-purple-500/20 rounded-lg p-6 sm:p-8">
-                  <h3 className="text-lg sm:text-xl font-semibold mb-2">{t("guest.loginToSave")}</h3>
-                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mt-4">
-                    <Button asChild variant="default" size="lg" className="w-full sm:w-auto">
-                      <a href="/auth/login">{t("nav.login")}</a>
-                    </Button>
-                    <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
-                      <a href="/auth/register">{t("guest.registerNow")}</a>
-                    </Button>
+            {/* Refreshing State - Show while refreshing */}
+            {isRefreshing && (
+              <div className="max-w-2xl mx-auto mb-12">
+                <div className="bg-card border rounded-lg p-12 shadow-lg">
+                  <div className="flex flex-col items-center justify-center space-y-4">
+                    <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                    <p className="text-lg text-muted-foreground">{t("guest.refreshing")}</p>
                   </div>
                 </div>
               </div>
             )}
+
+            {/* Content - Hidden while refreshing */}
+            {!isRefreshing && (
+              <>
+                {/* Player Filtering Card */}
+                {dbMatchCount > 0 && (
+                  <div className="max-w-6xl mx-auto mb-8 px-4">
+                    <div className="bg-card border rounded-lg p-4 sm:p-6">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Database className="h-5 w-5 text-teal-400" />
+                            <h3 className="text-sm font-semibold">{t("guest.filterPlayers")}</h3>
+                          </div>
+                          <Button onClick={handleStartOver} variant="outline" size="sm">
+                            {t("guest.newSearch")}
+                          </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-3">{t("guest.filterPlayersDescription")}</p>
+
+                        {/* Player Chips Grid */}
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          {uniquePlayers.map((player) => {
+                            const isSelected = selectedPlayers.includes(player.player_name);
+                            return (
+                              <button
+                                key={player.player_name}
+                                onClick={() => togglePlayerSelection(player.player_name)}
+                                disabled={selectedPlayers.length === 1 && isSelected}
+                                className={`
+                                  inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium
+                                  transition-all duration-200
+                                  ${
+                                    isSelected
+                                      ? "bg-teal-500/20 text-teal-400 border border-teal-500/50 hover:bg-teal-500/30"
+                                      : "bg-muted text-muted-foreground border border-transparent hover:border-border"
+                                  }
+                                  ${selectedPlayers.length === 1 && isSelected ? "opacity-50 cursor-not-allowed" : ""}
+                                `}
+                              >
+                                <span>{player.player_name}</span>
+                                <span className="text-xs opacity-70">({player.match_count})</span>
+                                {isSelected ? <X className="h-3 w-3" /> : <span className="text-xs">+</span>}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Add Button */}
+                        <Button onClick={handleOpenAddNickname} size="sm" variant="outline">
+                          <Plus className="mr-2 h-3 w-3" />
+                          {t("guest.addNickname")}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* No Results Found in Database - Show Contact Form */}
+                {dbMatchCount === 0 && !webResults && !isRefreshing && (
+                  <ContactNoKeywordForm
+                    nickname={nickname}
+                    initialKeyword=""
+                    onSuccess={() => {
+                      console.log("Contact form submitted successfully");
+                    }}
+                    onNewSearch={handleStartOver}
+                  />
+                )}
+
+                {/* No Results Found After Web Search - Show Contact Form */}
+                {dbMatchCount === 0 && webMatchCount === 0 && webResults && !isRefreshing && (
+                  <ContactNoKeywordForm
+                    nickname={nickname}
+                    initialKeyword={keyword}
+                    onSuccess={() => {
+                      console.log("Contact form submitted successfully");
+                    }}
+                    onNewSearch={handleStartOver}
+                  />
+                )}
+
+                {/* Display Results */}
+                {combinedResults && totalMatches > 0 && combinedResults.tournaments.length > 0 && (
+                  <div className="max-w-6xl mx-auto px-4">
+                    <div className="mb-6">
+                      <h2 className="text-xl sm:text-2xl font-semibold">{t("guest.resultsTitle")}</h2>
+                      <p className="text-xs sm:text-sm text-muted-foreground">
+                        {dbMatchCount > 0 && webMatchCount > 0
+                          ? t("guest.matchesFoundCombined", {
+                              db: dbMatchCount,
+                              web: webMatchCount,
+                              total: totalMatches,
+                            })
+                          : t("guest.matchesFound", { count: totalMatches })}
+                      </p>
+                    </div>
+
+                    {combinedResults && (
+                      <TournamentResults
+                        key={`results-${dbMatchCount}-${webMatchCount}`}
+                        results={combinedResults}
+                        nickname={selectedPlayers.join(", ")}
+                      />
+                    )}
+
+                    {/* Call to Action */}
+                    <div className="mt-8 sm:mt-12 text-center bg-gradient-to-r from-purple-500/10 to-teal-500/10 border border-purple-500/20 rounded-lg p-6 sm:p-8">
+                      <h3 className="text-lg sm:text-xl font-semibold mb-2">{t("guest.loginToSave")}</h3>
+                      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mt-4">
+                        <Button asChild variant="default" size="lg" className="w-full sm:w-auto">
+                          <a href="/auth/login">{t("nav.login")}</a>
+                        </Button>
+                        <Button asChild variant="outline" size="lg" className="w-full sm:w-auto">
+                          <a href="/auth/register">{t("guest.registerNow")}</a>
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         )}
       </div>
+
+      {/* Add Nickname Dialog */}
+      <Dialog open={isAddNicknameOpen} onOpenChange={setIsAddNicknameOpen}>
+        <DialogContent>
+          <DialogClose onClick={handleCloseAddNickname} />
+          <DialogHeader>
+            <DialogTitle>{t("guest.addNicknameTitle")}</DialogTitle>
+            <DialogDescription>{t("guest.addNicknameDescription")}</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-nickname">{t("guest.playerNickname")}</Label>
+              <Input
+                id="new-nickname"
+                type="text"
+                placeholder={t("guest.playerNicknamePlaceholder")}
+                value={newNickname}
+                onChange={(e) => {
+                  setNewNickname(e.target.value);
+                  if (e.target.value.length >= 3) {
+                    setNewNicknameError(null);
+                  }
+                }}
+                onKeyPress={(e) => {
+                  if (e.key === "Enter" && newNickname.trim().length >= 3) {
+                    handleAddNickname();
+                  }
+                }}
+                className={newNicknameError ? "border-destructive" : ""}
+              />
+              {newNicknameError && <p className="text-sm text-destructive">{newNicknameError}</p>}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCloseAddNickname}>
+              {t("guest.cancel")}
+            </Button>
+            <Button onClick={handleAddNickname} disabled={newNickname.trim().length < 3}>
+              {t("guest.confirm")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

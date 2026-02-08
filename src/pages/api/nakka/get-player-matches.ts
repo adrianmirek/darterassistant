@@ -10,7 +10,9 @@ const getPlayerMatchesSchema = z.object({
   nicknames: z
     .union([
       z.string().min(3, "Nickname must be at least 3 characters").max(100),
-      z.array(z.string().min(3, "Each nickname must be at least 3 characters").max(100)).min(1, "At least one nickname is required"),
+      z
+        .array(z.string().min(3, "Each nickname must be at least 3 characters").max(100))
+        .min(1, "At least one nickname is required"),
     ])
     .transform((val) => (Array.isArray(val) ? val : [val])), // Always convert to array
   limit: z.number().int().positive().max(30).optional().default(30),
