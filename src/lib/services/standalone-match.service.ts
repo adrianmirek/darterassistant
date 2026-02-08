@@ -36,6 +36,7 @@ import type {
   StandaloneMatchTypeDTO,
   StandaloneMatchTypeDetailDTO,
   CountDataResponse,
+  ListResponseMetadata,
 } from "@/topdarter.types";
 
 // ============================================================================
@@ -201,7 +202,7 @@ export async function deleteMatch(matchId: string, sessionId: string): Promise<v
 export async function listMatches(
   query: ListMatchesQuery = {},
   sessionId?: string
-): Promise<{ matches: StandaloneMatchListItemDTO[]; meta: Record<string, unknown> }> {
+): Promise<{ matches: StandaloneMatchListItemDTO[]; meta: ListResponseMetadata }> {
   const params = new URLSearchParams();
   Object.entries(query).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
@@ -322,7 +323,7 @@ export async function getMatchLegs(
   matchId: string,
   query: ListMatchLegsQuery = {},
   sessionId?: string
-): Promise<{ throws: MatchLegThrowDTO[]; meta: Record<string, unknown> }> {
+): Promise<{ throws: MatchLegThrowDTO[]; meta: ListResponseMetadata }> {
   const params = new URLSearchParams();
   Object.entries(query).forEach(([key, value]) => {
     if (value !== undefined && value !== null) {
