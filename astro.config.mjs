@@ -110,6 +110,7 @@ export default defineConfig({
   ],
   server: { port: 3000 },
   vite: {
+    // @ts-ignore - Type incompatibility between Astro's bundled Vite and @tailwindcss/vite
     plugins: [tailwindcss()],
   },
   adapter: cloudflare({
