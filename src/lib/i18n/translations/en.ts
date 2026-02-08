@@ -323,8 +323,7 @@ export const en = {
 
     // Contact Form (No Keyword)
     contactFormTitle: "Request Tournament Data",
-    contactFormDescription:
-      "Our team will prepare data as soon as possible. Thank you for your patience. Come back tomorrow to check if your tournament is ready to analyze.",
+    contactFormDescription: "Our team will prepare the data as soon as possible. Thank you for your patience. Please check back tomorrow to see if your tournament is ready for analysis.",
     contactFormNickname: "Player Nickname",
     contactFormKeyword: "Tournament Keyword",
     contactFormEmail: "Email (Optional)",
