@@ -292,6 +292,11 @@ export const pl: TranslationKeys = {
     filterPlayers: "Filtruj Graczy",
     filterPlayersDescription: "Wybierz graczy, dla których chcesz wyświetlić mecze",
     addNickname: "Dodaj Nick",
+    addNicknameTitle: "Dodaj Nowy Nick",
+    addNicknameDescription: "Wprowadź nick gracza, którego mecze chcesz wyszukać",
+    cancel: "Anuluj",
+    confirm: "Potwierdź",
+    refreshing: "Odświeżanie...",
 
     // Two-step search
     searchDatabaseInfo: "Najpierw przeszukamy naszą bazę danych (natychmiastowe wyniki)",
