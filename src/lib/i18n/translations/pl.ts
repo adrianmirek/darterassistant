@@ -244,7 +244,7 @@ export const pl: TranslationKeys = {
     tournamentKeyword: "Słowo Kluczowe Turnieju",
     tournamentKeywordPlaceholder: "np. mój turniej (min. 3 znaki)",
     playerNickname: "Twój Nick",
-    playerNicknamePlaceholder: "np. Jan Kowalski (min. 3 znaki)",
+    playerNicknamePlaceholder: "np. Jan Kowalski (min. 3 znaki) lub Jan, Anna, Marek (oddzielone przecinkami)",
     searchButton: "Szukaj Meczów",
     searching: "Wyszukiwanie...",
     savePlaceholder: "Zapisz Wyniki",
@@ -262,7 +262,8 @@ export const pl: TranslationKeys = {
 
     // Validation
     keywordMinLength: "Słowo kluczowe turnieju musi mieć co najmniej 3 znaki",
-    nicknameMinLength: "Nick musi mieć co najmniej 3 znaki",
+    nicknameMinLength: "Każdy nickname musi mieć co najmniej 3 znaki",
+    nicknameHint: "Wskazówka: Możesz wyszukiwać wiele nicków oddzielając je przecinkami (np. Jan, Anna, Marek)",
 
     // Match details
     playerLabel: "Ty",
@@ -308,8 +309,8 @@ export const pl: TranslationKeys = {
     underConstructionThanks: "Dziękujemy za cierpliwość",
 
     // Player Overview
-    performanceOverview: "Przegląd Wydajności",
-    lastMatches: "Ostatnie {count} Mecze",
+    performanceOverview: "Dane z Turniejów",
+    lastMatches: "Ostatnie {count} Meczów",
     wins: "Wygrane",
     losses: "Przegrane",
     winRate: "Procent Wygranych",

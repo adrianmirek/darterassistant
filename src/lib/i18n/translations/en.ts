@@ -242,7 +242,7 @@ export const en = {
     tournamentKeyword: "Tournament Keyword",
     tournamentKeywordPlaceholder: "e.g., my tournament (min. 3 characters)",
     playerNickname: "Your Nickname",
-    playerNicknamePlaceholder: "e.g., John Doe (min. 3 characters)",
+    playerNicknamePlaceholder: "e.g., John Doe (min. 3 characters) or John, Jane, Mike (comma-separated)",
     searchButton: "Search Matches",
     searching: "Searching...",
     savePlaceholder: "Save Results",
@@ -260,7 +260,8 @@ export const en = {
 
     // Validation
     keywordMinLength: "Tournament keyword must be at least 3 characters",
-    nicknameMinLength: "Nickname must be at least 3 characters",
+    nicknameMinLength: "Each nickname must be at least 3 characters",
+    nicknameHint: "Tip: You can search for multiple nicknames by separating them with commas (e.g., John, Jane, Mike)",
 
     // Match details
     playerLabel: "You",

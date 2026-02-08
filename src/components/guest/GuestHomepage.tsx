@@ -22,7 +22,7 @@ export function GuestHomepage() {
 
   // Search state
   const [searchStep, setSearchStep] = useState<SearchStep>("nickname");
-  const [nickname, setNickname] = useState("");
+  const [nickname, setNickname] = useState(""); // Input field for nicknames (comma-separated)
   const [keyword, setKeyword] = useState("");
 
   // Loading states
@@ -49,13 +49,25 @@ export function GuestHomepage() {
     setWebResults(null);
 
     try {
+      // Parse nicknames: split by comma and trim each
+      const nicknamesArray = nickname
+        .split(",")
+        .map((n) => n.trim())
+        .filter((n) => n.length >= 3);
+
+      if (nicknamesArray.length === 0) {
+        setNicknameError(t("guest.nicknameMinLength"));
+        setIsSearchingDatabase(false);
+        return;
+      }
+
       const response = await fetch("/api/nakka/get-player-matches", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          nick_name: nickname.trim(),
+          nicknames: nicknamesArray.length === 1 ? nicknamesArray[0] : nicknamesArray,
           limit: 30,
         }),
       });
@@ -258,6 +270,7 @@ export function GuestHomepage() {
                     className={nicknameError ? "border-destructive" : ""}
                     disabled={isSearchingDatabase}
                   />
+                  <p className="text-xs text-muted-foreground">{t("guest.nicknameHint")}</p>
                   {nicknameError && <p className="text-sm text-destructive">{nicknameError}</p>}
                 </div>
 
