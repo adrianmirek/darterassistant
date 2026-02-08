@@ -517,7 +517,7 @@ async function saveTournament(
 }
 
 /**
- * Retrieves top 30 matches for a player from the database by nickname
+ * Retrieves top 30 matches for a player from the database by nickname(s)
  * Matches are ordered by tournament_date DESC
  * The matched player is always returned in the "player" position
  *
@@ -529,37 +529,40 @@ async function saveTournament(
  * without requiring web scraping (uses pre-imported database records).
  *
  * @param supabase - Supabase client instance
- * @param nick_name - Player nickname to search for (case-insensitive)
+ * @param nicknames - Player nickname(s) to search for (case-insensitive) - can be string or string array
  * @param limit - Maximum number of matches to return (default: 30)
  * @returns Object containing array of player matches with statistics and total count
  */
 export async function getPlayerMatchesByNickname(
   supabase: SupabaseClient,
-  nick_name: string,
+  nicknames: string | string[],
   limit = 30
 ): Promise<GetPlayerMatchesResponseDTO> {
   try {
-    console.log(`[DB] Retrieving matches for nickname: "${nick_name}", limit: ${limit}`);
+    // Normalize to array if single string provided
+    const nicknameArray = Array.isArray(nicknames) ? nicknames : [nicknames];
+
+    console.log(`[DB] Retrieving matches for nickname(s): ${nicknameArray.join(", ")}, limit: ${limit}`);
 
     // Call the database function
     // Note: Type assertion needed as database types may not include custom functions yet
     const { data, error } = await supabase.schema("nakka").rpc(
       "get_player_matches_by_nickname" as never,
       {
-        search_nickname: nick_name,
+        search_nicknames: nicknameArray,
         match_limit: limit,
       } as never
     );
 
     if (error) {
-      console.error(`[DB] Error retrieving matches for "${nick_name}":`, error);
+      console.error(`[DB] Error retrieving matches for nickname(s):`, error);
       throw new Error(`Failed to retrieve player matches: ${error.message}`);
     }
 
     // Cast the data to our type
     const matches = (data || []) as unknown as NakkaPlayerMatchResult[];
 
-    console.log(`[DB] Retrieved ${matches.length} matches for "${nick_name}"`);
+    console.log(`[DB] Retrieved ${matches.length} matches for nickname(s): ${nicknameArray.join(", ")}`);
 
     return {
       matches,
