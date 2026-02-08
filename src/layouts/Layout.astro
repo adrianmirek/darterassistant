@@ -146,6 +146,13 @@ const detectedLang = detectLanguageFromHeader(acceptLanguage);
             #pwa-install-btn:active {
               transform: scale(0.98);
             }
+            
+            /* Hide PWA install button on desktop devices */
+            @media (min-width: 1000px) {
+              #pwa-install-btn {
+                display: none !important;
+              }
+            }
           `;
           document.head.appendChild(style);
 
