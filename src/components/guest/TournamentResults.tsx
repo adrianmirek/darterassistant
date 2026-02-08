@@ -14,6 +14,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/lib/hooks/I18nProvider";
+import { cleanPlayerName } from "@/lib/utils/text-normalization";
 import type { RetrieveTournamentsMatchesResponseDTO, NakkaTournamentMatchDTO } from "@/types";
 
 interface TournamentResultsProps {
@@ -268,7 +269,7 @@ function PlayerOverview({ stats, nickname }: PlayerOverviewProps) {
           <Target className="h-6 w-6 text-purple-400 flex-shrink-0" />
           <div>
             <h2 className="text-xl sm:text-2xl font-bold" translate="no">
-              {nickname}
+              {cleanPlayerName(nickname)}
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground">
               {t("guest.performanceOverview")} - {t("guest.lastMatches", { count: stats.totalMatches })}
@@ -498,6 +499,7 @@ function MatchCard({ match }: MatchCardProps) {
             <div className="flex items-center gap-2 min-w-0 flex-1">
               <span
                 className={`truncate text-sm ${matchData.isChecked ? "font-semibold text-purple-400" : "font-medium"}`}
+                translate="no"
               >
                 {matchData.player_name}
               </span>
@@ -529,7 +531,9 @@ function MatchCard({ match }: MatchCardProps) {
           {/* Opponent Row */}
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0 flex-1">
-              <span className="truncate text-sm font-medium">{matchData.opponent_name}</span>
+              <span className="truncate text-sm font-medium" translate="no">
+                {cleanPlayerName(matchData.opponent_name)}
+              </span>
               {hasResults &&
                 matchData.opponent_average_score !== null &&
                 matchData.opponent_average_score !== undefined && (
@@ -566,8 +570,8 @@ function MatchCard({ match }: MatchCardProps) {
           <div className="flex-1 grid grid-cols-5 gap-2 items-center">
             {/* Player */}
             <div className="col-span-2 flex items-center gap-2 justify-end">
-              <span className={`truncate ${matchData.isChecked ? "font-semibold text-purple-400" : ""}`}>
-                {matchData.player_name}
+              <span className={`truncate ${matchData.isChecked ? "font-semibold text-purple-400" : ""}`} translate="no">
+                {cleanPlayerName(matchData.player_name)}
               </span>
               <div className="w-[60px] flex justify-end">
                 {hasResults && matchData.average_score !== null && matchData.average_score !== undefined && (
@@ -620,7 +624,9 @@ function MatchCard({ match }: MatchCardProps) {
                     </Badge>
                   )}
               </div>
-              <span className="truncate">{matchData.opponent_name}</span>
+              <span className="truncate" translate="no">
+                {cleanPlayerName(matchData.opponent_name)}
+              </span>
             </div>
           </div>
         </div>
@@ -672,8 +678,8 @@ function MatchCard({ match }: MatchCardProps) {
           <div className="pt-3 border-t border-border/50 space-y-4">
             {/* Player Stats */}
             <div>
-              <h4 className="text-xs sm:text-sm font-semibold text-muted-foreground mb-2 truncate">
-                {matchData.player_name}
+              <h4 className="text-xs sm:text-sm font-semibold text-muted-foreground mb-2 truncate" translate="no">
+                {cleanPlayerName(matchData.player_name)}
               </h4>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                 {matchData.first_nine_avg !== null && matchData.first_nine_avg !== undefined && (
@@ -758,8 +764,8 @@ function MatchCard({ match }: MatchCardProps) {
             {/* Opponent Stats */}
             {(matchData.opponent_average_score !== null || matchData.opponent_first_nine_avg !== null) && (
               <div>
-                <h4 className="text-xs sm:text-sm font-semibold text-muted-foreground mb-2 truncate">
-                  {matchData.opponent_name}
+                <h4 className="text-xs sm:text-sm font-semibold text-muted-foreground mb-2 truncate" translate="no">
+                  {cleanPlayerName(matchData.opponent_name)}
                 </h4>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                   {matchData.opponent_first_nine_avg !== null && matchData.opponent_first_nine_avg !== undefined && (

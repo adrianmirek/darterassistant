@@ -288,6 +288,19 @@ export const pl: TranslationKeys = {
     matchTypeSemiFinal: "Półfinał",
     matchTypeFinal: "Finał",
 
+    // Filter players
+    filterPlayers: "Filtruj Graczy",
+    filterPlayersDescription: "Wybierz graczy, dla których chcesz wyświetlić mecze",
+    refreshSearch: "Odśwież Wyniki",
+    refreshing: "Odświeżanie...",
+    noPlayersSelected: "Proszę wybrać przynajmniej jednego gracza",
+    addNickname: "Dodaj Nick",
+    addNicknameTitle: "Dodaj Nowy Nick",
+    addNicknameDescription: "Wprowadź nick gracza, którego mecze chcesz wyszukać",
+    nicknameAlreadyExists: "Ten nickname jest już na liście",
+    cancel: "Anuluj",
+    confirm: "Potwierdź",
+
     // Two-step search
     searchDatabaseInfo: "Najpierw przeszukamy naszą bazę danych (natychmiastowe wyniki)",
     searchMoreTournaments: "Chcesz znaleźć więcej turniejów?",

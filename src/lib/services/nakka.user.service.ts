@@ -14,6 +14,7 @@ import {
   importMatchPlayerResults,
 } from "./nakka.service";
 import type { SupabaseClient } from "@/db/supabase.client";
+import { normalizePolishText, containsNormalized } from "@/lib/utils/text-normalization";
 
 /**
  * Retrieves tournaments and their matches filtered by keyword and player nickname
@@ -34,8 +35,8 @@ export async function retrieveTournamentsMatchesByKeywordAndNickName(
 
   const tournaments: NakkaTournamentWithMatchesDTO[] = [];
 
-  // Normalize nickname for case-insensitive matching
-  const normalizedNickname = nick_name.toLowerCase().trim();
+  // Normalize nickname for case and accent-insensitive matching
+  const normalizedNickname = normalizePolishText(nick_name.trim());
 
   // Step 2: For each tournament, scrape matches and filter by nickname
   for (const tournament of scrapedTournaments) {
@@ -102,7 +103,7 @@ export async function retrieveTournamentsMatchesByKeywordAndNickNameForGuest(
   console.log(`[Guest] Found ${scrapedTournaments.length} tournaments`);
 
   const allMatches: NakkaPlayerMatchResult[] = [];
-  const normalizedNickname = nick_name.toLowerCase().trim();
+  const normalizedNickname = normalizePolishText(nick_name.trim());
   const MAX_MATCHES = 30;
 
   // Step 2: For each tournament, check DB first, then scrape if needed
@@ -334,9 +335,9 @@ async function getTournamentMatchesFromDB(
  * @returns Processed match DTO with isChecked flag and potentially reordered players
  */
 function processMatchForNickname(match: NakkaMatchScrapedDTO, normalizedNickname: string): NakkaTournamentMatchDTO {
-  // Check if either player name contains the nickname (case-insensitive)
-  const firstPlayerMatches = match.first_player_name.toLowerCase().includes(normalizedNickname);
-  const secondPlayerMatches = match.second_player_name.toLowerCase().includes(normalizedNickname);
+  // Check if either player name contains the nickname (case and accent-insensitive)
+  const firstPlayerMatches = containsNormalized(match.first_player_name, normalizedNickname);
+  const secondPlayerMatches = containsNormalized(match.second_player_name, normalizedNickname);
   const isChecked = firstPlayerMatches || secondPlayerMatches;
 
   // Determine player order based on nickname match
