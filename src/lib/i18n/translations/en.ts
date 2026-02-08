@@ -320,6 +320,21 @@ export const en = {
     score140s: "140+",
     score100s: "100+",
     checkoutPercent: "CO %",
+
+    // Contact Form (No Keyword)
+    contactFormTitle: "Request Tournament Data",
+    contactFormDescription:
+      "Our team will prepare data as soon as possible. Thank you for your patience. Come back tomorrow to check if your tournament is ready to analyze.",
+    contactFormNickname: "Player Nickname",
+    contactFormKeyword: "Tournament Keyword",
+    contactFormEmail: "Email (Optional)",
+    contactFormEmailPlaceholder: "your.email@example.com",
+    contactFormSubmit: "Submit Request",
+    contactFormSubmitting: "Submitting...",
+    contactFormSuccess: "Request submitted successfully!",
+    contactFormSuccessDescription: "We'll prepare your tournament data as soon as possible.",
+    contactFormError: "Failed to submit request",
+    contactFormErrorDescription: "Please try again or contact support.",
   },
 
   // Footer

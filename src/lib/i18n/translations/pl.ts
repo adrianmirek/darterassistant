@@ -322,6 +322,21 @@ export const pl: TranslationKeys = {
     score140s: "140+",
     score100s: "100+",
     checkoutPercent: "CO %",
+
+    // Contact Form (No Keyword)
+    contactFormTitle: "Poproś o Dane Turniejowe",
+    contactFormDescription:
+      "Nasz zespół przygotuje dane tak szybko, jak to możliwe. Dziękujemy za cierpliwość. Wróć jutro, aby sprawdzić, czy Twój turniej jest gotowy do analizy.",
+    contactFormNickname: "Nick Gracza",
+    contactFormKeyword: "Słowo Kluczowe Turnieju",
+    contactFormEmail: "Email (Opcjonalny)",
+    contactFormEmailPlaceholder: "twoj.email@przyklad.com",
+    contactFormSubmit: "Wyślij",
+    contactFormSubmitting: "Wysyłanie...",
+    contactFormSuccess: "Prośba wysłana pomyślnie!",
+    contactFormSuccessDescription: "Przygotujemy dane Twojego turnieju tak szybko, jak to możliwe.",
+    contactFormError: "Nie udało się wysłać prośby",
+    contactFormErrorDescription: "Spróbuj ponownie lub skontaktuj się z pomocą techniczną.",
   },
 
   // Footer
