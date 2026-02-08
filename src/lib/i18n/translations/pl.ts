@@ -288,6 +288,11 @@ export const pl: TranslationKeys = {
     matchTypeSemiFinal: "Półfinał",
     matchTypeFinal: "Finał",
 
+    // Filter players
+    filterPlayers: "Filtruj Graczy",
+    filterPlayersDescription: "Wybierz graczy, dla których chcesz wyświetlić mecze",
+    addNickname: "Dodaj Nick",
+
     // Two-step search
     searchDatabaseInfo: "Najpierw przeszukamy naszą bazę danych (natychmiastowe wyniki)",
     searchMoreTournaments: "Chcesz znaleźć więcej turniejów?",
