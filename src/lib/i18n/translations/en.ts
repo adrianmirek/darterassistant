@@ -242,7 +242,7 @@ export const en = {
     tournamentKeyword: "Tournament Keyword",
     tournamentKeywordPlaceholder: "e.g., my tournament (min. 3 characters)",
     playerNickname: "Your Nickname",
-    playerNicknamePlaceholder: "e.g., John Doe (min. 3 characters)",
+    playerNicknamePlaceholder: "e.g., John Doe (min. 3 characters) or John, Jane, Mike (comma-separated)",
     searchButton: "Search Matches",
     searching: "Searching...",
     savePlaceholder: "Save Results",
@@ -260,7 +260,8 @@ export const en = {
 
     // Validation
     keywordMinLength: "Tournament keyword must be at least 3 characters",
-    nicknameMinLength: "Nickname must be at least 3 characters",
+    nicknameMinLength: "Each nickname must be at least 3 characters",
+    nicknameHint: "Tip: You can search for multiple nicknames by separating them with commas (e.g., John, Jane, Mike)",
 
     // Match details
     playerLabel: "You",
@@ -324,7 +325,7 @@ export const en = {
     // Contact Form (No Keyword)
     contactFormTitle: "Request Tournament Data",
     contactFormDescription:
-      "Our team will prepare data as soon as possible. Thank you for your patience. Come back tomorrow to check if your tournament is ready to analyze.",
+      "Our team will prepare the data as soon as possible. Thank you for your patience. Please check back tomorrow to see if your tournament is ready for analysis.",
     contactFormNickname: "Player Nickname",
     contactFormKeyword: "Tournament Keyword",
     contactFormEmail: "Email (Optional)",
@@ -335,11 +336,24 @@ export const en = {
     contactFormSuccessDescription: "We'll prepare your tournament data as soon as possible.",
     contactFormError: "Failed to submit request",
     contactFormErrorDescription: "Please try again or contact support.",
+
+    // Player Filtering
+    filterPlayers: "Filter Players",
+    filterPlayersDescription: "Multiple players found. Remove unwanted players from the list and refresh results.",
+    refreshSearch: "Refresh Results",
+    refreshing: "Refreshing...",
+    noPlayersSelected: "Please select at least one player",
+    addNickname: "Add",
+    addNicknameTitle: "Add New Nickname",
+    addNicknameDescription: "Enter the player's nickname you want to add to the filter list.",
+    nicknameAlreadyExists: "This nickname is already in the list",
+    confirm: "Confirm",
+    cancel: "Cancel",
   },
 
   // Footer
   footer: {
-    madeBy: "Made by topiszajba",
+    madeBy: "Made by topdarter",
   },
 } as const;
 
