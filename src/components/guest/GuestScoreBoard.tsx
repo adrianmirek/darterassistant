@@ -4,7 +4,11 @@ import { Delete, CheckCircle, ArrowLeft, BarChart3 } from "lucide-react";
 import { useStandaloneMatch } from "@/lib/hooks/useStandaloneMatch";
 import { loadMatchSetup, loadMatchState } from "@/lib/models/standalone-match.models";
 
-export function GuestScoreBoard() {
+interface GuestScoreBoardProps {
+  onExit?: () => void;
+}
+
+export function GuestScoreBoard({ onExit }: GuestScoreBoardProps = {}) {
   const [isMobile, setIsMobile] = useState(false);
   const [checkoutDarts, setCheckoutDarts] = useState<number | null>(null);
   const [showCheckoutInput, setShowCheckoutInput] = useState(false);
@@ -74,9 +78,13 @@ export function GuestScoreBoard() {
 
       const setup = loadMatchSetup();
       if (!setup) {
-        // No setup found, redirect to home
-        console.log("❌ No setup found, redirecting to home");
-        window.location.href = "/";
+        // No setup found, go back to setup page
+        console.log("❌ No setup found, returning to setup");
+        if (onExit) {
+          onExit();
+        } else {
+          window.location.href = "/";
+        }
         return;
       }
 
@@ -94,7 +102,11 @@ export function GuestScoreBoard() {
         hasInitialized.current = true;
       } catch (error) {
         console.error("❌ Error loading match setup:", error);
-        window.location.href = "/";
+        if (onExit) {
+          onExit();
+        } else {
+          window.location.href = "/";
+        }
       }
     };
 
@@ -173,7 +185,14 @@ export function GuestScoreBoard() {
   // Exit handler
   const handleExit = async () => {
     await exitMatch();
-    window.location.href = "/";
+    
+    // Use callback for SPA navigation or fallback to page navigation
+    if (onExit) {
+      onExit();
+    } else {
+      // Fallback for backward compatibility (if used standalone)
+      window.location.href = "/";
+    }
   };
 
   // Get current display score (most recent "To Go" value)

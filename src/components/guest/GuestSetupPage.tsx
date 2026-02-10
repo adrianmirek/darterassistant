@@ -6,7 +6,11 @@ import { useStandaloneMatch } from "@/lib/hooks/useStandaloneMatch";
 import type { MatchSetup } from "@/lib/models/standalone-match.models";
 import { saveMatchSetup } from "@/lib/models/standalone-match.models";
 
-export function GuestSetupPage() {
+interface GuestSetupPageProps {
+  onMatchStart?: () => void;
+}
+
+export function GuestSetupPage({ onMatchStart }: GuestSetupPageProps = {}) {
   const [setup, setSetup] = useState<MatchSetup>({
     playerName: "Player 1",
     opponentName: "Player 2",
@@ -42,8 +46,13 @@ export function GuestSetupPage() {
         clearTimeout(loadingTimeout);
         setShowLoading(false);
 
-        // Navigate to score page (localStorage is synchronous, so state is already saved)
-        window.location.href = "/score";
+        // Navigate to scoring view using callback (SPA navigation) or fallback to page navigation
+        if (onMatchStart) {
+          onMatchStart();
+        } else {
+          // Fallback for backward compatibility (if used standalone)
+          window.location.href = "/score";
+        }
       } catch (err) {
         clearTimeout(loadingTimeout);
         setShowLoading(false);
