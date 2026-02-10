@@ -5,7 +5,7 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useTranslation } from "@/lib/hooks/I18nProvider";
 import { LanguageSwitcherCompact } from "@/components/ui/language-switcher";
 
-export type GuestView = "home" | "setup";
+export type GuestView = "home" | "setup" | "scoring";
 
 export interface GuestNavProps {
   currentView?: GuestView;

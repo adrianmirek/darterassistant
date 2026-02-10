@@ -1,6 +1,6 @@
 ---
-import Layout from "@/layouts/Layout.astro";
-import { GuestScorePage } from "@/components/guest/GuestScorePage";
+// Redirect /score to main page with scoring view parameter
+// This maintains backward compatibility while using SPA architecture
 
 // Check if user is authenticated - redirect to tournaments if logged in
 const user = Astro.locals.user;
@@ -11,13 +11,8 @@ export const prerender = false;
 if (user) {
   return Astro.redirect("/tournaments");
 }
----
 
-<Layout title="Darter Assistant - Score Match" showAuthNav={false}>
-  <Fragment slot="head">
-    <!-- Prevent Chrome auto-translation which interferes with keyboard input -->
-    <meta name="google" content="notranslate" />
-    <meta http-equiv="content-language" content="pl" />
-  </Fragment>
-  <GuestScorePage client:only="react" />
-</Layout>
+// Redirect to main page with scoring view parameter
+// The GuestPage component will handle the routing
+return Astro.redirect("/?view=scoring");
+---
