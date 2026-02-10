@@ -68,7 +68,7 @@ export function GuestPage() {
   // Navigate between views with browser history support
   const navigateToView = (view: GuestView) => {
     setCurrentView(view);
-    
+
     // Update browser history
     const url = view === "home" ? "/" : `/?view=${view}`;
     window.history.pushState({ view }, "", url);
@@ -98,10 +98,8 @@ export function GuestPage() {
       <I18nProvider lang={lang}>
         <div className="min-h-screen flex flex-col">
           {/* Hide navigation when in scoring view */}
-          {currentView !== "scoring" && (
-            <GuestNav currentView={currentView} onViewChange={navigateToView} />
-          )}
-          
+          {currentView !== "scoring" && <GuestNav currentView={currentView} onViewChange={navigateToView} />}
+
           <main className={`flex-1 ${currentView !== "scoring" ? "pb-20 md:pb-0" : ""}`}>
             {currentView === "home" && <GuestHomepage />}
             {currentView === "setup" && <GuestSetupPage onMatchStart={handleMatchStart} />}

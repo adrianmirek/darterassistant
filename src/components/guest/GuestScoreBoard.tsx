@@ -185,7 +185,7 @@ export function GuestScoreBoard({ onExit }: GuestScoreBoardProps = {}) {
   // Exit handler
   const handleExit = async () => {
     await exitMatch();
-    
+
     // Use callback for SPA navigation or fallback to page navigation
     if (onExit) {
       onExit();
