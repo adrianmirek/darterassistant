@@ -327,17 +327,6 @@ export function GuestHomepage() {
   // Transform player matches to tournament-grouped format for display
   const transformToTournamentFormat = useCallback(
     (playerMatches: NakkaPlayerMatchResult[]): RetrieveTournamentsMatchesResponseDTO => {
-      // Define match type priority order (lower number = higher priority)
-      const matchTypePriority: Record<string, number> = {
-        t_final: 1,
-        "t_semi-final": 2,
-        t_quarter_final: 3,
-        t_top_8: 3, // Same as quarter final
-        t_top_16: 4,
-        t_top_32: 5,
-        rr: 6, // Group stage
-      };
-
       // Group matches by tournament
       const tournamentMap = new Map<string, NakkaTournamentWithMatchesDTO>();
 
@@ -392,15 +381,9 @@ export function GuestHomepage() {
         }
       });
 
-      // Sort matches within each tournament by match type priority
+      // Matches are already sorted by the database (by match_date DESC within each tournament)
+      // No need to re-sort here - preserve the database ordering
       const tournaments = Array.from(tournamentMap.values());
-      tournaments.forEach((tournament) => {
-        tournament.tournament_matches.sort((a: NakkaTournamentMatchDTO, b: NakkaTournamentMatchDTO) => {
-          const priorityA = matchTypePriority[a.match_type] ?? 999;
-          const priorityB = matchTypePriority[b.match_type] ?? 999;
-          return priorityA - priorityB;
-        });
-      });
 
       return {
         tournaments,
