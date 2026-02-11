@@ -194,7 +194,7 @@ BEGIN
         WHERE nakka.normalize_polish_text(tm.first_player_name) LIKE '%' || nakka.normalize_polish_text(nickname) || '%'
            OR nakka.normalize_polish_text(tm.second_player_name) LIKE '%' || nakka.normalize_polish_text(nickname) || '%'
       )
-    ORDER BY tm.match_date DESC, tm.tournament_match_id DESC
+    ORDER BY t.tournament_date DESC, tm.match_date DESC, tm.tournament_match_id DESC
     LIMIT match_limit
   )
   SELECT 
@@ -254,7 +254,7 @@ BEGIN
       -- Construct opponent identifier: {tournamentId}_{matchType}_{round}_{opponentCode}
       REGEXP_REPLACE(md.nakka_match_identifier, '_[^_]+_[^_]+$', '') || '_' || md.opponent_code
     )
-  ORDER BY md.match_date DESC, md.tournament_match_id DESC;
+  ORDER BY md.tournament_date DESC, md.match_date DESC, md.tournament_match_id DESC;
 END;
 $$;
 
@@ -263,7 +263,7 @@ GRANT EXECUTE ON FUNCTION nakka.get_player_matches_by_nickname(TEXT[], INTEGER) 
 
 -- Add comments
 COMMENT ON FUNCTION nakka.get_player_matches_by_nickname(TEXT[], INTEGER) IS 
-'Retrieves matches for a player filtered by multiple nicknames (array). Uses accent-insensitive matching for Polish characters. Returns matches where ANY of the provided nicknames is found in either player name. The matched player is always returned as "player" (first position). Results are ordered by match_date descending and limited to the specified number (default 30).';
+'Retrieves matches for a player filtered by multiple nicknames (array). Uses accent-insensitive matching for Polish characters. Returns matches where ANY of the provided nicknames is found in either player name. The matched player is always returned as "player" (first position). Results are grouped by tournament (ordered by tournament_date DESC - most recent first), then within each tournament ordered by match_date DESC (latest matches first), and limited to the specified number (default 30).';
 
 COMMENT ON TYPE nakka.player_match_result IS 
 'Result type for player match queries. Contains tournament and match data with the searched player always in the "player" position. Includes match_date for chronological ordering.';
@@ -472,7 +472,7 @@ BEGIN
         nakka.normalize_polish_text(tm.first_player_name) LIKE '%' || nakka.normalize_polish_text(search_nickname) || '%'
         OR nakka.normalize_polish_text(tm.second_player_name) LIKE '%' || nakka.normalize_polish_text(search_nickname) || '%'
       )
-    ORDER BY tm.match_date DESC, tm.tournament_match_id DESC
+    ORDER BY t.tournament_date DESC, tm.match_date DESC, tm.tournament_match_id DESC
     LIMIT match_limit
   )
   SELECT 
@@ -530,7 +530,7 @@ BEGIN
     AND opr.nakka_match_player_identifier = (
       REGEXP_REPLACE(md.nakka_match_identifier, '_[^_]+_[^_]+$', '') || '_' || md.opponent_code
     )
-  ORDER BY md.match_date DESC, md.tournament_match_id DESC;
+  ORDER BY md.tournament_date DESC, md.match_date DESC, md.tournament_match_id DESC;
 END;
 $$;
 
@@ -539,4 +539,4 @@ GRANT EXECUTE ON FUNCTION nakka.get_player_matches_by_tournament_and_nickname(TE
 
 -- Add comments
 COMMENT ON FUNCTION nakka.get_player_matches_by_tournament_and_nickname(TEXT, TEXT, INTEGER) IS 
-'Retrieves matches for a player filtered by tournament keyword and nickname. Uses accent-insensitive matching for Polish characters. Returns matches where the nickname is found in either player name within tournaments matching the keyword. The matched player is always returned as "player" (first position). Results are ordered by match_date descending and limited to the specified number (default 30).';
+'Retrieves matches for a player filtered by tournament keyword and nickname. Uses accent-insensitive matching for Polish characters. Returns matches where the nickname is found in either player name within tournaments matching the keyword. The matched player is always returned as "player" (first position). Results are grouped by tournament (ordered by tournament_date DESC - most recent first), then within each tournament ordered by match_date DESC (latest matches first), and limited to the specified number (default 30).';

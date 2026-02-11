@@ -315,6 +315,7 @@ export const pl: TranslationKeys = {
     startOverDescription: "Wyszukaj innego gracza",
     newSearch: "Nowe Wyszukiwanie",
     startNewSearch: "Rozpocznij Nowe Wyszukiwanie",
+    noTournamentContact: "Brak turnieju, skontaktuj się z nami",
 
     // Under Construction
     underConstructionTitle: "Strona w Budowie",
