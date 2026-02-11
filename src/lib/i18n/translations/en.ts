@@ -300,6 +300,7 @@ export const en = {
     startOverDescription: "Search for a different player",
     newSearch: "New Search",
     startNewSearch: "Start New Search",
+    noTournamentContact: "No Tournament - Contact Us",
 
     // Under Construction
     underConstructionTitle: "Website Under Construction",
