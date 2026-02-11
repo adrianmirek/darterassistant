@@ -26,14 +26,14 @@ BEFORE UPDATE ON nakka.tournament_matches
 FOR EACH ROW
 EXECUTE FUNCTION nakka.increment_attempts_count();
 
--- Step 4: Create a trigger function to delete rows when attempts_count reaches 10
+-- Step 4: Create a trigger function to delete rows when attempts_count reaches 10 AND match_result_error is set
 CREATE OR REPLACE FUNCTION nakka.delete_high_attempt_matches()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  -- If attempts_count has reached 10 or more, delete the row
-  IF NEW.attempts_count >= 10 THEN
+  -- If attempts_count has reached 10 or more AND match_result_error is NOT NULL, delete the row
+  IF NEW.attempts_count >= 10 AND NEW.match_result_error IS NOT NULL THEN
     DELETE FROM nakka.tournament_matches 
     WHERE tournament_match_id = NEW.tournament_match_id;
     -- Return NULL to prevent the update from completing (row is already deleted)
@@ -45,11 +45,11 @@ BEGIN
 END;
 $$;
 
--- Step 5: Create an AFTER UPDATE trigger to delete rows with high attempt counts
+-- Step 5: Create an AFTER UPDATE trigger to delete rows with high attempt counts and errors
 CREATE TRIGGER trigger_delete_high_attempt_matches
 AFTER UPDATE ON nakka.tournament_matches
 FOR EACH ROW
-WHEN (NEW.attempts_count >= 10)
+WHEN (NEW.attempts_count >= 10 AND NEW.match_result_error IS NOT NULL)
 EXECUTE FUNCTION nakka.delete_high_attempt_matches();
 
 -- Step 6: Add comment to the column
@@ -61,4 +61,4 @@ COMMENT ON FUNCTION nakka.increment_attempts_count() IS
 'Trigger function that increments the attempts_count column by 1 on every update of a tournament_matches row.';
 
 COMMENT ON FUNCTION nakka.delete_high_attempt_matches() IS 
-'Trigger function that automatically deletes tournament_matches rows when attempts_count reaches 10 or more.';
+'Trigger function that automatically deletes tournament_matches rows when attempts_count reaches 10 or more AND match_result_error is NOT NULL.';
