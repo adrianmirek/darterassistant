@@ -53,6 +53,9 @@ export function GuestHomepage() {
   const [newNickname, setNewNickname] = useState("");
   const [newNicknameError, setNewNicknameError] = useState<string | null>(null);
 
+  // Contact form state
+  const [showContactForm, setShowContactForm] = useState(false);
+
   // Loading states
   const [isSearchingDatabase, setIsSearchingDatabase] = useState(false);
 
@@ -447,6 +450,11 @@ export function GuestHomepage() {
     setNicknameError(null);
     setUniquePlayers([]);
     setSelectedPlayers([]);
+    setShowContactForm(false);
+  };
+
+  const handleShowContactForm = () => {
+    setShowContactForm(true);
   };
 
   // Prevent rendering results while still in loading state
@@ -567,18 +575,23 @@ export function GuestHomepage() {
             {!isRefreshing && (
               <>
                 {/* Player Filtering Card */}
-                {dbMatchCount > 0 && (
+                {!showContactForm && dbMatchCount > 0 && (
                   <div className="max-w-6xl mx-auto mb-8 px-4">
                     <div className="bg-card border rounded-lg p-4 sm:p-6">
                       <div className="space-y-3">
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                           <div className="flex items-center gap-2">
                             <Database className="h-5 w-5 text-teal-400" />
                             <h3 className="text-sm font-semibold">{t("guest.filterPlayers")}</h3>
                           </div>
-                          <Button onClick={handleStartOver} variant="outline" size="sm">
-                            {t("guest.newSearch")}
-                          </Button>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Button onClick={handleShowContactForm} variant="outline" size="sm" className="whitespace-nowrap">
+                              {t("guest.noTournamentContact")}
+                            </Button>
+                            <Button onClick={handleStartOver} variant="outline" size="sm" className="whitespace-nowrap">
+                              {t("guest.newSearch")}
+                            </Button>
+                          </div>
                         </div>
                         <p className="text-xs text-muted-foreground mb-3">{t("guest.filterPlayersDescription")}</p>
 
@@ -620,8 +633,20 @@ export function GuestHomepage() {
                   </div>
                 )}
 
+                {/* Contact Form - Show when manually triggered or no results found */}
+                {showContactForm && !isRefreshing && (
+                  <ContactNoKeywordForm
+                    nickname={selectedPlayers.length > 0 ? selectedPlayers.join(", ") : nickname}
+                    initialKeyword=""
+                    onSuccess={() => {
+                      console.log("Contact form submitted successfully");
+                    }}
+                    onNewSearch={handleStartOver}
+                  />
+                )}
+
                 {/* No Results Found in Database - Show Contact Form */}
-                {dbMatchCount === 0 && !webResults && !isRefreshing && (
+                {!showContactForm && dbMatchCount === 0 && !webResults && !isRefreshing && (
                   <ContactNoKeywordForm
                     nickname={nickname}
                     initialKeyword=""
@@ -633,7 +658,7 @@ export function GuestHomepage() {
                 )}
 
                 {/* No Results Found After Web Search - Show Contact Form */}
-                {dbMatchCount === 0 && webMatchCount === 0 && webResults && !isRefreshing && (
+                {!showContactForm && dbMatchCount === 0 && webMatchCount === 0 && webResults && !isRefreshing && (
                   <ContactNoKeywordForm
                     nickname={nickname}
                     initialKeyword={keyword}
@@ -645,7 +670,7 @@ export function GuestHomepage() {
                 )}
 
                 {/* Display Results */}
-                {combinedResults && totalMatches > 0 && combinedResults.tournaments.length > 0 && (
+                {!showContactForm && combinedResults && totalMatches > 0 && combinedResults.tournaments.length > 0 && (
                   <div className="max-w-6xl mx-auto px-4">
                     <div className="mb-6">
                       <h2 className="text-xl sm:text-2xl font-semibold">{t("guest.resultsTitle")}</h2>
