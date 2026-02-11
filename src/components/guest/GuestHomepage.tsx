@@ -22,7 +22,6 @@ import type {
   GetPlayerMatchesResponseDTO,
   NakkaPlayerMatchResult,
   NakkaTournamentWithMatchesDTO,
-  NakkaTournamentMatchDTO,
 } from "@/types";
 
 type SearchStep = "nickname" | "keyword" | "results";
@@ -585,7 +584,12 @@ export function GuestHomepage() {
                             <h3 className="text-sm font-semibold">{t("guest.filterPlayers")}</h3>
                           </div>
                           <div className="flex items-center gap-2 flex-wrap">
-                            <Button onClick={handleShowContactForm} variant="outline" size="sm" className="whitespace-nowrap">
+                            <Button
+                              onClick={handleShowContactForm}
+                              variant="outline"
+                              size="sm"
+                              className="whitespace-nowrap"
+                            >
                               {t("guest.noTournamentContact")}
                             </Button>
                             <Button onClick={handleStartOver} variant="outline" size="sm" className="whitespace-nowrap">
