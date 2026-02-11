@@ -8,14 +8,19 @@
 ALTER TABLE nakka.tournament_matches
 ADD COLUMN attempts_count INTEGER NOT NULL DEFAULT 1;
 
--- Step 2: Create a trigger function to increment attempts_count on update
+-- Step 2: Create a trigger function to increment attempts_count on update only if match_result_error is set
 CREATE OR REPLACE FUNCTION nakka.increment_attempts_count()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  -- Increment the attempts_count by 1 on every update
-  NEW.attempts_count := OLD.attempts_count + 1;
+  -- Increment the attempts_count by 1 only if match_result_error is NOT NULL
+  IF NEW.match_result_error IS NOT NULL THEN
+    NEW.attempts_count := OLD.attempts_count + 1;
+  ELSE
+    -- Keep the same attempts_count if match_result_error is NULL (successful update)
+    NEW.attempts_count := OLD.attempts_count;
+  END IF;
   RETURN NEW;
 END;
 $$;
@@ -58,7 +63,7 @@ COMMENT ON COLUMN nakka.tournament_matches.attempts_count IS
 
 -- Step 7: Add comments to functions
 COMMENT ON FUNCTION nakka.increment_attempts_count() IS 
-'Trigger function that increments the attempts_count column by 1 on every update of a tournament_matches row.';
+'Trigger function that increments the attempts_count column by 1 only when match_result_error is NOT NULL (failed attempts). Successful updates do not increment the counter.';
 
 COMMENT ON FUNCTION nakka.delete_high_attempt_matches() IS 
 'Trigger function that automatically deletes tournament_matches rows when attempts_count reaches 10 or more AND match_result_error is NOT NULL.';
