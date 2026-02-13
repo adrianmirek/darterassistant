@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Device Fingerprint Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    h1 {
+      color: #333;
+    }
+    .result {
+      background: #f0f9ff;
+      padding: 15px;
+      border-radius: 4px;
+      border-left: 4px solid #3b82f6;
+      margin: 10px 0;
+      word-break: break-all;
+    }
+    .fingerprint-details {
+      background: #fef3c7;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 10px 0;
+      font-size: 14px;
+      font-family: monospace;
+    }
+    button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+    .success {
+      color: #059669;
+      font-weight: bold;
+    }
+    .error {
+      color: #dc2626;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔍 Device Fingerprint Test</h1>
+  
+  <div class="card">
+    <h2>Test Instructions</h2>
+    <ol>
+      <li>Click "Generate Device ID" in this window</li>
+      <li>Copy the Device ID</li>
+      <li>Open an <strong>incognito/private window</strong></li>
+      <li>Open this same HTML file in incognito</li>
+      <li>Click "Generate Device ID" again</li>
+      <li>Compare the IDs - they should be <strong>identical</strong>!</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2>Generate Device Fingerprint</h2>
+    <button onclick="generateFingerprint()">Generate Device ID</button>
+    <button onclick="clearCache()">Clear Cache</button>
+    <button onclick="showDetails()">Show Details</button>
+    
+    <div id="result"></div>
+    <div id="details"></div>
+  </div>
+
+  <div class="card">
+    <h2>Test Results</h2>
+    <div id="comparison"></div>
+  </div>
+
+  <script>
+    async function generateDeviceFingerprint() {
+      const fingerprint = [];
+
+      fingerprint.push(`${screen.width}`);
+      fingerprint.push(`${screen.height}`);
+      fingerprint.push(`${screen.colorDepth}`);
+      fingerprint.push(Intl.DateTimeFormat().resolvedOptions().timeZone);
+
+      const combined = fingerprint.join('::');
+      
+      let hash = 0;
+      for (let i = 0; i < combined.length; i++) {
+        const char = combined.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+      }
+      
+      const hashHex = Math.abs(hash).toString(16).padStart(8, '0');
+      const uuid = `${hashHex.slice(0, 8)}-${hashHex.slice(0, 4)}-4${hashHex.slice(0, 3)}-8${hashHex.slice(0, 3)}-${hashHex.padEnd(12, hashHex.slice(0, 4)).slice(0, 12)}`;
+      
+      return { uuid, components: fingerprint };
+    }
+
+    async function generateFingerprint() {
+      const result = document.getElementById('result');
+      result.innerHTML = '<p>Generating fingerprint...</p>';
+      
+      try {
+        const { uuid, components } = await generateDeviceFingerprint();
+        
+        // Try to cache in localStorage
+        let cached = false;
+        try {
+          localStorage.setItem('device_id', uuid);
+          cached = true;
+        } catch (e) {
+          cached = false;
+        }
+        
+        result.innerHTML = `
+          <div class="result">
+            <strong>Device ID:</strong><br>
+            <code>${uuid}</code>
+          </div>
+          <p>
+            <strong>Cached in localStorage:</strong> ${cached ? 
+              '<span class="success">✓ Yes</span>' : 
+              '<span class="error">✗ No (incognito mode?)</span>'}
+          </p>
+          <p><small>Copy this ID and compare it with the incognito window!</small></p>
+        `;
+        
+        // Store for comparison
+        sessionStorage.setItem('test_device_id', uuid);
+        
+        // Save fingerprint components
+        window.fingerprintComponents = components;
+      } catch (error) {
+        result.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+      }
+    }
+
+    function showDetails() {
+      const details = document.getElementById('details');
+      if (!window.fingerprintComponents) {
+        details.innerHTML = '<p>Generate a fingerprint first!</p>';
+        return;
+      }
+      
+      details.innerHTML = `
+        <div class="fingerprint-details">
+          <strong>Fingerprint Components:</strong><br>
+          ${window.fingerprintComponents.map(c => `• ${c}`).join('<br>')}
+        </div>
+      `;
+    }
+
+    function clearCache() {
+      try {
+        localStorage.removeItem('device_id');
+        sessionStorage.removeItem('test_device_id');
+        document.getElementById('result').innerHTML = '<p class="success">✓ Cache cleared!</p>';
+        document.getElementById('details').innerHTML = '';
+        window.fingerprintComponents = null;
+      } catch (e) {
+        document.getElementById('result').innerHTML = '<p class="error">Could not clear cache (incognito mode?)</p>';
+      }
+    }
+
+    // Auto-compare if we have a previous ID
+    window.addEventListener('load', () => {
+      const previousId = sessionStorage.getItem('test_device_id');
+      if (previousId) {
+        document.getElementById('comparison').innerHTML = `
+          <p><strong>Previous Device ID (this session):</strong><br>
+          <code>${previousId}</code></p>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>

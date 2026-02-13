@@ -50,6 +50,7 @@ import {
   endMatch,
   ApiError,
 } from "@/lib/services/standalone-match.service";
+import { getDeviceIdentifier } from "@/lib/utils/device-identifier";
 
 // ============================================================================
 // Hook Return Type
@@ -121,6 +122,8 @@ export function useStandaloneMatch(options: UseStandaloneMatchOptions = {}): Use
 
   // Session management
   const sessionId = useRef<string>(getOrCreateSessionId());
+  // Guard to prevent concurrent duplicate starts
+  const isStartingRef = useRef(false);
 
   // State
   const [matchState, setMatchState] = useState<MatchState | null>(null);
@@ -263,6 +266,38 @@ export function useStandaloneMatch(options: UseStandaloneMatchOptions = {}): Use
         return;
       }
 
+      // Prevent concurrent starts within this instance
+      if (isStartingRef.current) {
+        console.log("⏱ startMatch already in progress (instance), skipping duplicate call");
+        return;
+      }
+
+      // Prevent concurrent starts across different hook instances/tabs using localStorage
+      let globalStarting = false;
+      try {
+        globalStarting = localStorage.getItem("starting_match") === "1";
+      } catch {
+        // localStorage might be unavailable - ignore
+      }
+
+      if (globalStarting) {
+        console.log("⏱ startMatch already in progress (global), skipping duplicate call");
+        return;
+      }
+
+      // If match already in progress, nothing to do
+      if (stateToUse.matchStatus === "in_progress") {
+        console.log("✅ Match already in progress, skipping start");
+        return;
+      }
+
+      isStartingRef.current = true;
+      try {
+        localStorage.setItem("starting_match", "1");
+      } catch {
+        // ignore
+      }
+
       clearError();
       setIsLoading(true);
 
@@ -281,7 +316,8 @@ export function useStandaloneMatch(options: UseStandaloneMatchOptions = {}): Use
 
         // Try to start the match via API
         try {
-          const { match, lock } = await startNewMatch(command, sessionId.current);
+          const deviceId = await getDeviceIdentifier().catch(() => null);
+          const { match, lock } = await startNewMatch(command, sessionId.current, deviceId || undefined);
 
           console.log("🔐 Match start response:", {
             matchId: match.id,
@@ -289,7 +325,7 @@ export function useStandaloneMatch(options: UseStandaloneMatchOptions = {}): Use
             lockMatchId: lock?.match_id,
           });
 
-          // Update state with API response
+          // Update state with API response and persist immediately to localStorage
           setMatchState((prev) => {
             if (!prev) return prev;
             const newState = {
@@ -306,6 +342,14 @@ export function useStandaloneMatch(options: UseStandaloneMatchOptions = {}): Use
               hasLock: newState.hasLock,
             });
 
+            // Persist immediately so subsequent components can see the match state
+            try {
+              saveMatchState(newState);
+              console.log("💾 Match state saved to localStorage (post-start)");
+            } catch (e) {
+              console.warn("Failed to save match state immediately:", e);
+            }
+
             return newState;
           });
 
@@ -317,7 +361,7 @@ export function useStandaloneMatch(options: UseStandaloneMatchOptions = {}): Use
           // Create a local pseudo-matchId for tracking
           const localMatchId = `local-${crypto.randomUUID()}`;
 
-          setMatchState((prev) => {
+          const localState = (prev: MatchState | null) => {
             if (!prev) return prev;
             return {
               ...prev,
@@ -326,6 +370,19 @@ export function useStandaloneMatch(options: UseStandaloneMatchOptions = {}): Use
               hasLock: false, // No API lock in local mode
               sessionId: sessionId.current,
             };
+          };
+
+          setMatchState((prev) => {
+            const ns = localState(prev);
+            if (ns) {
+              try {
+                saveMatchState(ns);
+                console.log("💾 Match state saved to localStorage (local mode)");
+              } catch (e) {
+                console.warn("Failed to save local match state:", e);
+              }
+            }
+            return ns;
           });
 
           console.log("📱 Match running locally:", localMatchId);
@@ -334,6 +391,12 @@ export function useStandaloneMatch(options: UseStandaloneMatchOptions = {}): Use
         handleError(err);
       } finally {
         setIsLoading(false);
+        isStartingRef.current = false;
+        try {
+          localStorage.removeItem("starting_match");
+        } catch {
+          // ignore
+        }
       }
     },
     [matchState, opts.defaultMatchTypeId, clearError, handleError]
