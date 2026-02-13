@@ -1,10 +1,12 @@
 import type { APIRoute } from "astro";
+import { trackUserAction } from "@/lib/services/user-action-tracking.service";
 
 export const prerender = false;
 
 /**
  * POST /api/v1/matches/:matchId/start
  * Start a match (change status from setup to in_progress and acquire lock)
+ * Tracks "Start Match" action for analytics
  */
 export const POST: APIRoute = async ({ locals, params, request }) => {
   try {
@@ -25,7 +27,22 @@ export const POST: APIRoute = async ({ locals, params, request }) => {
       });
     }
 
+    // Get device identifier from request body (optional, for tracking)
+    let deviceIdentifier: string | null = null;
+    try {
+      const body = await request.json();
+      deviceIdentifier = body.deviceIdentifier || null;
+    } catch {
+      // Body is optional, continue without it
+      console.warn("[API] No device identifier provided in request body");
+    }
+
     const supabase = locals.supabase;
+
+    // Get user session (if authenticated)
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
     // Set session variable for RLS
     await supabase.rpc("set_session_id", { session_id: sessionId });
@@ -143,6 +160,21 @@ export const POST: APIRoute = async ({ locals, params, request }) => {
       console.log("✅ Lock acquired for match:", matchId, "with device info");
     } else {
       console.warn("⚠️ No lock created for match:", matchId, "- scoring may fail");
+    }
+
+    // Track the start match action (non-blocking)
+    if (deviceIdentifier) {
+      trackUserAction(supabase, {
+        actionName: "Start Match",
+        description: null, // No additional description needed for Start Match
+        deviceIdentifier,
+        userId: session?.user?.id || null,
+      }).catch((error) => {
+        console.error("[API] Failed to track start match action:", error);
+        // Continue without throwing - tracking is non-critical
+      });
+    } else {
+      console.warn("[API] Device identifier not provided, skipping tracking");
     }
 
     if (!match) {

@@ -17,6 +17,7 @@ import { useTranslation } from "@/lib/hooks/I18nProvider";
 import { TournamentResults } from "./TournamentResults";
 import { ContactNoKeywordForm } from "./ContactNoKeywordForm";
 import { cleanPlayerName } from "@/lib/utils/text-normalization";
+import { getDeviceIdentifier } from "@/lib/utils/device-identifier";
 import type {
   RetrieveTournamentsMatchesResponseDTO,
   GetPlayerMatchesResponseDTO,
@@ -91,6 +92,9 @@ export function GuestHomepage() {
         return;
       }
 
+      // Get device identifier (async)
+      const deviceId = await getDeviceIdentifier();
+
       const response = await fetch("/api/nakka/get-player-matches", {
         method: "POST",
         headers: {
@@ -99,6 +103,8 @@ export function GuestHomepage() {
         body: JSON.stringify({
           nicknames: nicknamesArray.length === 1 ? nicknamesArray[0] : nicknamesArray,
           limit: 30,
+          deviceIdentifier: deviceId,
+          skipTracking: false, // Track this - user clicked search button
         }),
       });
 
@@ -171,6 +177,9 @@ export function GuestHomepage() {
         setError(null);
 
         try {
+          // Get device identifier (async)
+          const deviceId = await getDeviceIdentifier();
+
           const response = await fetch("/api/nakka/get-player-matches", {
             method: "POST",
             headers: {
@@ -179,6 +188,8 @@ export function GuestHomepage() {
             body: JSON.stringify({
               nicknames: selectedPlayers.length === 1 ? selectedPlayers[0] : selectedPlayers,
               limit: 30,
+              deviceIdentifier: deviceId,
+              skipTracking: true, // Don't track - this is auto-refresh
             }),
           });
 
@@ -257,6 +268,9 @@ export function GuestHomepage() {
       // Combine selected players with new nickname
       const allNicknames = [...selectedPlayers, trimmedNickname];
 
+      // Get device identifier (async)
+      const deviceId = await getDeviceIdentifier();
+
       const response = await fetch("/api/nakka/get-player-matches", {
         method: "POST",
         headers: {
@@ -265,6 +279,8 @@ export function GuestHomepage() {
         body: JSON.stringify({
           nicknames: allNicknames.length === 1 ? allNicknames[0] : allNicknames,
           limit: 30,
+          deviceIdentifier: deviceId,
+          skipTracking: true, // Don't track - this is adding a nickname
         }),
       });
 

@@ -247,7 +247,17 @@ function AddTournamentFormContent() {
 
     // Add to saved matches array
     const currentMatches = form.getValues("matches");
-    form.setValue("matches", [...currentMatches, currentMatch]);
+
+    // Prevent accidental double-insert: check for duplicate JSON representation
+    const isDuplicate = currentMatches.some((m) => JSON.stringify(m) === JSON.stringify(currentMatch));
+    if (isDuplicate) {
+      // Already added, no-op
+      toast.info(t("tournaments.matchSaved"), {
+        description: t("tournaments.matchSavedDescription", { number: currentMatches.length }),
+      });
+    } else {
+      form.setValue("matches", [...currentMatches, currentMatch]);
+    }
 
     // Remember the match_type_id
     const lastMatchTypeId = currentMatch.match_type_id;

@@ -522,3 +522,24 @@ export interface GetPlayerMatchesResponseDTO {
   matches: NakkaPlayerMatchResult[];
   total_count: number;
 }
+
+// ============================================================================
+// USER ACTION TRACKING TYPES
+// ============================================================================
+
+/**
+ * Action names that can be tracked
+ */
+export type TrackedActionName = "Search Matches" | "Start Match";
+
+/**
+ * DTO for user action tracking records
+ */
+export interface UserActionTrackingDTO {
+  id: string;
+  action_name: TrackedActionName;
+  description: string | null;
+  user_id: string | null;
+  device_identifier: string;
+  created_at: string;
+}
