@@ -74,13 +74,9 @@ export async function getDeviceIdentifier(): Promise<string> {
     // New fingerprint - cache it
     localStorage.setItem(STORAGE_KEY, currentFingerprint);
     localStorage.setItem(FINGERPRINT_KEY, fingerprintComponents);
-    console.log("[Device] Generated new device identifier:", currentFingerprint);
-
     return currentFingerprint;
   } catch {
-    console.log("[Device] localStorage not available, using fingerprint");
     const deviceId = await generateDeviceFingerprint();
-    console.log("[Device] Generated device identifier (no cache):", deviceId);
     return deviceId;
   }
 }

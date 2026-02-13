@@ -7,6 +7,18 @@
 drop policy if exists "deny_anon_all_user_action_tracking" on public.user_action_tracking;
 drop policy if exists "deny_authenticated_select_user_action_tracking" on public.user_action_tracking;
 
+-- Drop any existing insert policies to avoid duplicate creation errors
+drop policy if exists "allow_anon_insert_user_action_tracking" on public.user_action_tracking;
+drop policy if exists "allow_authenticated_insert_user_action_tracking" on public.user_action_tracking;
+
+-- Drop any existing select/update/delete policies to avoid duplicate creation errors
+drop policy if exists "deny_anon_select_user_action_tracking" on public.user_action_tracking;
+drop policy if exists "deny_authenticated_select_user_action_tracking" on public.user_action_tracking;
+drop policy if exists "deny_anon_update_user_action_tracking" on public.user_action_tracking;
+drop policy if exists "deny_anon_delete_user_action_tracking" on public.user_action_tracking;
+drop policy if exists "deny_authenticated_update_user_action_tracking" on public.user_action_tracking;
+drop policy if exists "deny_authenticated_delete_user_action_tracking" on public.user_action_tracking;
+
 -- Allow anonymous users to INSERT tracking data
 create policy "allow_anon_insert_user_action_tracking"
   on public.user_action_tracking
