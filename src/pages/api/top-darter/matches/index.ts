@@ -3,6 +3,9 @@ import { z } from "zod";
 
 export const prerender = false;
 
+// In-memory guard to prevent rapid duplicate match creation per session
+const creatingSessions = new Map<string, number>();
+
 // Validation schemas
 const playerInfoSchema = z
   .object({
@@ -45,10 +48,10 @@ const createMatchSchema = z
  * Create a new match
  */
 export const POST: APIRoute = async ({ locals, request }) => {
-  try {
-    // Get session ID from header
-    const sessionId = request.headers.get("X-Session-ID");
+  // Get session ID from header
+  const sessionId = request.headers.get("X-Session-ID");
 
+  try {
     if (!sessionId) {
       return new Response(
         JSON.stringify({
@@ -62,6 +65,27 @@ export const POST: APIRoute = async ({ locals, request }) => {
           headers: { "Content-Type": "application/json" },
         }
       );
+    }
+
+    // Duplicate-creation guard: if a match was created for this session within last 3s, block
+    try {
+      const last = creatingSessions.get(sessionId);
+      const now = Date.now();
+      if (last && now - last < 1000) {
+        console.warn("[API] Duplicate match creation prevented for session:", sessionId);
+        return new Response(
+          JSON.stringify({
+            error: {
+              code: "DUPLICATE_CREATION",
+              message: "A match creation is already in progress for this session",
+            },
+          }),
+          { status: 409, headers: { "Content-Type": "application/json" } }
+        );
+      }
+      creatingSessions.set(sessionId, now);
+    } catch {
+      // ignore storage guard errors
     }
 
     // Parse request body
@@ -188,4 +212,6 @@ export const POST: APIRoute = async ({ locals, request }) => {
       }
     );
   }
+  // Don't use finally to delete the guard - let it persist for 3s to block rapid duplicates
+  // The timestamp check handles expiry automatically
 };

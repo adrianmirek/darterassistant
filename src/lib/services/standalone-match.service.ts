@@ -447,7 +447,8 @@ export async function getMatchStats(
  */
 export async function startNewMatch(
   command: CreateMatchCommand,
-  sessionId: string
+  sessionId: string,
+  deviceIdentifier?: string
 ): Promise<{
   match: StandaloneMatchDTO;
   lock: MatchLockDTO;
@@ -456,10 +457,14 @@ export async function startNewMatch(
   const match = await createMatch(command, sessionId);
 
   // Start the match (transitions to in_progress and acquires lock)
+  const body: Record<string, unknown> = {};
+  if (deviceIdentifier) body.deviceIdentifier = deviceIdentifier;
+
   const response = await apiRequest<{ data: { match: StandaloneMatchDTO; lock: MatchLockDTO } }>(
     `/matches/${match.id}/start`,
     {
       method: "POST",
+      body: JSON.stringify(body),
     },
     sessionId
   );
